@@ -2,6 +2,8 @@
 
 This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses Claude Code to search the web, compile a structured briefing, and publish it to Notion.
 
+The system is cross-platform, supporting macOS (launchd) and Windows (Task Scheduler).
+
 ---
 
 ## Table of Contents
@@ -22,24 +24,34 @@ This document describes the architecture, data flow, and design decisions behind
 
 ## 1. System Architecture Overview
 
-The system is composed of four primary components: a macOS scheduler, a shell entry point, the Claude Code AI engine, and the Notion API as the output destination. A manual CLI trigger provides an alternative entry point.
+The system is composed of four primary layers: a platform-native scheduler, a scripted entry point, the Claude Code AI engine, and the Notion API as the output destination. The core logic (prompt, search, compilation, Notion write) is identical across platforms -- only the scheduling and scripting layers differ.
 
 ```mermaid
 graph TD
-    A[macOS launchd Scheduler] -->|8:00 AM daily| B[briefing.sh]
-    C[ai-news CLI] -->|Manual kickstart| A
-    B -->|Invokes Claude Code in print mode| D[Claude Code - Sonnet Model]
-    D -->|WebSearch tool| E[Web Sources]
-    D -->|Notion MCP tool| F[Notion API]
-    F --> G[Notion Page - AI Daily Briefing]
-    B -->|Writes logs| H[logs/ Directory]
-    I[prompt.md] -->|Read by briefing.sh| B
+    subgraph "Platform Schedulers"
+        A1[macOS launchd] -->|8:00 AM daily| B1[briefing.sh]
+        A2[Windows Task Scheduler] -->|8:00 AM daily| B2[briefing.ps1]
+    end
+
+    subgraph "Shared Pipeline"
+        B1 -->|Reads| P[prompt.md]
+        B2 -->|Reads| P
+        B1 -->|Invokes| D[Claude Code CLI - Sonnet Model]
+        B2 -->|Invokes| D
+        D -->|WebSearch tool| E[Web Sources]
+        D -->|Notion MCP tool| F[Notion API]
+        F --> G[Notion Page - AI Daily Briefing]
+    end
+
+    B1 -->|Writes logs| H[logs/ Directory]
+    B2 -->|Writes logs| H
 ```
 
 **Key design principles:**
 
 - **Headless execution.** The entire pipeline runs without user interaction via `claude -p` (print mode).
-- **Single responsibility.** Each file has one job: scheduling, orchestration, prompt definition, or manual triggering.
+- **Cross-platform.** Platform-specific code is isolated to the entry point scripts and scheduler configs. The prompt, search strategy, and output format are shared.
+- **Single responsibility.** Each file has one job: scheduling, orchestration, prompt definition, or installation.
 - **Cost containment.** A hard budget cap of $2.00 per run prevents runaway API costs.
 - **Observability.** All output (stdout and stderr) is captured in date-stamped log files.
 
@@ -47,31 +59,44 @@ graph TD
 
 ## 2. Execution Flow
 
-The system supports two trigger paths that converge on the same execution pipeline.
+The system supports multiple trigger paths that converge on the same execution pipeline.
+
+### Platform Entry Points
+
+```mermaid
+flowchart LR
+    subgraph macOS
+        L[launchd 08:00] --> BS[briefing.sh]
+        AI[ai-news CLI] -->|kickstart| L
+    end
+
+    subgraph Windows
+        TS[Task Scheduler 08:00] --> PS[briefing.ps1]
+        MAN["schtasks /run"] --> TS
+    end
+
+    BS --> CC[Claude Code CLI]
+    PS --> CC
+```
 
 ### Full Lifecycle Sequence
 
 ```mermaid
 sequenceDiagram
-    participant L as launchd
-    participant AI as ai-news CLI
-    participant B as briefing.sh
+    participant S as Scheduler
+    participant E as Entry Script
     participant C as Claude Code
     participant W as WebSearch Tool
     participant N as Notion MCP Tool
     participant NP as Notion Page
 
-    Note over L: Automatic trigger at 08:00
-    L->>B: Execute /bin/bash briefing.sh
+    Note over S: Automatic trigger at 08:00<br/>or manual trigger
+    S->>E: Execute entry script
 
-    Note over AI: Manual trigger
-    AI->>L: launchctl kickstart gui/UID/com.ainews.briefing
-    L->>B: Execute /bin/bash briefing.sh
-
-    B->>B: Set up environment, create log dir
-    B->>B: Unset CLAUDECODE env var
-    B->>B: Read prompt.md into memory
-    B->>C: claude -p --model sonnet --max-budget-usd 2.00
+    E->>E: Set up environment, create log dir
+    E->>E: Clear CLAUDECODE env var
+    E->>E: Read prompt.md into memory
+    E->>C: claude -p --model sonnet --max-budget-usd 2.00
 
     loop For each of 9 topics
         C->>W: WebSearch query for topic
@@ -86,9 +111,9 @@ sequenceDiagram
     N->>NP: Create page in AI Daily Briefing database
     N-->>C: Page URL returned
 
-    C-->>B: Output with page URL
-    B->>B: Log success or failure
-    B->>B: Clean up logs older than 30 days
+    C-->>E: Output with page URL
+    E->>E: Log success or failure
+    E->>E: Clean up logs older than 30 days
 ```
 
 ### Timing
@@ -99,11 +124,21 @@ Based on observed log data, a typical run takes approximately 3-5 minutes from s
 
 ## 3. Component Details
 
-### 3.1 launchd Scheduler (`com.ainews.briefing.plist`)
+### 3.1 Schedulers
 
-The plist file is a macOS LaunchAgent that registers the briefing job with the user-level `launchd` daemon.
+The system uses the native scheduler for each platform. Both are configured for identical behavior: fire once daily at 08:00, recover from missed runs when possible.
 
-**Key configuration:**
+| Aspect | macOS (launchd) | Windows (Task Scheduler) |
+|---|---|---|
+| Config file | `com.ainews.briefing.plist` | Created by `install-task.ps1` |
+| Task name | `com.ainews.briefing` | `AiNewsBriefing` |
+| Default time | 08:00 | 08:00 |
+| Missed run recovery | Fires on wake (sleep only) | `StartWhenAvailable` fires on wake or login |
+| Powered-off recovery | Skipped for that day | Fires on next login |
+| Concurrency guard | Single instance enforced by launchd | `ExecutionTimeLimit` of 30 minutes |
+| Manual trigger | `launchctl kickstart` or `ai-news` CLI | `schtasks /run /tn AiNewsBriefing` |
+
+#### macOS plist configuration
 
 | Property | Value | Purpose |
 |---|---|---|
@@ -114,51 +149,64 @@ The plist file is a macOS LaunchAgent that registers the briefing job with the u
 | `StandardErrorPath` | `logs/launchd-stderr.log` | Capture stderr from launchd itself |
 | `EnvironmentVariables` | `PATH`, `HOME` | Ensures Claude and tools are discoverable |
 
-**How `StartCalendarInterval` works:**
+#### Windows Task Scheduler settings
 
-- It functions like a cron entry: the job fires when the system clock matches the specified hour and minute.
-- If the Mac is asleep at 08:00, launchd fires the job as soon as the machine wakes up (it catches up on missed intervals).
-- If the Mac is powered off at 08:00, the job is skipped entirely for that day; launchd does not retroactively execute missed jobs after a cold boot.
-- Only one instance runs at a time. If a prior run is still executing, the scheduled trigger is ignored.
+| Setting | Value | Purpose |
+|---|---|---|
+| `AllowStartIfOnBatteries` | True | Run even on battery power (laptops) |
+| `DontStopIfGoingOnBatteries` | True | Don't kill the task if AC is unplugged mid-run |
+| `StartWhenAvailable` | True | Catch up on missed runs after sleep/shutdown |
+| `ExecutionTimeLimit` | 30 minutes | Kill runaway tasks |
+| `RunLevel` | Limited | No admin elevation required |
 
-**Installation:**
+### 3.2 Entry Point Scripts
 
-The plist must be placed in (or symlinked from) `~/Library/LaunchAgents/` and loaded with:
-
-```bash
-launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
-```
-
-### 3.2 Entry Point (`briefing.sh`)
-
-This is the orchestration script. It is deliberately minimal -- its only job is to set up the environment and hand off to Claude Code.
+Both scripts are deliberately minimal -- their only job is to set up the environment and hand off to Claude Code. They share the same logic in platform-native languages.
 
 ```mermaid
 graph TD
-    A[Start] --> B[Resolve SCRIPT_DIR]
-    B --> C[Set LOG_DIR, DATE, TIME, LOG_FILE]
-    C --> D[Unset CLAUDECODE env var]
-    D --> E[mkdir -p logs/]
-    E --> F[Log: Starting AI News Briefing]
-    F --> G[Invoke Claude Code with prompt.md]
-    G --> H{Exit code?}
-    H -->|0| I[Log: Briefing complete]
-    H -->|Non-zero| J[Log: Briefing FAILED]
-    I --> K[Delete logs older than 30 days]
-    J --> K
-    K --> L[End]
+    A[Start] --> B[Resolve script directory]
+    B --> C[Set LOG_DIR, DATE, LOG_FILE]
+    C --> D[Clear CLAUDECODE env var]
+    D --> E[Create logs/ directory]
+    E --> F["Log: Starting AI News Briefing..."]
+    F --> G[Read prompt.md]
+    G --> H[Invoke Claude Code with prompt]
+    H --> I{Exit code?}
+    I -->|0| J["Log: Briefing complete"]
+    I -->|Non-zero| K["Log: Briefing FAILED"]
+    J --> L[Delete logs older than 30 days]
+    K --> L
+    L --> M[End]
 ```
 
-**Design decisions:**
+#### `briefing.sh` (macOS)
 
-- **`set -e`**: The script exits immediately on any command failure, preventing partial or corrupted runs.
-- **`unset CLAUDECODE`**: This is critical. If the script is invoked from within a Claude Code session (e.g., during development), the nested session detection would block execution. Unsetting this variable bypasses that guard.
-- **Absolute path to Claude**: The `CLAUDE` variable points to `/Users/davidnguyen/.local/bin/claude` rather than relying on `$PATH`, ensuring the correct binary is always used regardless of the shell environment.
-- **Log rotation**: The `find` command at the end purges log files older than 30 days, preventing unbounded disk usage. The `|| true` ensures this cleanup never causes a script failure.
+- **Language:** Bash with `set -e` (exit on error)
+- **Claude path:** `$HOME/.local/bin/claude` (portable across users)
+- **Log rotation:** `find` with `-mtime +30 -delete`
+- **Error suppression:** `|| true` on cleanup to prevent script failure
 
-### 3.3 AI Prompt (`prompt.md`)
+#### `briefing.ps1` (Windows)
 
-The prompt is a structured Markdown document that serves as the complete instruction set for Claude Code. It follows a three-step sequential pattern.
+- **Language:** PowerShell 5.1+ with `Set-StrictMode` and `$ErrorActionPreference = "Stop"`
+- **Claude path:** `$env:USERPROFILE\.local\bin\claude.exe`
+- **Log rotation:** `Get-ChildItem` with `Where-Object` filtering by `LastWriteTime`
+- **Error handling:** `try/catch` block captures Claude execution failures
+
+**Shared design decisions:**
+
+- **`unset CLAUDECODE` / `$env:CLAUDECODE = $null`**: Prevents nested session detection if the script is invoked from within a Claude Code terminal.
+- **Log to file, not stdout:** All output is captured in date-stamped log files for observability without requiring a terminal.
+- **30-day log rotation:** Prevents unbounded disk usage on both platforms.
+
+### 3.3 Task Installer (`install-task.ps1`, Windows only)
+
+A PowerShell script that registers (or re-registers) the Windows Task Scheduler task. Accepts `-Hour` and `-Minute` parameters for schedule customization. Removes any existing task with the same name before creating a new one, making it idempotent.
+
+### 3.4 AI Prompt (`prompt.md`)
+
+The prompt is a structured Markdown document that serves as the complete instruction set for Claude Code. It is shared across both platforms with no platform-specific content.
 
 ```mermaid
 graph TD
@@ -186,21 +234,11 @@ graph TD
 4. **Exact Notion API parameters.** The `parent` database ID, property schema, and formatting rules are hardcoded in the prompt so Claude produces the correct API call every time.
 5. **Guardrails.** Instructions like "Focus on NEWS from the past 24-48 hours only" and "If a topic has no significant news today, say 'No major updates today'" prevent hallucination and filler content.
 
-### 3.4 Manual CLI Trigger (`ai-news`)
+### 3.5 Manual CLI Trigger (macOS: `ai-news`)
 
-Located at `~/.local/bin/ai-news`, this is a convenience script for on-demand execution.
+Located at `~/.local/bin/ai-news` on macOS, this is a convenience script for on-demand execution. It calls `launchctl kickstart` to trigger the same launchd job, reusing the exact execution environment defined in the plist.
 
-**How it works:**
-
-1. Prints a status message to the terminal.
-2. Calls `launchctl kickstart` to trigger the same launchd job that runs automatically at 08:00.
-3. Prints instructions for tailing the live log.
-
-**Why `launchctl kickstart` instead of running `briefing.sh` directly:**
-
-- It reuses the exact same execution environment (PATH, HOME) defined in the plist.
-- It respects launchd's single-instance guarantee -- if a run is already in progress, the kickstart is a no-op.
-- The job appears in `launchctl list` output, making it observable through standard macOS tooling.
+On Windows, the equivalent is `schtasks /run /tn AiNewsBriefing`, which can be run from any terminal.
 
 ---
 
@@ -229,7 +267,7 @@ graph LR
 | Compile | Filtered news items | Two-tier Markdown briefing | Claude Code (LLM generation) |
 | Format | Raw Markdown | Notion-flavored Markdown with tables | Claude Code (following prompt rules) |
 | Publish | Formatted content + metadata | Notion database page | Claude Code via Notion MCP tool |
-| Log | Page URL + status | Date-stamped log entry | briefing.sh |
+| Log | Page URL + status | Date-stamped log entry | Entry point script |
 
 ---
 
@@ -305,12 +343,12 @@ The briefing follows a two-tier structure designed for different reading depths:
 
 ```mermaid
 graph TD
-    A[Notion Page] --> B[Title: YYYY-MM-DD - AI Daily Briefing]
-    A --> C[Properties: Date, Status, Topics]
+    A[Notion Page] --> B["Title: YYYY-MM-DD - AI Daily Briefing"]
+    A --> C["Properties: Date, Status, Topics"]
     A --> D[Content Body]
 
     D --> E[Tier 1: TL;DR]
-    D --> F[Divider: ---]
+    D --> F["Divider: ---"]
     D --> G[Tier 2: Full Briefing]
 
     E --> E1[10-15 bullet points]
@@ -333,8 +371,6 @@ graph TD
 ```
 
 ### Notion Formatting Conventions
-
-The prompt specifies a precise formatting vocabulary for the Notion page:
 
 | Markdown Element | Notion Rendering | Usage |
 |---|---|---|
@@ -359,117 +395,101 @@ The parent database is identified by a hardcoded `data_source_id` in the prompt.
 
 ## 7. Scheduling Architecture
 
-The scheduling layer relies entirely on macOS `launchd`. The system's behavior varies depending on the machine's power state at the scheduled time.
-
-### Mac State Diagram
+### Cross-Platform Scheduling Comparison
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Awake
+flowchart TD
+    subgraph "macOS: launchd"
+        direction TB
+        ML[launchd daemon] -->|StartCalendarInterval| MT{08:00?}
+        MT -->|Yes| MR[Run briefing.sh]
+        MT -->|Sleeping| MW[Queue for wake]
+        MT -->|Powered off| MS[Skipped]
+        MW -->|Mac wakes| MR
+    end
 
-    Awake --> Sleeping: Lid closed / idle
-    Sleeping --> Awake: Lid opened / wake event
-    Awake --> PoweredOff: Shutdown
-    PoweredOff --> Awake: Power on
-
-    state Awake {
-        [*] --> WaitingForSchedule
-        WaitingForSchedule --> JobRunning: Clock hits 08:00
-        WaitingForSchedule --> JobRunning: Manual kickstart via ai-news
-        JobRunning --> WaitingForSchedule: Job completes
-    }
-
-    state Sleeping {
-        [*] --> MissedInterval
-        MissedInterval --> CatchUpOnWake: Mac wakes
-    }
-
-    state PoweredOff {
-        [*] --> IntervalSkipped
-        IntervalSkipped --> NoRetroactiveFire: Mac boots
-    }
+    subgraph "Windows: Task Scheduler"
+        direction TB
+        WS[Task Scheduler Service] -->|Daily trigger| WT{08:00?}
+        WT -->|Yes| WR[Run briefing.ps1]
+        WT -->|Sleeping/Off| WW[StartWhenAvailable]
+        WW -->|Machine available| WR
+    end
 ```
 
-### Behavior by Mac State
+### Machine State Behavior
 
-| Mac State at 08:00 | Behavior | Result |
+| Machine State at 08:00 | macOS (launchd) | Windows (Task Scheduler) |
 |---|---|---|
-| Awake | Job fires immediately at 08:00 | Briefing created on schedule |
-| Sleeping | Job fires on next wake | Briefing created late but same day |
-| Powered off | Job is skipped | No briefing for that day |
-| Job already running | Scheduled trigger is ignored | Single instance enforced |
+| Awake | Job fires immediately | Task fires immediately |
+| Sleeping | Fires on next wake | Fires on next wake (`StartWhenAvailable`) |
+| Powered off | Skipped entirely | Fires on next login (`StartWhenAvailable`) |
+| Job already running | Trigger ignored (single instance) | Governed by `ExecutionTimeLimit` |
 
-### Calendar Interval Semantics
+**Key difference:** Windows `StartWhenAvailable` recovers from both sleep and cold boot. macOS launchd only recovers from sleep -- a cold boot after a missed interval does not retroactively fire the job.
 
-The `StartCalendarInterval` with `Hour: 8, Minute: 0` means:
+### Schedule Customization
 
-- The job fires once per day when both conditions are met (hour = 8 AND minute = 0).
-- Only the `Hour` and `Minute` keys are specified, so it fires every day of the week, every day of the month.
-- To change to a weekday-only schedule, add `Weekday` keys (0 = Sunday, 1 = Monday, etc.).
+**macOS:** Edit `StartCalendarInterval` in the plist. For weekday-only, use an array of dicts with `Weekday` keys.
+
+**Windows:** Re-run `install-task.ps1 -Hour <H> -Minute <M>`. The script is idempotent and replaces any existing task.
 
 ---
 
 ## 8. Error Handling
 
-The system has multiple layers of error handling, from the shell script level down to the AI execution level.
+The system has multiple layers of error handling, from the script level down to the AI execution level. Both platform scripts implement the same error handling strategy.
 
 ### Error Path Diagram
 
 ```mermaid
 graph TD
-    A[briefing.sh starts] --> B{Log directory exists?}
-    B -->|No| C[mkdir -p creates it]
+    A[Entry script starts] --> B{Log directory exists?}
+    B -->|No| C[Create it]
     B -->|Yes| D[Continue]
     C --> D
 
-    D --> E[Invoke Claude Code]
-    E --> F{CLAUDECODE env set?}
-    F -->|Yes| G[Unset prevents nested session crash]
-    F -->|No| H[Continue normally]
-    G --> H
+    D --> E{CLAUDECODE env set?}
+    E -->|Yes| F[Clear it]
+    E -->|No| G[Continue]
+    F --> G
 
-    H --> I{Claude execution}
-    I --> J{Budget exceeded?}
-    J -->|Yes| K[Claude exits with error]
-    I --> L{WebSearch failures?}
-    L -->|Yes| M[Claude skips or retries topic]
-    I --> N{Notion API error?}
+    G --> H[Invoke Claude Code]
+    H --> I{Budget exceeded?}
+    I -->|Yes| J[Claude exits with error]
+    H --> K{WebSearch failures?}
+    K -->|Partial| L[Claude notes 'No major updates' for topic]
+    K -->|Total| M[Claude produces empty briefing]
+    H --> N{Notion API error?}
     N -->|Yes| O[Claude reports error in output]
-    I --> P{Success}
+    H --> P{Success}
 
-    K --> Q[Exit code non-zero]
-    M --> P
+    J --> Q[Log: FAILED with exit code]
+    M --> Q
     O --> Q
-    P --> R[Exit code 0]
+    L --> P
+    P --> R[Log: Briefing complete]
 
-    Q --> S[Log: Briefing FAILED with exit code]
-    R --> T[Log: Briefing complete]
-
-    S --> U[Log rotation cleanup]
-    T --> U
-
-    U --> V{find fails?}
-    V -->|Yes| W[Suppressed by || true]
-    V -->|No| X[Old logs deleted]
-    W --> Y[End]
-    X --> Y
+    Q --> S[Log rotation cleanup]
+    R --> S
+    S --> T[End]
 ```
 
 ### Error Categories
 
 | Error Type | Detection | Recovery | Impact |
 |---|---|---|---|
-| Nested Claude session | `CLAUDECODE` env var set | `unset CLAUDECODE` in briefing.sh | Prevented entirely |
-| Budget exceeded ($2.00) | Claude exits with non-zero code | Logged as failure; no partial page created | No briefing for that run |
-| WebSearch failure (single topic) | Claude observes empty/error results | Claude notes "No major updates today" for that section | Partial briefing, degraded coverage |
-| WebSearch failure (all topics) | Claude cannot gather any news | Claude exits or produces empty briefing | Failed run logged |
-| Notion API error | MCP tool returns error | Claude reports error in stdout; logged | No page created despite search work |
-| Claude binary not found | Shell `set -e` triggers exit | Logged as failure with exit code | No briefing |
-| Log directory permission error | `mkdir -p` fails, `set -e` exits | Script exits immediately | No briefing, no log |
+| Nested Claude session | `CLAUDECODE` env var set | Cleared by entry script | Prevented entirely |
+| Budget exceeded ($2.00) | Claude exits with non-zero code | Logged as failure | No briefing for that run |
+| WebSearch failure (single topic) | Claude observes empty/error results | Notes "No major updates today" | Partial briefing |
+| WebSearch failure (all topics) | Claude cannot gather any news | Empty briefing or failure | Failed run logged |
+| Notion API error | MCP tool returns error | Claude reports in stdout | No page created |
+| Claude binary not found | Script exits on error | Logged as failure | No briefing |
+| Log directory permission error | Directory creation fails | Script exits immediately | No briefing, no log |
 
 ### Budget Safety
 
-The `--max-budget-usd 2.00` flag is the primary cost control mechanism. Claude Code tracks cumulative API costs (input tokens, output tokens, tool calls) during the run and terminates if the budget is exceeded. Based on observed runs, a typical briefing consumes well under this cap, leaving headroom for retries and longer search sessions.
+The `--max-budget-usd 2.00` flag is the primary cost control mechanism. Claude Code tracks cumulative API costs during the run and terminates if the budget is exceeded. Based on observed runs, a typical briefing consumes well under this cap.
 
 ---
 
@@ -477,46 +497,51 @@ The `--max-budget-usd 2.00` flag is the primary cost control mechanism. Claude C
 
 ```mermaid
 graph TD
-    A["~/ai-news-briefing/"] --> B[briefing.sh]
+    A["project root/"] --> B[briefing.sh]
+    A --> B2[briefing.ps1]
     A --> C[prompt.md]
     A --> D[com.ainews.briefing.plist]
+    A --> D2[install-task.ps1]
     A --> E[.gitignore]
     A --> F[ARCHITECTURE.md]
+    A --> F2[README.md]
     A --> G["logs/"]
-    A --> H[".git/"]
 
-    G --> G1["YYYY-MM-DD.log (daily run logs)"]
-    G --> G2["launchd-stdout.log"]
-    G --> G3["launchd-stderr.log"]
+    G --> G1["YYYY-MM-DD.log"]
+    G --> G2["launchd-stdout.log (macOS)"]
+    G --> G3["launchd-stderr.log (macOS)"]
 
-    I["~/.local/bin/"] --> J[ai-news]
+    H["macOS: ~/Library/LaunchAgents/"] --> I["com.ainews.briefing.plist (copy)"]
+    I -.->|References| B
 
-    K["~/Library/LaunchAgents/"] --> L["com.ainews.briefing.plist (symlink or copy)"]
+    J["macOS: ~/.local/bin/"] --> K[ai-news]
+    K -.->|Kickstarts| I
 
-    L -.->|References| B
-    J -.->|Kicks start| L
-    B -.->|Reads| C
-    B -.->|Writes to| G
+    L["Windows: Task Scheduler"] --> M[AiNewsBriefing task]
+    M -.->|Runs| B2
 ```
 
 ### File Descriptions
 
-| File | Purpose | Tracked in Git |
-|---|---|---|
-| `briefing.sh` | Entry point script; orchestrates the entire pipeline | Yes |
-| `prompt.md` | Complete AI instruction set defining search, compilation, and output | Yes |
-| `com.ainews.briefing.plist` | macOS launchd job definition for scheduling | Yes |
-| `.gitignore` | Excludes `logs/`, `*.log`, `.DS_Store` from version control | Yes |
-| `ARCHITECTURE.md` | This document | Yes |
-| `logs/*.log` | Daily run logs and launchd output | No (gitignored) |
-| `~/.local/bin/ai-news` | Manual trigger CLI script | No (lives outside repo) |
+| File | Platform | Purpose | Tracked in Git |
+|---|---|---|---|
+| `briefing.sh` | macOS | Entry point script (bash) | Yes |
+| `briefing.ps1` | Windows | Entry point script (PowerShell) | Yes |
+| `prompt.md` | Shared | Complete AI instruction set | Yes |
+| `com.ainews.briefing.plist` | macOS | launchd job definition | Yes |
+| `install-task.ps1` | Windows | Task Scheduler installer | Yes |
+| `.gitignore` | Shared | Excludes `logs/`, `*.log`, `.DS_Store` | Yes |
+| `ARCHITECTURE.md` | Shared | This document | Yes |
+| `README.md` | Shared | User-facing documentation | Yes |
+| `logs/*.log` | Shared | Daily run logs | No (gitignored) |
+| `~/.local/bin/ai-news` | macOS | Manual trigger CLI script | No (outside repo) |
 
 ### Log File Lifecycle
 
-1. **Created**: At the start of each run, `briefing.sh` creates (or appends to) `logs/YYYY-MM-DD.log`.
-2. **Appended**: Claude Code's full stdout and stderr are appended to the same file. Multiple runs on the same day append to the same log.
-3. **Rotated**: At the end of each run, logs older than 30 days are deleted by `find`.
-4. **launchd logs**: `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself (e.g., job start/stop events). These are not rotated automatically and may grow over time.
+1. **Created**: At the start of each run, the entry script creates (or appends to) `logs/YYYY-MM-DD.log`.
+2. **Appended**: Claude Code's full stdout and stderr are appended. Multiple runs on the same day share one log file.
+3. **Rotated**: At the end of each run, logs older than 30 days are deleted.
+4. **launchd logs** (macOS only): `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself. These are not rotated automatically.
 
 ---
 
@@ -544,13 +569,7 @@ At a daily budget of $2.00, the maximum monthly cost is approximately $60 (assum
 
 ### Log File Access
 
-Log files contain:
-
-- Timestamps of each run.
-- Claude Code's full output, including the briefing content and Notion page URLs.
-- Error messages that may reveal system paths or configuration details.
-
-The `logs/` directory is gitignored to prevent accidental publication. Log files inherit the user's file permissions (`umask` dependent) and are not world-readable by default on macOS.
+Log files contain timestamps, Claude Code's full output (including briefing content and Notion page URLs), and error messages that may reveal system paths. The `logs/` directory is gitignored to prevent accidental publication.
 
 ### Notion API Credentials
 
@@ -558,7 +577,7 @@ The Notion MCP tool authenticates via credentials managed by Claude Code's MCP c
 
 ### Environment Variables
 
-The plist explicitly sets `PATH` and `HOME` to ensure deterministic execution. No secrets are stored in the plist or any tracked file. Claude Code's API key and Notion integration token are managed externally by the Claude Code and MCP runtime.
+No secrets are stored in any tracked file. Claude Code's API key and Notion integration token are managed externally by the Claude Code and MCP runtime. The macOS plist explicitly sets `PATH` and `HOME` for deterministic execution; the Windows task inherits the user's environment.
 
 ---
 
@@ -566,81 +585,51 @@ The plist explicitly sets `PATH` and `HOME` to ensure deterministic execution. N
 
 ### Adding or Modifying Topics
 
-To change the topics covered in the daily briefing:
-
-1. Edit `prompt.md`, Section "Topics to Search".
-2. Add, remove, or modify topic entries (currently 9).
-3. Update the `Topics` property value in the Notion parameters section if the count changes.
-4. No changes to `briefing.sh` or the plist are required.
+Edit `prompt.md`, Section "Topics to Search". Update the `Topics` property value if the count changes. No changes to entry scripts or scheduler configs are required.
 
 ### Changing the AI Model
 
-The model is specified in `briefing.sh` via `--model sonnet`. To change it:
-
-- Replace `sonnet` with another supported model identifier (e.g., `opus`, `haiku`).
-- Consider adjusting `--max-budget-usd` accordingly, as different models have different cost profiles.
-- Opus would provide higher quality analysis at higher cost; Haiku would be faster and cheaper but may produce less thorough briefings.
+Change `--model sonnet` in the entry script for your platform. Consider adjusting `--max-budget-usd` accordingly.
 
 ### Adding Notification Channels
 
-The system currently has no push notifications. Potential additions:
-
 | Channel | Implementation Approach |
 |---|---|
-| macOS notification | Add `osascript -e 'display notification ...'` to `briefing.sh` after successful run |
-| Slack | Add a Slack MCP tool call in `prompt.md` Step 3, or a `curl` webhook in `briefing.sh` |
-| Email | Add a `mail` or `sendmail` command in `briefing.sh`, or use an email MCP tool |
-| SMS | Integrate Twilio API via MCP tool or post-run curl in `briefing.sh` |
+| macOS notification | `osascript -e 'display notification ...'` in `briefing.sh` |
+| Windows toast | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
+| Slack | Slack MCP tool call in `prompt.md` or webhook `curl`/`Invoke-RestMethod` in the entry script |
+| Email | `mail`/`sendmail` (macOS) or `Send-MailMessage` (Windows) in the entry script |
 
-### Changing the Schedule
+### Adding Linux Support
 
-Edit `com.ainews.briefing.plist`:
+The system could be extended to Linux by:
 
-- **Different time**: Change the `Hour` and `Minute` integer values.
-- **Multiple times per day**: Use an array of `StartCalendarInterval` dicts.
-- **Weekdays only**: Add `<key>Weekday</key><integer>1</integer>` through `5` as separate dicts in an array.
-
-After editing, reload the job:
-
-```bash
-launchctl unload ~/Library/LaunchAgents/com.ainews.briefing.plist
-launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
-```
+1. Reusing `briefing.sh` as-is (bash is available on Linux).
+2. Creating a systemd timer + service unit (analogous to the launchd plist) or a cron entry.
+3. No changes to `prompt.md` or the Claude Code invocation.
 
 ### Adding a Web Dashboard
 
-The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and contain structured output. A lightweight web server could serve a dashboard showing:
-
-- Run history (success/failure) parsed from log timestamps.
-- Links to the Notion pages (URLs are present in log output).
-- Cost tracking (would require parsing Claude Code's budget output).
-
-### Adding Source Diversity Controls
-
-Currently, Claude has full discretion over which web sources it consults. To improve source diversity:
-
-- Add explicit source preferences to `prompt.md` (e.g., "Always check TechCrunch, The Verge, Ars Technica").
-- Add source exclusions (e.g., "Do not cite social media posts as primary sources").
-- Add a requirement for minimum unique sources per section.
+The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and contain structured output. A lightweight web server could serve a dashboard showing run history, Notion page links, and cost tracking.
 
 ---
 
 ## Appendix: Quick Reference
 
-### Commands
+### Commands by Platform
 
-| Action | Command |
-|---|---|
-| Run manually | `ai-news` |
-| Tail live log | `tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log` |
-| Check job status | `launchctl list \| grep ainews` |
-| Load the job | `launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist` |
-| Unload the job | `launchctl unload ~/Library/LaunchAgents/com.ainews.briefing.plist` |
-| View recent logs | `ls -la ~/ai-news-briefing/logs/` |
+| Action | macOS | Windows |
+|---|---|---|
+| Run manually | `ai-news` | `schtasks /run /tn AiNewsBriefing` |
+| Tail live log | `tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log` | `Get-Content "...\logs\YYYY-MM-DD.log" -Wait` |
+| Check job status | `launchctl list \| grep ainews` | `schtasks /query /tn AiNewsBriefing` |
+| Install scheduler | `launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist` | `.\install-task.ps1` |
+| Remove scheduler | `launchctl unload ~/Library/LaunchAgents/com.ainews.briefing.plist` | `schtasks /delete /tn AiNewsBriefing /f` |
+| View recent logs | `ls -la ~/ai-news-briefing/logs/` | `Get-ChildItem ~\ai-news-briefing\logs\` |
 
 ### Environment Requirements
 
-- macOS (launchd is macOS-specific)
+- macOS or Windows 10/11
 - Claude Code CLI installed at `~/.local/bin/claude`
 - Notion MCP integration configured in Claude Code
 - WebSearch tool available in Claude Code

@@ -6,7 +6,7 @@ LOG_DIR="$SCRIPT_DIR/logs"
 DATE=$(date +%Y-%m-%d)
 TIME=$(date +%H:%M:%S)
 LOG_FILE="$LOG_DIR/$DATE.log"
-CLAUDE="/Users/davidnguyen/.local/bin/claude"
+CLAUDE="${HOME}/.local/bin/claude"
 
 # Ensure we can run even if Claude Code is open
 unset CLAUDECODE

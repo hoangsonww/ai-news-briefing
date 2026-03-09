@@ -1,10 +1,10 @@
 # AI News Briefing
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, and publishes it to Notion -- powered by Claude Code CLI and macOS launchd.
+Automated daily AI news research agent that searches the web, compiles a structured briefing, and publishes it to Notion -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler).
 
 ## Overview
 
-AI News Briefing is a fully automated pipeline that runs every morning on your Mac. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), and writing the finished page directly to a Notion database.
+AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), and writing the finished page directly to a Notion database.
 
 The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion, and your daily AI briefing is already there.
 
@@ -16,63 +16,77 @@ Keeping up with AI news across models, tools, policy, funding, and open source i
 
 ```mermaid
 flowchart TD
-    A[macOS launchd] -->|8:00 AM daily| B[briefing.sh]
-    B -->|Reads| C[prompt.md]
-    B -->|Invokes| D[Claude Code CLI]
+    subgraph Schedulers
+        A1[macOS launchd]
+        A2[Windows Task Scheduler]
+    end
+
+    A1 -->|8:00 AM daily| B1[briefing.sh]
+    A2 -->|8:00 AM daily| B2[briefing.ps1]
+
+    B1 -->|Reads| C[prompt.md]
+    B2 -->|Reads| C
+
+    B1 -->|Invokes| D[Claude Code CLI]
+    B2 -->|Invokes| D
+
     D -->|Step 1: Search| E[WebSearch Tool]
     E -->|9 topics x multiple queries| F[Web Results]
     F -->|Step 2: Compile| G[Two-Tier Briefing]
     G -->|Step 3: Write| H[Notion MCP]
     H -->|Creates page| I[Notion Database]
-    B -->|Logs output| J[logs/YYYY-MM-DD.log]
+
+    B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
+    B2 -->|Logs output| J
     J -->|Auto-cleanup| K[Delete logs older than 30 days]
 ```
 
 **Data flow summary:**
 
-1. **launchd** fires `briefing.sh` at the scheduled time each day.
-2. **briefing.sh** reads the prompt from `prompt.md` and passes it to the Claude Code CLI in print mode.
-3. **Claude Code** executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
-4. **Notion** receives the finished briefing as a new database page.
-5. **Logs** are written to a date-stamped file and automatically pruned after 30 days.
+1. The platform scheduler fires the entry point script (`briefing.sh` on macOS, `briefing.ps1` on Windows) at the configured time each day.
+2. The script reads the prompt from `prompt.md` and passes it to the Claude Code CLI in print mode.
+3. Claude Code executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
+4. Notion receives the finished briefing as a new database page.
+5. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
 ## Prerequisites
 
 | Requirement | Details |
 |---|---|
-| **macOS** | launchd is macOS-only; the plist scheduler will not work on Linux |
+| **OS** | macOS or Windows 10/11 |
 | **Claude Code CLI** | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
 | **Notion MCP** | The Notion MCP server must be configured in Claude Code's MCP settings with access to your workspace |
 | **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
 
 ## Installation
 
-### 1. Clone or copy the project
+### 1. Clone the project
 
 ```bash
 git clone <your-repo-url> ~/ai-news-briefing
 cd ~/ai-news-briefing
 ```
 
-### 2. Make the shell script executable
+### 2. Platform-specific setup
+
+#### macOS (launchd)
 
 ```bash
+# Make the shell script executable
 chmod +x ~/ai-news-briefing/briefing.sh
+
+# Install the launchd plist
+cp ~/ai-news-briefing/com.ainews.briefing.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
+
+# Verify the agent is registered
+launchctl list | grep ainews
 ```
 
-### 3. Set up the manual trigger command
-
-Copy the convenience script to your local bin:
+Optionally, set up the manual trigger command:
 
 ```bash
 mkdir -p ~/.local/bin
-cp ~/.local/bin/ai-news ~/.local/bin/ai-news   # already in place if cloned
-chmod +x ~/.local/bin/ai-news
-```
-
-Or create it manually:
-
-```bash
 cat > ~/.local/bin/ai-news << 'EOF'
 #!/bin/bash
 echo "Starting AI News Briefing..."
@@ -84,55 +98,46 @@ chmod +x ~/.local/bin/ai-news
 
 Make sure `~/.local/bin` is in your `PATH` (add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.zshrc` if needed).
 
-### 4. Install the launchd plist
+#### Windows (Task Scheduler)
 
-```bash
-cp ~/ai-news-briefing/com.ainews.briefing.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
+Open PowerShell and run the installer script:
+
+```powershell
+cd $env:USERPROFILE\ai-news-briefing
+.\install-task.ps1
 ```
 
-### 5. Verify the agent is registered
+This registers a Task Scheduler task named `AiNewsBriefing` that runs daily at 8:00 AM under the current user account.
 
-```bash
-launchctl list | grep ainews
+To customize the time:
+
+```powershell
+.\install-task.ps1 -Hour 7 -Minute 30
 ```
-
-You should see a line containing `com.ainews.briefing`.
 
 ## Configuration
 
 ### Change the schedule
 
-Edit `com.ainews.briefing.plist` and modify the `StartCalendarInterval` section:
-
-```xml
-<key>StartCalendarInterval</key>
-<dict>
-    <key>Hour</key>
-    <integer>8</integer>    <!-- Change this (0-23) -->
-    <key>Minute</key>
-    <integer>0</integer>    <!-- Change this (0-59) -->
-</dict>
-```
-
-After editing, reload the agent:
+**macOS:** Edit `com.ainews.briefing.plist` and modify the `StartCalendarInterval` section, then reload:
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.ainews.briefing.plist
 launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
 ```
 
+**Windows:** Re-run the installer with new time parameters:
+
+```powershell
+.\install-task.ps1 -Hour 9 -Minute 0
+```
+
 ### Change the model
 
-Edit `briefing.sh` and change the `--model` flag:
+Edit the entry point script for your platform:
 
-```bash
-"$CLAUDE" -p \
-  --model sonnet \          # Change to: opus, haiku, sonnet, etc.
-  --dangerously-skip-permissions \
-  --max-budget-usd 2.00 \
-  "$(cat "$SCRIPT_DIR/prompt.md")"
-```
+- **macOS:** `briefing.sh` -- change the `--model sonnet` flag
+- **Windows:** `briefing.ps1` -- change the `--model sonnet` argument
 
 **Model trade-offs:**
 
@@ -144,7 +149,7 @@ Edit `briefing.sh` and change the `--model` flag:
 
 ### Change the budget cap
 
-Edit the `--max-budget-usd` value in `briefing.sh`. The default is `2.00` (USD per run). This acts as a safety cap -- if the agent's token usage would exceed this amount, the run stops.
+Edit the `--max-budget-usd` value in `briefing.sh` (macOS) or `briefing.ps1` (Windows). The default is `2.00` (USD per run). This acts as a safety cap -- if the agent's token usage would exceed this amount, the run stops.
 
 ### Change the topics
 
@@ -152,30 +157,43 @@ Edit `prompt.md` and modify the "Topics to Search" list. You can add, remove, or
 
 ## Usage
 
-### Automatic (launchd)
+### Automatic (scheduled)
 
 Once installed, the briefing runs automatically every day at the scheduled time (default: 8:00 AM). No action needed.
 
 ### Manual trigger
 
-Run the briefing on demand from any terminal:
+**macOS:**
 
 ```bash
 ai-news
+# or: launchctl kickstart "gui/$(id -u)/com.ainews.briefing"
 ```
 
-This uses `launchctl kickstart` to trigger the same launchd job, so it behaves identically to the scheduled run.
+**Windows (PowerShell or cmd):**
+
+```powershell
+schtasks /run /tn AiNewsBriefing
+```
 
 ### Watch the progress
+
+**macOS:**
 
 ```bash
 tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
 ```
 
+**Windows:**
+
+```powershell
+Get-Content "$env:USERPROFILE\ai-news-briefing\logs\$(Get-Date -Format 'yyyy-MM-dd').log" -Wait
+```
+
 A typical successful run takes 2-4 minutes and ends with a message like:
 
 ```
-[2026-03-09 13:47:33] Briefing complete. Check Notion for today's report.
+2026-03-09 14:08:08 Briefing complete. Check Notion for today's report.
 ```
 
 ## Notion Setup
@@ -200,7 +218,7 @@ The prompt references a specific Notion data source ID:
 856794cc-d871-4a95-be2d-2a1600920a19
 ```
 
-To use your own database, you need to replace this value in `prompt.md` (in the Step 3 section). To find your data source ID:
+To use your own database, replace this value in `prompt.md` (in the Step 3 section). To find your data source ID:
 
 1. Open Claude Code and ensure the Notion MCP is connected.
 2. Ask Claude: "List my Notion data sources" or use the `notion-search` MCP tool.
@@ -253,70 +271,71 @@ Claude calls the `mcp__notion__notion-create-pages` tool to create a new page in
 
 ### Location
 
-All logs are stored in `~/ai-news-briefing/logs/`:
+All logs are stored in the `logs/` directory within the project:
 
 | File | Contents |
 |---|---|
 | `YYYY-MM-DD.log` | Full output from each run (timestamps, Claude output, success/failure) |
-| `launchd-stdout.log` | Standard output captured by launchd (usually empty; output goes to the date log) |
-| `launchd-stderr.log` | Standard error captured by launchd (useful for diagnosing launch failures) |
+| `launchd-stdout.log` | (macOS only) Standard output captured by launchd |
+| `launchd-stderr.log` | (macOS only) Standard error captured by launchd |
 
 ### Reading logs
 
-View today's log:
+**macOS:**
 
 ```bash
 cat ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
+tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
 ```
 
-Follow a run in progress:
+**Windows:**
 
-```bash
-tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
+```powershell
+Get-Content "$env:USERPROFILE\ai-news-briefing\logs\$(Get-Date -Format 'yyyy-MM-dd').log"
+Get-Content "$env:USERPROFILE\ai-news-briefing\logs\$(Get-Date -Format 'yyyy-MM-dd').log" -Wait
 ```
 
 ### Auto-cleanup
 
-Logs older than 30 days are automatically deleted at the end of each run. This is handled by the `find` command at the bottom of `briefing.sh`:
-
-```bash
-find "$LOG_DIR" -name "*.log" -mtime +30 -delete 2>/dev/null || true
-```
-
-The `launchd-stdout.log` and `launchd-stderr.log` files are not date-stamped, so they persist and grow over time. You may want to clear them periodically.
+Logs older than 30 days are automatically deleted at the end of each run on both platforms. The macOS-specific `launchd-stdout.log` and `launchd-stderr.log` files are not date-stamped and may need periodic manual cleanup.
 
 ## Troubleshooting
 
 ### "Claude Code cannot be launched inside another Claude Code session"
 
-This error occurs when the `CLAUDECODE` environment variable is set, which happens if you trigger the script from inside a Claude Code terminal session. The script includes `unset CLAUDECODE` to prevent this, but if you see this error:
+This error occurs when the `CLAUDECODE` environment variable is set, which happens if you trigger the script from inside a Claude Code terminal session. Both `briefing.sh` and `briefing.ps1` unset this variable automatically, but if you see this error:
 
-- Make sure you are running `ai-news` from a regular terminal, not from within Claude Code.
-- Verify that `briefing.sh` contains `unset CLAUDECODE` before the Claude invocation.
+- Make sure you are running the briefing from a regular terminal, not from within Claude Code.
+- Verify the entry point script contains the `unset CLAUDECODE` / `$env:CLAUDECODE = $null` line.
 
-### launchd job does not run at the scheduled time
+### Scheduled task does not run at the expected time
 
-- **Mac was asleep:** launchd will run the job when the Mac wakes up if the scheduled time was missed. However, if Power Nap is disabled or the lid was closed, the job may not fire until the next login.
+**macOS (launchd):**
+
+- **Mac was asleep:** launchd will run the job when the Mac wakes up if the scheduled time was missed. If Power Nap is disabled or the lid was closed, the job may not fire until the next login.
+- **Powered off at scheduled time:** The job is skipped entirely for that day.
 - **Agent not loaded:** Verify with `launchctl list | grep ainews`. If missing, reload the plist.
 - **Path issues:** The plist sets a custom `PATH` and `HOME`. If Claude is installed in a non-standard location, update the `PATH` in the plist.
 
+**Windows (Task Scheduler):**
+
+- **Machine was off/asleep:** `StartWhenAvailable` is enabled, so the task runs as soon as the machine wakes or the user logs in.
+- **Task not registered:** Verify with `schtasks /query /tn AiNewsBriefing`. If missing, re-run `install-task.ps1`.
+- **Execution policy:** The task action uses `-ExecutionPolicy Bypass`. If this is overridden by group policy, contact your IT admin or run `briefing.ps1` manually.
+
 ### Run succeeds but no Notion page appears
 
-- Check that the Notion MCP is configured in Claude Code's MCP settings (`~/.claude/` or project-level `.mcp.json`).
+- Check that the Notion MCP is configured in Claude Code's MCP settings.
 - Verify the data source ID in `prompt.md` matches a database your Notion integration has access to.
 - Look at the log output -- Claude typically prints a Notion URL on success.
 
-### TTY suspension warnings
-
-When running in headless/print mode (`-p`), Claude Code does not need a terminal. If you see TTY-related warnings in the logs, they are generally harmless and can be ignored. The `--dangerously-skip-permissions` flag is required for unattended execution because there is no terminal to approve tool use interactively.
-
 ### Budget exceeded
 
-If the log shows the run stopped mid-way, the `--max-budget-usd` cap may have been reached. This can happen if the model makes an unusually large number of search queries. Increase the budget in `briefing.sh` or switch to a cheaper model.
+If the log shows the run stopped mid-way, the `--max-budget-usd` cap may have been reached. Increase the budget in the entry point script or switch to a cheaper model.
 
 ### Multiple runs in the same day
 
-Running `ai-news` multiple times in a day will create multiple Notion pages (one per run). The logs append to the same date-stamped file, so all runs for a given day are captured in one log.
+Running the briefing multiple times in a day creates multiple Notion pages (one per run). Logs append to the same date-stamped file, so all runs for a given day are captured in one log.
 
 ## Cost Estimate
 
@@ -336,16 +355,16 @@ Actual costs vary based on the volume of news, number of search queries, and bri
 
 ```
 ai-news-briefing/
-├── briefing.sh                  # Main shell script -- orchestrates the run
-├── prompt.md                    # Agent prompt -- search, compile, and write instructions
+├── briefing.sh                  # macOS entry point (bash)
+├── briefing.ps1                 # Windows entry point (PowerShell)
+├── prompt.md                    # Agent prompt (shared across platforms)
 ├── com.ainews.briefing.plist    # macOS launchd schedule definition
+├── install-task.ps1             # Windows Task Scheduler installer
 ├── logs/                        # Run logs (git-ignored)
 │   ├── YYYY-MM-DD.log           # Per-day output logs
-│   ├── launchd-stdout.log       # launchd stdout capture
-│   └── launchd-stderr.log       # launchd stderr capture
-├── .gitignore                   # Ignores logs/ and .DS_Store
+│   ├── launchd-stdout.log       # (macOS) launchd stdout capture
+│   └── launchd-stderr.log       # (macOS) launchd stderr capture
+├── .gitignore
+├── ARCHITECTURE.md              # Detailed architecture documentation
 └── README.md                    # This file
-
-~/.local/bin/
-└── ai-news                      # Convenience command for manual runs
 ```
