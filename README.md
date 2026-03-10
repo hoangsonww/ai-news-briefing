@@ -1,5 +1,19 @@
 # AI News Briefing
 
+![Claude Code](https://img.shields.io/badge/Claude_Code-CLI-f97316?logo=anthropic&logoColor=white)
+![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
+![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
+![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
+![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
+![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
+
 Automated daily AI news research agent that searches the web, compiles a structured briefing, and publishes it to Notion -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler).
 
 ## Overview
@@ -57,14 +71,15 @@ flowchart TD
 | **Claude Code CLI** | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
 | **Notion MCP** | The Notion MCP server must be configured in Claude Code's MCP settings with access to your workspace |
 | **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
+| **Make** (optional) | GNU Make for using the Makefile task runner (`winget install GnuWin32.Make` on Windows, pre-installed on macOS) |
 
 ## Installation
 
 ### 1. Clone the project
 
 ```bash
-git clone <your-repo-url> ~/ai-news-briefing
-cd ~/ai-news-briefing
+git clone https://github.com/hoangsonww/AI-News-Briefing
+cd AI-News-Briefing
 ```
 
 ### 2. Platform-specific setup
@@ -163,30 +178,38 @@ Once installed, the briefing runs automatically every day at the scheduled time 
 
 ### Manual trigger
 
-**macOS:**
+**Using Make (recommended, cross-platform):**
 
 ```bash
-ai-news
-# or: launchctl kickstart "gui/$(id -u)/com.ainews.briefing"
+make run            # Run in foreground
+make run-bg         # Run in background
+make run-scheduled  # Trigger via OS scheduler
 ```
 
-**Windows (PowerShell or cmd):**
+**Platform-native:**
 
-```powershell
+```bash
+# macOS
+ai-news
+# or: launchctl kickstart "gui/$(id -u)/com.ainews.briefing"
+
+# Windows (PowerShell or cmd)
 schtasks /run /tn AiNewsBriefing
 ```
 
 ### Watch the progress
 
-**macOS:**
-
 ```bash
-tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
+make tail           # Cross-platform: tail today's log
 ```
 
-**Windows:**
+Or platform-native:
 
-```powershell
+```bash
+# macOS
+tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log
+
+# Windows (PowerShell)
 Get-Content "$env:USERPROFILE\ai-news-briefing\logs\$(Get-Date -Format 'yyyy-MM-dd').log" -Wait
 ```
 
@@ -195,6 +218,51 @@ A typical successful run takes 2-4 minutes and ends with a message like:
 ```
 2026-03-09 14:08:08 Briefing complete. Check Notion for today's report.
 ```
+
+### Makefile Reference
+
+The project includes a cross-platform `Makefile` that auto-detects your OS and routes commands to the correct platform tools. Requires GNU Make.
+
+| Target | Description |
+|---|---|
+| `make help` | Show all targets with descriptions |
+| `make run` | Run briefing in foreground |
+| `make run-bg` | Run briefing in background |
+| `make run-scheduled` | Trigger via OS scheduler |
+| `make tail` | Tail today's log live |
+| `make log` | Print today's log |
+| `make logs` | List all log files with sizes |
+| `make log-date D=YYYY-MM-DD` | Print log for a specific date |
+| `make clean-logs` | Delete logs older than 30 days |
+| `make purge-logs` | Delete all logs |
+| `make install` | Install platform scheduler |
+| `make uninstall` | Remove platform scheduler |
+| `make status` | Show scheduler status |
+| `make check` | Verify Claude CLI is installed |
+| `make validate` | Validate all project files and prompt structure |
+| `make prompt` | Print the current prompt |
+| `make info` | Show config summary (model, budget, paths) |
+
+### Utility Scripts Reference
+
+The `scripts/` directory contains 12 utility script pairs (`.sh` for macOS/Linux, `.ps1` for Windows) for managing and troubleshooting the system.
+
+| Script | Description | Example Usage |
+|---|---|---|
+| `health-check` | Verify full setup (CLI, files, prompt structure, scheduler) | `bash scripts/health-check.sh` |
+| `log-summary` | Tabular summary of recent runs with status and size | `bash scripts/log-summary.sh 14` |
+| `log-search` | Search across all logs by keyword with context | `bash scripts/log-search.sh --search "Anthropic" --context 3` |
+| `dry-run` | Run the full pipeline without writing to Notion | `bash scripts/dry-run.sh --model haiku --budget 1.00` |
+| `test-notion` | Quick Notion MCP connectivity test | `bash scripts/test-notion.sh` |
+| `cost-report` | Estimate API costs from log history | `bash scripts/cost-report.sh --month 2026-03` |
+| `export-logs` | Archive logs to tar.gz (Unix) or zip (Windows) | `bash scripts/export-logs.sh --from 2026-03-01 --to 2026-03-09` |
+| `backup-prompt` | Version prompt.md with timestamped backups | `bash scripts/backup-prompt.sh --list` |
+| `topic-edit` | Add, remove, or list topics in prompt.md | `bash scripts/topic-edit.sh --add "AI Hardware" "GPU news"` |
+| `update-schedule` | Change daily run time | `bash scripts/update-schedule.sh --hour 7 --minute 30` |
+| `notify` | Send native OS notification for briefing status | `bash scripts/notify.sh` |
+| `uninstall` | Remove scheduler; `--all` also removes logs and backups | `bash scripts/uninstall.sh --all` |
+
+**Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
 
 ## Notion Setup
 
@@ -355,16 +423,36 @@ Actual costs vary based on the volume of news, number of search queries, and bri
 
 ```
 ai-news-briefing/
+├── index.html                   # Landing page / project wiki
+├── wiki/                        # Landing page assets
+│   ├── style.css                # Styles
+│   └── script.js                # Interactions
+├── Makefile                     # Cross-platform task runner
+├── scripts/                     # Utility scripts (sh + ps1 pairs)
+│   ├── health-check.sh/.ps1     # Verify full setup
+│   ├── log-summary.sh/.ps1      # Summarize recent runs
+│   ├── log-search.sh/.ps1       # Search across all logs
+│   ├── dry-run.sh/.ps1          # Test without writing to Notion
+│   ├── test-notion.sh/.ps1      # Test Notion MCP connectivity
+│   ├── cost-report.sh/.ps1      # Estimate API costs from logs
+│   ├── export-logs.sh/.ps1      # Archive logs to tar.gz/zip
+│   ├── backup-prompt.sh/.ps1    # Version and restore prompt.md
+│   ├── topic-edit.sh/.ps1       # Add/remove/list topics
+│   ├── update-schedule.sh/.ps1  # Change daily run time
+│   ├── notify.sh/.ps1           # Send native OS notifications
+│   └── uninstall.sh/.ps1        # Full cleanup and removal
 ├── briefing.sh                  # macOS entry point (bash)
 ├── briefing.ps1                 # Windows entry point (PowerShell)
 ├── prompt.md                    # Agent prompt (shared across platforms)
 ├── com.ainews.briefing.plist    # macOS launchd schedule definition
 ├── install-task.ps1             # Windows Task Scheduler installer
 ├── logs/                        # Run logs (git-ignored)
-│   ├── YYYY-MM-DD.log           # Per-day output logs
-│   ├── launchd-stdout.log       # (macOS) launchd stdout capture
-│   └── launchd-stderr.log       # (macOS) launchd stderr capture
+├── backups/                     # Prompt backups (git-ignored)
 ├── .gitignore
 ├── ARCHITECTURE.md              # Detailed architecture documentation
 └── README.md                    # This file
 ```
+
+## Author
+
+**Son Nguyen** &mdash; [github.com/hoangsonww](https://github.com/hoangsonww) &middot; [sonnguyenhoang.com](https://sonnguyenhoang.com)
