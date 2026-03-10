@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI News Briefing - Automated Daily AI Intelligence</title>
+  <meta name="description" content="Automated daily AI news research agent powered by Claude Code. Searches the web, compiles structured briefings, publishes to Notion.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="wiki/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#12121a',
+        primaryColor: '#6366f1',
+        primaryTextColor: '#e4e4ef',
+        primaryBorderColor: '#2a2a3a',
+        lineColor: '#6366f1',
+        secondaryColor: '#1a1a26',
+        tertiaryColor: '#12121a',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '14px',
+        noteBkgColor: '#1e1e2e',
+        noteTextColor: '#e4e4ef',
+        noteBorderColor: '#2a2a3a',
+        actorBkg: '#12121a',
+        actorBorder: '#6366f1',
+        actorTextColor: '#e4e4ef',
+        actorLineColor: '#2a2a3a',
+        signalColor: '#e4e4ef',
+        signalTextColor: '#e4e4ef',
+        activationBkgColor: '#1e1e2e',
+        activationBorderColor: '#6366f1',
+        sequenceNumberColor: '#6366f1',
+        loopTextColor: '#8888a0',
+      }
+    });
+  </script>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2zm0 0a2 2 0 01-2-2v-9c0-1.1.9-2 2-2h2"/>
+        <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
+      </svg>
+      AI News Briefing
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#topics">Topics</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#makefile">Makefile</a></li>
+      <li><a href="#cost">Cost</a></li>
+    </ul>
+    <button class="nav-hamburger" aria-label="Toggle navigation">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Runs daily at 8:00 AM</div>
+  <h1>Your AI News.<br><span class="gradient">Automated. Daily.</span></h1>
+  <p class="hero-sub">
+    A headless Claude Code agent that searches the web across 9 AI topic areas,
+    compiles a two-tier briefing, and publishes it to your Notion workspace &mdash;
+    every morning, zero intervention.
+  </p>
+  <div class="hero-actions">
+    <a href="#quickstart" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Get Started
+    </a>
+    <a href="https://github.com/hoangsonww/AI-News-Briefing" class="btn btn-secondary" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+</section>
+<section class="section" id="features">
+  <div class="section-header">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything runs on autopilot</h2>
+    <p class="section-desc">Set it up once. Get a comprehensive AI briefing in Notion every morning.</p>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon purple">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <h3>9-Topic Web Search</h3>
+      <p>Claude searches the web across 9 AI topic areas with multiple queries per topic, targeting news from the past 24 hours only.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon orange">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Two-Tier Briefing</h3>
+      <p>TL;DR with 10-15 bullet points for a 1-minute scan, plus a full 9-section deep dive with source attribution and dates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      </div>
+      <h3>Notion Integration</h3>
+      <p>Publishes directly to a Notion database via MCP. Each briefing is a searchable, tagged page with structured properties.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon cyan">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h3>Cross-Platform</h3>
+      <p>Runs on macOS (launchd) and Windows (Task Scheduler). Shared prompt, platform-native scheduling.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon rose">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Deduplication</h3>
+      <p>Reads the previous Notion briefing before searching, so it never repeats stories already covered yesterday.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon amber">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <h3>Budget Capped</h3>
+      <p>Hard $2.00 cap per run. Typical cost: $0.70-1.40. Safety-first design prevents runaway API spend.</p>
+    </div>
+  </div>
+</section>
+<section class="section" id="architecture">
+  <div class="section-header">
+    <div class="section-label">Architecture</div>
+    <h2 class="section-title">How it works</h2>
+    <p class="section-desc">Five stages, fully automated, from scheduler trigger to Notion page.</p>
+  </div>
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="arch-node-icon">&#9200;</div>
+      <div class="arch-node-label">Scheduler</div>
+      <div class="arch-node-sub">launchd / Task Scheduler</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128221;</div>
+      <div class="arch-node-label">Entry Script</div>
+      <div class="arch-node-sub">briefing.sh / .ps1</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#129302;</div>
+      <div class="arch-node-label">Claude Code</div>
+      <div class="arch-node-sub">Headless CLI agent</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128270;</div>
+      <div class="arch-node-label">WebSearch</div>
+      <div class="arch-node-sub">9 topics &times; N queries</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128214;</div>
+      <div class="arch-node-label">Notion</div>
+      <div class="arch-node-sub">MCP &rarr; Database page</div>
+    </div>
+  </div>
+  <div style="margin-top: 3.5rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Data Flow Pipeline</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph Schedulers
+        A1[macOS launchd]
+        A2[Windows Task Scheduler]
+    end
+
+    A1 -->|8:00 AM daily| B1[briefing.sh]
+    A2 -->|8:00 AM daily| B2[briefing.ps1]
+
+    B1 -->|Reads| C[prompt.md]
+    B2 -->|Reads| C
+
+    B1 -->|Invokes| D[Claude Code CLI]
+    B2 -->|Invokes| D
+
+    D -->|Step 0: Dedup| N0[Notion MCP - Read Previous]
+    N0 -->|Already covered stories| D
+    D -->|Step 1: Search| E[WebSearch Tool]
+    E -->|9 topics x multiple queries| F[Web Results]
+    F -->|Step 2: Compile| G[Two-Tier Briefing]
+    G -->|Step 3: Write| H[Notion MCP - Create Page]
+    H -->|Creates page| I[(Notion Database)]
+
+    B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
+    B2 -->|Logs output| J
+      </pre>
+    </div>
+  </div>
+  <div style="margin-top: 3.5rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Execution Lifecycle</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant S as Scheduler
+    participant E as Entry Script
+    participant C as Claude Code
+    participant NR as Notion (Read)
+    participant W as WebSearch
+    participant NW as Notion (Write)
+
+    Note over S: 08:00 AM or manual trigger
+    S->>E: Execute entry script
+    E->>E: Setup env, create log dir
+    E->>E: Read prompt.md
+    E->>C: claude -p --model sonnet
+
+    C->>NR: Fetch previous briefing
+    NR-->>C: Yesterday's stories
+
+    loop For each of 9 topics
+        C->>W: Search query
+        W-->>C: Results
+    end
+
+    C->>C: Filter duplicates
+    C->>C: Compile TLDR tier
+    C->>C: Compile Full Briefing
+    C->>C: Build Key Takeaways
+
+    C->>NW: Create page with briefing
+    NW-->>C: Page URL
+    C-->>E: Done
+    E->>E: Log result
+      </pre>
+    </div>
+  </div>
+  <div style="margin-top: 3.5rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Error Handling</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    A[Entry script starts] --> B{Log dir exists?}
+    B -->|No| C[Create it]
+    B -->|Yes| D[Continue]
+    C --> D
+    D --> E{CLAUDECODE env set?}
+    E -->|Yes| F[Clear it]
+    E -->|No| G[Continue]
+    F --> G
+    G --> H[Invoke Claude Code]
+    H --> I{Budget exceeded?}
+    I -->|Yes| J[Exit with error]
+    H --> K{Search failures?}
+    K -->|Partial| L[Note: No updates for topic]
+    K -->|Total| M[Empty briefing]
+    H --> N{Notion API error?}
+    N -->|Yes| O[Report in output]
+    H --> P{Success}
+    J --> Q[Log: FAILED]
+    M --> Q
+    O --> Q
+    L --> P
+    P --> R[Log: Complete]
+    Q --> S[Cleanup old logs]
+    R --> S
+      </pre>
+    </div>
+  </div>
+  <div class="file-tree" style="margin-top: 3rem;">
+    <div><span class="dir">ai-news-briefing/</span></div>
+    <div>&nbsp;&nbsp;<span class="file">Makefile</span> <span class="new-badge">NEW</span></div>
+    <div>&nbsp;&nbsp;<span class="file">briefing.sh</span> <span class="dim"># macOS entry point</span></div>
+    <div>&nbsp;&nbsp;<span class="file">briefing.ps1</span> <span class="dim"># Windows entry point</span></div>
+    <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># Agent instructions</span></div>
+    <div>&nbsp;&nbsp;<span class="file">com.ainews.briefing.plist</span> <span class="dim"># macOS scheduler</span></div>
+    <div>&nbsp;&nbsp;<span class="file">install-task.ps1</span> <span class="dim"># Windows scheduler</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># Run output (git-ignored)</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">wiki/</span> <span class="dim"># Landing page assets</span></div>
+    <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># This page</span></div>
+  </div>
+</section>
+<section class="section" id="topics">
+  <div class="section-header">
+    <div class="section-label">Coverage</div>
+    <h2 class="section-title">9 topics, every day</h2>
+    <p class="section-desc">Each topic gets multiple targeted web searches for comprehensive coverage.</p>
+  </div>
+  <div class="topics-grid">
+    <div class="topic-card">
+      <div class="topic-num">1</div>
+      <div>
+        <h4>Claude Code / Anthropic</h4>
+        <p>Releases, features, announcements, blog posts</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">2</div>
+      <div>
+        <h4>OpenAI / Codex / ChatGPT</h4>
+        <p>Model updates, API changes, capabilities</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">3</div>
+      <div>
+        <h4>AI Coding IDEs</h4>
+        <p>Cursor, Windsurf, Copilot, Xcode AI, JetBrains</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">4</div>
+      <div>
+        <h4>Agentic AI Ecosystem</h4>
+        <p>LangChain, CrewAI, AutoGen, MCP updates</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">5</div>
+      <div>
+        <h4>AI Industry</h4>
+        <p>Model releases, benchmarks, company news</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">6</div>
+      <div>
+        <h4>Open Source AI</h4>
+        <p>Llama, Mistral, DeepSeek, Hugging Face</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">7</div>
+      <div>
+        <h4>AI Startups &amp; Funding</h4>
+        <p>Rounds, acquisitions, notable launches</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">8</div>
+      <div>
+        <h4>AI Policy &amp; Regulation</h4>
+        <p>Government policy, EU AI Act, safety</p>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">9</div>
+      <div>
+        <h4>Dev Tools &amp; Frameworks</h4>
+        <p>Vercel, Next.js, React Native, TypeScript</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section" id="quickstart">
+  <div class="section-header">
+    <div class="section-label">Quick Start</div>
+    <h2 class="section-title">Up and running in 2 minutes</h2>
+  </div>
+
+  <div class="code-section" style="max-width: 720px; margin: 0 auto 2rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">terminal</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Clone</span>
+<span class="cmd">git clone</span> <span class="string">https://github.com/hoangsonww/AI-News-Briefing</span>
+<span class="cmd">cd</span> AI-News-Briefing
+<span class="comment"># Install scheduler (auto-detects platform)</span>
+<span class="cmd">make</span> install
+<span class="comment"># Or run immediately</span>
+<span class="cmd">make</span> run
+<span class="comment"># Watch progress</span>
+<span class="cmd">make</span> tail</pre>
+    </div>
+  </div>
+  <div class="code-section" style="max-width: 720px; margin: 0 auto;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">platform-native (without Make)</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># macOS</span>
+<span class="cmd">chmod +x</span> briefing.sh
+<span class="cmd">cp</span> com.ainews.briefing.plist ~/Library/LaunchAgents/
+<span class="cmd">launchctl load</span> ~/Library/LaunchAgents/com.ainews.briefing.plist
+<span class="comment"># Windows (PowerShell)</span>
+<span class="cmd">.\install-task.ps1</span></pre>
+    </div>
+  </div>
+</section>
+<section class="section" id="makefile">
+  <div class="section-header">
+    <div class="section-label">Makefile</div>
+    <h2 class="section-title">One interface, every platform</h2>
+    <p class="section-desc">Auto-detects macOS, Windows (Git Bash), or Linux and routes to native tools.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Category</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>make run</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in foreground</td></tr>
+        <tr><td><code>make run-bg</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in background</td></tr>
+        <tr><td><code>make run-scheduled</code></td><td><span class="cat-badge exec">Execution</span></td><td>Trigger via OS scheduler</td></tr>
+        <tr><td><code>make tail</code></td><td><span class="cat-badge logs">Logs</span></td><td>Tail today's log live</td></tr>
+        <tr><td><code>make log</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print today's log</td></tr>
+        <tr><td><code>make logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>List all log files with sizes</td></tr>
+        <tr><td><code>make log-date D=...</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print log for a specific date</td></tr>
+        <tr><td><code>make clean-logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>Delete logs older than 30 days</td></tr>
+        <tr><td><code>make purge-logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>Delete all logs</td></tr>
+        <tr><td><code>make install</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Install platform scheduler</td></tr>
+        <tr><td><code>make uninstall</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Remove platform scheduler</td></tr>
+        <tr><td><code>make status</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Show scheduler status</td></tr>
+        <tr><td><code>make check</code></td><td><span class="cat-badge valid">Validate</span></td><td>Verify Claude CLI is installed</td></tr>
+        <tr><td><code>make validate</code></td><td><span class="cat-badge valid">Validate</span></td><td>Validate all project files</td></tr>
+        <tr><td><code>make prompt</code></td><td><span class="cat-badge info">Info</span></td><td>Print the current prompt</td></tr>
+        <tr><td><code>make info</code></td><td><span class="cat-badge info">Info</span></td><td>Show config summary</td></tr>
+        <tr><td><code>make help</code></td><td><span class="cat-badge info">Info</span></td><td>Show all targets</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="section" id="cost">
+  <div class="section-header">
+    <div class="section-label">Cost</div>
+    <h2 class="section-title">Transparent pricing</h2>
+    <p class="section-desc">Default configuration: Sonnet model, 9 topics, $2.00 budget cap per run.</p>
+  </div>
+  <div class="cost-grid">
+    <div class="cost-card">
+      <div class="label">Per Run</div>
+      <div class="value accent">~$1.00</div>
+      <div class="sub">$0.70 &ndash; $1.40 typical</div>
+    </div>
+    <div class="cost-card">
+      <div class="label">Monthly (Daily)</div>
+      <div class="value orange">~$30</div>
+      <div class="sub">$21 &ndash; $42 range</div>
+    </div>
+    <div class="cost-card">
+      <div class="label">Budget Cap</div>
+      <div class="value green">$2.00</div>
+      <div class="sub">Hard ceiling per run</div>
+    </div>
+    <div class="cost-card">
+      <div class="label">Run Time</div>
+      <div class="value">3-5 min</div>
+      <div class="sub">Search + compile + publish</div>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="footer-inner">
+    <p>AI News Briefing &mdash; Powered by Claude Code CLI &amp; Notion MCP</p>
+    <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
+      Created by <a href="https://github.com/hoangsonww" target="_blank" rel="noopener" style="color: #6366f1;">Son Nguyen</a>
+      &middot; <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener" style="color: #6366f1;">sonnguyenhoang.com</a>
+    </p>
+    <div class="footer-links">
+      <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">GitHub Profile</a>
+      <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener">Website</a>
+      <a href="https://github.com/hoangsonww/AI-News-Briefing" target="_blank" rel="noopener">Repository</a>
+      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/README.md" target="_blank" rel="noopener">README</a>
+      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
+      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </div>
+  </div>
+</footer>
+<script src="wiki/script.js"></script>
+</body>
+</html>

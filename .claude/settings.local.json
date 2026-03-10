@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(schtasks:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(git push:*)",
+      "Bash(make help:*)",
+      "Read(//c/ProgramData/chocolatey/**)",
+      "Read(//c/Program Files \\(x86\\)/GnuWin32/**)",
+      "Bash(start:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

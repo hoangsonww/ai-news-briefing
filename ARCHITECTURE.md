@@ -1,5 +1,19 @@
 # Architecture: AI News Briefing System
 
+![Claude Code](https://img.shields.io/badge/Claude_Code-CLI-f97316?logo=anthropic&logoColor=white)
+![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
+![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
+![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
+![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
+![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
+
 This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses Claude Code to search the web, compile a structured briefing, and publish it to Notion.
 
 The system is cross-platform, supporting macOS (launchd) and Windows (Task Scheduler).
@@ -103,7 +117,7 @@ sequenceDiagram
         W-->>C: Search results
     end
 
-    C->>C: Compile TL;DR tier
+    C->>C: Compile TLDR tier
     C->>C: Compile Full Briefing tier
     C->>C: Build Key Takeaways table
 
@@ -234,11 +248,80 @@ graph TD
 4. **Exact Notion API parameters.** The `parent` database ID, property schema, and formatting rules are hardcoded in the prompt so Claude produces the correct API call every time.
 5. **Guardrails.** Instructions like "Focus on NEWS from the past 24-48 hours only" and "If a topic has no significant news today, say 'No major updates today'" prevent hallucination and filler content.
 
-### 3.5 Manual CLI Trigger (macOS: `ai-news`)
+### 3.5 Makefile (Cross-Platform Task Runner)
+
+The `Makefile` provides a unified command interface across macOS, Windows (Git Bash / MSYS2), and Linux. It auto-detects the platform at invocation and routes commands to the correct native tools.
+
+**Design decisions:**
+
+- **Platform detection.** Uses `uname -s` output to classify the environment as `macos`, `windows`, or `linux`. Handles MINGW, MSYS, and CYGWIN variants for Windows Git Bash environments.
+- **Prerequisite gating.** The `check` target validates the Claude CLI binary exists before `run` or `install` execute, providing a clear error message instead of a cryptic failure.
+- **Validation.** The `validate` target checks that all project files exist and that `prompt.md` contains the expected step structure (Step 0 through Step 3).
+- **No dependencies beyond Make.** The Makefile uses only POSIX shell commands and platform-native tools. No additional packages are required.
+
+**Target categories:**
+
+| Category | Targets | Purpose |
+|---|---|---|
+| Execution | `run`, `run-bg`, `run-scheduled` | Trigger the briefing pipeline |
+| Logs | `tail`, `log`, `logs`, `log-date`, `clean-logs`, `purge-logs` | View and manage log files |
+| Scheduler | `install`, `uninstall`, `status` | Manage the platform scheduler |
+| Validation | `check`, `validate` | Verify environment and project health |
+| Info | `help`, `info`, `prompt` | Display configuration and documentation |
+
+### 3.7 Utility Scripts (`scripts/`)
+
+The `scripts/` directory contains 12 paired utility scripts (`.sh` + `.ps1`) that support system management, diagnostics, and maintenance. Each pair implements identical functionality in platform-native languages.
+
+**Design decisions:**
+
+- **Cross-platform parity.** Every script exists as both a Bash and PowerShell variant. The two versions produce the same output and accept equivalent parameters.
+- **Auto-backup on mutation.** Scripts that modify `prompt.md` (`topic-edit`, `backup-prompt`) automatically create a timestamped backup before writing.
+- **Read-only by default.** Most scripts are diagnostic (health-check, log-summary, cost-report). Only `topic-edit`, `backup-prompt`, `update-schedule`, `uninstall`, and `export-logs` perform writes.
+- **No external dependencies.** All scripts use only built-in OS utilities (bash, PowerShell, grep, sed, Get-Content, Select-String).
+
+**Script categories:**
+
+| Category | Scripts | Purpose |
+|---|---|---|
+| Diagnostics | `health-check`, `log-summary`, `log-search`, `cost-report` | Inspect system health, run history, and spending |
+| Testing | `dry-run`, `test-notion` | Validate pipeline and MCP connectivity without side effects |
+| Data Management | `export-logs`, `backup-prompt` | Archive logs and version prompt.md |
+| Configuration | `topic-edit`, `update-schedule` | Modify topics and scheduler timing |
+| Lifecycle | `notify`, `uninstall` | Post-run notifications and full system removal |
+
+**Interaction with other components:**
+
+```mermaid
+graph LR
+    HC[health-check] -->|Validates| PM[prompt.md]
+    HC -->|Validates| CL[Claude CLI]
+    HC -->|Validates| SC[Scheduler]
+
+    DR[dry-run] -->|Reads| PM
+    DR -->|Invokes| CL
+    TN[test-notion] -->|Invokes| CL
+
+    TE[topic-edit] -->|Modifies| PM
+    TE -->|Auto-backup| BP[backup-prompt]
+    BP -->|Versions| PM
+
+    US[update-schedule] -->|Modifies| SC
+
+    LS[log-summary] -->|Reads| LG["logs/"]
+    LSR[log-search] -->|Reads| LG
+    CR[cost-report] -->|Reads| LG
+    EL[export-logs] -->|Archives| LG
+
+    NT[notify] -->|Reads| LG
+    UN[uninstall] -->|Removes| SC
+```
+
+### 3.8 Manual CLI Trigger (macOS: `ai-news`)
 
 Located at `~/.local/bin/ai-news` on macOS, this is a convenience script for on-demand execution. It calls `launchctl kickstart` to trigger the same launchd job, reusing the exact execution environment defined in the plist.
 
-On Windows, the equivalent is `schtasks /run /tn AiNewsBriefing`, which can be run from any terminal.
+On Windows, the equivalent is `schtasks /run /tn AiNewsBriefing`, or simply `make run` on either platform.
 
 ---
 
@@ -497,7 +580,18 @@ The `--max-budget-usd 2.00` flag is the primary cost control mechanism. Claude C
 
 ```mermaid
 graph TD
-    A["project root/"] --> B[briefing.sh]
+    A["project root/"] --> IDX[index.html]
+    A --> W["wiki/"]
+    W --> WS[style.css]
+    W --> WJ[script.js]
+    A --> MK[Makefile]
+    A --> SC["scripts/"]
+    SC --> SC1["health-check.sh/.ps1"]
+    SC --> SC2["log-summary.sh/.ps1"]
+    SC --> SC3["dry-run.sh/.ps1"]
+    SC --> SC4["topic-edit.sh/.ps1"]
+    SC --> SC5["+ 8 more pairs"]
+    A --> B[briefing.sh]
     A --> B2[briefing.ps1]
     A --> C[prompt.md]
     A --> D[com.ainews.briefing.plist]
@@ -506,6 +600,7 @@ graph TD
     A --> F[ARCHITECTURE.md]
     A --> F2[README.md]
     A --> G["logs/"]
+    A --> BK["backups/"]
 
     G --> G1["YYYY-MM-DD.log"]
     G --> G2["launchd-stdout.log (macOS)"]
@@ -525,6 +620,10 @@ graph TD
 
 | File | Platform | Purpose | Tracked in Git |
 |---|---|---|---|
+| `index.html` | Shared | Landing page / project wiki | Yes |
+| `wiki/style.css` | Shared | Landing page styles | Yes |
+| `wiki/script.js` | Shared | Landing page interactions | Yes |
+| `Makefile` | Shared | Cross-platform task runner (auto-detects OS) | Yes |
 | `briefing.sh` | macOS | Entry point script (bash) | Yes |
 | `briefing.ps1` | Windows | Entry point script (PowerShell) | Yes |
 | `prompt.md` | Shared | Complete AI instruction set | Yes |
@@ -533,7 +632,10 @@ graph TD
 | `.gitignore` | Shared | Excludes `logs/`, `*.log`, `.DS_Store` | Yes |
 | `ARCHITECTURE.md` | Shared | This document | Yes |
 | `README.md` | Shared | User-facing documentation | Yes |
+| `scripts/*.sh` | macOS/Linux | Utility scripts (12 tools) | Yes |
+| `scripts/*.ps1` | Windows | Utility scripts (12 tools) | Yes |
 | `logs/*.log` | Shared | Daily run logs | No (gitignored) |
+| `backups/` | Shared | Timestamped prompt.md backups | No (gitignored) |
 | `~/.local/bin/ai-news` | macOS | Manual trigger CLI script | No (outside repo) |
 
 ### Log File Lifecycle
@@ -618,14 +720,23 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 
 ### Commands by Platform
 
-| Action | macOS | Windows |
-|---|---|---|
-| Run manually | `ai-news` | `schtasks /run /tn AiNewsBriefing` |
-| Tail live log | `tail -f ~/ai-news-briefing/logs/$(date +%Y-%m-%d).log` | `Get-Content "...\logs\YYYY-MM-DD.log" -Wait` |
-| Check job status | `launchctl list \| grep ainews` | `schtasks /query /tn AiNewsBriefing` |
-| Install scheduler | `launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist` | `.\install-task.ps1` |
-| Remove scheduler | `launchctl unload ~/Library/LaunchAgents/com.ainews.briefing.plist` | `schtasks /delete /tn AiNewsBriefing /f` |
-| View recent logs | `ls -la ~/ai-news-briefing/logs/` | `Get-ChildItem ~\ai-news-briefing\logs\` |
+| Action | Make (cross-platform) | macOS (native) | Windows (native) |
+|---|---|---|---|
+| Run manually | `make run` | `ai-news` | `schtasks /run /tn AiNewsBriefing` |
+| Run in background | `make run-bg` | `nohup bash briefing.sh &` | `Start-Process powershell briefing.ps1` |
+| Tail live log | `make tail` | `tail -f logs/YYYY-MM-DD.log` | `Get-Content "logs\YYYY-MM-DD.log" -Wait` |
+| Check job status | `make status` | `launchctl list \| grep ainews` | `schtasks /query /tn AiNewsBriefing` |
+| Install scheduler | `make install` | `launchctl load ~/Library/LaunchAgents/...` | `.\install-task.ps1` |
+| Remove scheduler | `make uninstall` | `launchctl unload ~/Library/LaunchAgents/...` | `schtasks /delete /tn AiNewsBriefing /f` |
+| View recent logs | `make logs` | `ls -la logs/` | `Get-ChildItem logs\` |
+| Validate project | `make validate` | -- | -- |
+| Show config | `make info` | -- | -- |
+| Health check | -- | `bash scripts/health-check.sh` | `.\scripts\health-check.ps1` |
+| Dry run (no Notion) | -- | `bash scripts/dry-run.sh` | `.\scripts\dry-run.ps1` |
+| Search logs | -- | `bash scripts/log-search.sh --search "term"` | `.\scripts\log-search.ps1 -Pattern "term"` |
+| Cost report | -- | `bash scripts/cost-report.sh` | `.\scripts\cost-report.ps1` |
+| Backup prompt | -- | `bash scripts/backup-prompt.sh --backup` | `.\scripts\backup-prompt.ps1 -Action backup` |
+| Edit topics | -- | `bash scripts/topic-edit.sh --list` | `.\scripts\topic-edit.ps1 -Action list` |
 
 ### Environment Requirements
 
@@ -633,4 +744,11 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 - Claude Code CLI installed at `~/.local/bin/claude`
 - Notion MCP integration configured in Claude Code
 - WebSearch tool available in Claude Code
+- GNU Make (optional, for Makefile targets -- pre-installed on macOS, `winget install GnuWin32.Make` on Windows)
 - Active internet connection at time of execution
+
+---
+
+## Author
+
+**Son Nguyen** &mdash; [github.com/hoangsonww](https://github.com/hoangsonww) &middot; [sonnguyenhoang.com](https://sonnguyenhoang.com)
