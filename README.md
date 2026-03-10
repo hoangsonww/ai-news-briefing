@@ -455,4 +455,8 @@ ai-news-briefing/
 
 ## Author
 
-**Son Nguyen** &mdash; [github.com/hoangsonww](https://github.com/hoangsonww) &middot; [sonnguyenhoang.com](https://sonnguyenhoang.com)
+Created by [Son Nguyen](https://sonnguyenhoang.com) -- AI researcher and developer focused on building tools that empower people to harness the power of AI in their daily lives.
+
+---
+
+Thanks for checking out the project! If you have any questions, suggestions, or want to contribute, feel free to open an issue or submit a pull request.

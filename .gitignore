@@ -2,3 +2,4 @@ logs/
 *.log
 backups/
 .DS_Store
+.vs/
