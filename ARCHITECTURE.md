@@ -9,6 +9,8 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
+![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=microsoftteams&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
@@ -32,7 +34,8 @@ The system is cross-platform, supporting macOS (launchd) and Windows (Task Sched
 8. [Error Handling](#8-error-handling)
 9. [File System Layout](#9-file-system-layout)
 10. [Security Considerations](#10-security-considerations)
-11. [Future Enhancements / Extension Points](#11-future-enhancements--extension-points)
+11. [Teams Notification Pipeline](#11-teams-notification-pipeline)
+12. [Future Enhancements / Extension Points](#12-future-enhancements--extension-points)
 
 ---
 
@@ -57,6 +60,14 @@ graph TD
         F --> G[Notion Page - AI Daily Briefing]
     end
 
+    subgraph "Post-Processing"
+        B1 -->|On success| T1[notify-teams.sh]
+        B2 -->|On success| T2[notify-teams.ps1]
+        T1 --> TC[build-teams-card.py]
+        T2 --> TC
+        TC -->|Adaptive Card JSON| TW[Teams Webhook]
+    end
+
     B1 -->|Writes logs| H[logs/ Directory]
     B2 -->|Writes logs| H
 ```
@@ -68,6 +79,7 @@ graph TD
 - **Single responsibility.** Each file has one job: scheduling, orchestration, prompt definition, or installation.
 - **Cost containment.** A hard budget cap of $2.00 per run prevents runaway API costs.
 - **Observability.** All output (stdout and stderr) is captured in date-stamped log files.
+- **Multi-channel delivery.** Briefings publish to Notion and optionally post to Microsoft Teams via webhook.
 
 ---
 
@@ -103,6 +115,9 @@ sequenceDiagram
     participant W as WebSearch Tool
     participant N as Notion MCP Tool
     participant NP as Notion Page
+    participant T as notify-teams.sh / .ps1
+    participant P as build-teams-card.py
+    participant TW as Teams Webhook
 
     Note over S: Automatic trigger at 08:00<br/>or manual trigger
     S->>E: Execute entry script
@@ -127,6 +142,12 @@ sequenceDiagram
 
     C-->>E: Output with page URL
     E->>E: Log success or failure
+    E->>E: Check AI_BRIEFING_TEAMS_WEBHOOK
+    E->>T: notify-teams.sh / .ps1
+    T->>P: build-teams-card.py (parse log)
+    P-->>T: Adaptive Card JSON
+    T->>TW: POST to Teams webhook
+    TW-->>T: 200 OK
     E->>E: Clean up logs older than 30 days
 ```
 
@@ -322,6 +343,67 @@ graph LR
 Located at `~/.local/bin/ai-news` on macOS, this is a convenience script for on-demand execution. It calls `launchctl kickstart` to trigger the same launchd job, reusing the exact execution environment defined in the plist.
 
 On Windows, the equivalent is `schtasks /run /tn AiNewsBriefing`, or simply `make run` on either platform.
+
+### 3.9 Teams Notification Pipeline
+
+After a successful briefing run, the system can optionally post a summary to a Microsoft Teams channel via a Power Automate webhook. The notification pipeline uses a three-file architecture: a platform-native shell script dispatches to a shared Python builder, which produces an Adaptive Card JSON payload for the webhook.
+
+```mermaid
+flowchart LR
+    L["logs/YYYY-MM-DD.log"] -->|Input| NS["notify-teams.sh / .ps1"]
+    NS -->|Invokes| PY["build-teams-card.py"]
+    PY -->|Parses sections, bullets, sources| AC["Adaptive Card JSON"]
+    AC -->|POST| WH["Teams Webhook URL"]
+    WH -->|200 OK| NS
+```
+
+#### Files Involved
+
+| File | Language | Purpose |
+|---|---|---|
+| `scripts/notify-teams.sh` | Bash | macOS/Linux entry point. Validates log, checks webhook env var, calls Python builder, POSTs via `curl`. |
+| `scripts/notify-teams.ps1` | PowerShell | Windows entry point. Same logic as the Bash variant using `Invoke-RestMethod`. |
+| `scripts/build-teams-card.py` | Python 3 | Shared card builder. Parses the log file and emits an Adaptive Card JSON payload to stdout. |
+
+#### Adaptive Card Structure
+
+The card is built as an [Adaptive Card v1.4](https://adaptivecards.io/) with the following layout:
+
+1. **Header banner.** An accent-styled container with a newspaper icon, the title "AI Daily Briefing", the date, and a story/topic count.
+2. **Section blocks.** Each briefing topic gets a separator, an icon (matched via `ICON_MAP` keyword lookup), a bold header, and its bullet points.
+3. **Sources.** If the log contains `[title](url)` links, they are collected into a collapsible sources section at the bottom.
+4. **Full-width rendering.** The card sets `"msteams": {"width": "Full"}` to use the entire channel width instead of the narrow default.
+
+The card is wrapped in the Teams message envelope:
+
+```json
+{
+  "type": "message",
+  "attachments": [{
+    "contentType": "application/vnd.microsoft.card.adaptive",
+    "content": { "type": "AdaptiveCard", "version": "1.4", "msteams": {"width": "Full"}, "body": [...] }
+  }]
+}
+```
+
+#### Environment Variable Setup
+
+The webhook URL is read from the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable. If the variable is not set, the notification step is skipped silently.
+
+**macOS / Linux:**
+
+```bash
+# Add to ~/.zshrc or ~/.bashrc
+export AI_BRIEFING_TEAMS_WEBHOOK="https://prod-XX.westus.logic.azure.com:443/workflows/..."
+```
+
+**Windows (PowerShell):**
+
+```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "https://prod-XX.westus.logic.azure.com:443/workflows/...", "User")
+```
+
+Both scripts also accept command-line overrides (`--webhook-url` / `-WebhookUrl`) for testing without modifying the environment.
 
 ---
 
@@ -590,7 +672,9 @@ graph TD
     SC --> SC2["log-summary.sh/.ps1"]
     SC --> SC3["dry-run.sh/.ps1"]
     SC --> SC4["topic-edit.sh/.ps1"]
-    SC --> SC5["+ 8 more pairs"]
+    SC --> SC5["notify-teams.sh/.ps1"]
+    SC --> SC6["build-teams-card.py"]
+    SC --> SC7["+ 8 more pairs"]
     A --> B[briefing.sh]
     A --> B2[briefing.ps1]
     A --> C[prompt.md]
@@ -632,6 +716,9 @@ graph TD
 | `.gitignore` | Shared | Excludes `logs/`, `*.log`, `.DS_Store` | Yes |
 | `ARCHITECTURE.md` | Shared | This document | Yes |
 | `README.md` | Shared | User-facing documentation | Yes |
+| `scripts/notify-teams.sh` | macOS/Linux | Teams notification entry point (Bash) | Yes |
+| `scripts/notify-teams.ps1` | Windows | Teams notification entry point (PowerShell) | Yes |
+| `scripts/build-teams-card.py` | Shared | Adaptive Card JSON builder (Python 3) | Yes |
 | `scripts/*.sh` | macOS/Linux | Utility scripts (12 tools) | Yes |
 | `scripts/*.ps1` | Windows | Utility scripts (12 tools) | Yes |
 | `logs/*.log` | Shared | Daily run logs | No (gitignored) |
@@ -683,7 +770,13 @@ No secrets are stored in any tracked file. Claude Code's API key and Notion inte
 
 ---
 
-## 11. Future Enhancements / Extension Points
+## 11. Teams Notification Pipeline
+
+See [Section 3.9](#39-teams-notification-pipeline) for full architectural details.
+
+---
+
+## 12. Future Enhancements / Extension Points
 
 ### Adding or Modifying Topics
 
@@ -695,12 +788,13 @@ Change `--model sonnet` in the entry script for your platform. Consider adjustin
 
 ### Adding Notification Channels
 
-| Channel | Implementation Approach |
-|---|---|
-| macOS notification | `osascript -e 'display notification ...'` in `briefing.sh` |
-| Windows toast | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
-| Slack | Slack MCP tool call in `prompt.md` or webhook `curl`/`Invoke-RestMethod` in the entry script |
-| Email | `mail`/`sendmail` (macOS) or `Send-MailMessage` (Windows) in the entry script |
+| Channel | Status | Implementation Approach |
+|---|---|---|
+| Microsoft Teams | **Implemented** | Power Automate webhook + Adaptive Card via `notify-teams.sh/.ps1` and `build-teams-card.py`. See [Section 3.9](#39-teams-notification-pipeline). |
+| macOS notification | Planned | `osascript -e 'display notification ...'` in `briefing.sh` |
+| Windows toast | Planned | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
+| Slack | Planned | Slack MCP tool call in `prompt.md` or webhook `curl`/`Invoke-RestMethod` in the entry script |
+| Email | Planned | `mail`/`sendmail` (macOS) or `Send-MailMessage` (Windows) in the entry script |
 
 ### Adding Linux Support
 
@@ -737,6 +831,8 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 | Cost report | -- | `bash scripts/cost-report.sh` | `.\scripts\cost-report.ps1` |
 | Backup prompt | -- | `bash scripts/backup-prompt.sh --backup` | `.\scripts\backup-prompt.ps1 -Action backup` |
 | Edit topics | -- | `bash scripts/topic-edit.sh --list` | `.\scripts\topic-edit.ps1 -Action list` |
+| Test Teams notify | -- | `bash scripts/notify-teams.sh` | `.\scripts\notify-teams.ps1` |
+| Set Teams webhook | -- | `export AI_BRIEFING_TEAMS_WEBHOOK="..."` | `[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "...", "User")` |
 
 ### Environment Requirements
 

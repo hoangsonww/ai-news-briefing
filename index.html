@@ -61,6 +61,7 @@
       <li><a href="#topics">Topics</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
       <li><a href="#makefile">Makefile</a></li>
+      <li><a href="#teams">Teams</a></li>
       <li><a href="#cost">Cost</a></li>
     </ul>
     <button class="nav-hamburger" aria-label="Toggle navigation">
@@ -75,7 +76,7 @@
   <h1>Your AI News.<br><span class="gradient">Automated. Daily.</span></h1>
   <p class="hero-sub">
     A headless Claude Code agent that searches the web across 9 AI topic areas,
-    compiles a two-tier briefing, and publishes it to your Notion workspace &mdash;
+    compiles a two-tier briefing, and publishes it to Notion and Microsoft Teams &mdash;
     every morning, zero intervention.
   </p>
   <div class="hero-actions">
@@ -138,13 +139,20 @@
       <h3>Budget Capped</h3>
       <p>Hard $2.00 cap per run. Typical cost: $0.70-1.40. Safety-first design prevents runaway API spend.</p>
     </div>
+    <div class="feature-card">
+      <div class="feature-icon blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <h3>Teams Delivery</h3>
+      <p>Automatically posts a styled Adaptive Card to Microsoft Teams with the full briefing, section icons, and clickable source links.</p>
+    </div>
   </div>
 </section>
 <section class="section" id="architecture">
   <div class="section-header">
     <div class="section-label">Architecture</div>
     <h2 class="section-title">How it works</h2>
-    <p class="section-desc">Five stages, fully automated, from scheduler trigger to Notion page.</p>
+    <p class="section-desc">Six stages, fully automated, from scheduler trigger to Notion page and Teams channel.</p>
   </div>
   <div class="arch-flow">
     <div class="arch-node">
@@ -176,6 +184,12 @@
       <div class="arch-node-label">Notion</div>
       <div class="arch-node-sub">MCP &rarr; Database page</div>
     </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128172;</div>
+      <div class="arch-node-label">Teams</div>
+      <div class="arch-node-sub">Adaptive Card webhook</div>
+    </div>
   </div>
   <div style="margin-top: 3.5rem;">
     <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Data Flow Pipeline</h3>
@@ -206,6 +220,12 @@ flowchart TD
 
     B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
     B2 -->|Logs output| J
+
+    B1 -->|If webhook set| T1[notify-teams.sh]
+    B2 -->|If webhook set| T2[notify-teams.ps1]
+    T1 & T2 --> PY[build-teams-card.py]
+    PY --> TW[Teams Webhook]
+    TW --> TC[Teams Channel]
       </pre>
     </div>
   </div>
@@ -220,6 +240,7 @@ sequenceDiagram
     participant NR as Notion (Read)
     participant W as WebSearch
     participant NW as Notion (Write)
+    participant TW as Teams Webhook
 
     Note over S: 08:00 AM or manual trigger
     S->>E: Execute entry script
@@ -244,6 +265,13 @@ sequenceDiagram
     NW-->>C: Page URL
     C-->>E: Done
     E->>E: Log result
+
+    opt Teams webhook configured
+        E->>E: notify-teams.sh / .ps1
+        E->>E: build-teams-card.py (parse log)
+        E->>TW: POST Adaptive Card to webhook
+        TW-->>E: 202 Accepted
+    end
       </pre>
     </div>
   </div>
@@ -287,6 +315,11 @@ flowchart TD
     <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># Agent instructions</span></div>
     <div>&nbsp;&nbsp;<span class="file">com.ainews.briefing.plist</span> <span class="dim"># macOS scheduler</span></div>
     <div>&nbsp;&nbsp;<span class="file">install-task.ps1</span> <span class="dim"># Windows scheduler</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">scripts/</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.sh</span> <span class="new-badge">NEW</span> <span class="dim"># macOS/Linux Teams notifier</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.ps1</span> <span class="new-badge">NEW</span> <span class="dim"># Windows Teams notifier</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">build-teams-card.py</span> <span class="new-badge">NEW</span> <span class="dim"># Adaptive Card builder</span></div>
+    <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md</span> <span class="new-badge">NEW</span> <span class="dim"># Teams integration docs</span></div>
     <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># Run output (git-ignored)</span></div>
     <div>&nbsp;&nbsp;<span class="dir">wiki/</span> <span class="dim"># Landing page assets</span></div>
     <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># This page</span></div>
@@ -441,6 +474,68 @@ flowchart TD
     </table>
   </div>
 </section>
+<section class="section" id="teams">
+  <div class="section-header">
+    <div class="section-label">Teams</div>
+    <h2 class="section-title">Delivered to your channel</h2>
+    <p class="section-desc">Full briefing as a styled Adaptive Card, posted automatically after each run.</p>
+  </div>
+  <div style="margin-top: 2rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Teams Notification Pipeline</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    A[Briefing Log] --> B[build-teams-card.py]
+    B --> C[Adaptive Card JSON]
+    C --> D[Power Automate Webhook]
+    D --> E[Teams Channel]
+      </pre>
+    </div>
+  </div>
+  <div style="max-width: 720px; margin: 2.5rem auto 0;">
+    <h3 style="color:#e4e4ef; font-size:1.05rem; font-weight:700; margin-bottom:1rem;">Setup</h3>
+    <div class="code-section" style="margin-bottom: 1.5rem;">
+      <div class="code-header">
+        <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+        <span class="code-title">macOS / Linux</span>
+        <button class="code-copy">Copy</button>
+      </div>
+      <div class="code-body">
+<pre><span class="comment"># Add to ~/.zshrc or ~/.bashrc</span>
+<span class="cmd">export</span> AI_BRIEFING_TEAMS_WEBHOOK=<span class="string">"&lt;your-power-automate-webhook-url&gt;"</span>
+
+<span class="comment"># Test it</span>
+<span class="cmd">./scripts/notify-teams.sh</span> logs/$(date +%Y-%m-%d).log</pre>
+      </div>
+    </div>
+    <div class="code-section" style="margin-bottom: 1.5rem;">
+      <div class="code-header">
+        <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+        <span class="code-title">Windows (PowerShell)</span>
+        <button class="code-copy">Copy</button>
+      </div>
+      <div class="code-body">
+<pre><span class="comment"># Set persistent environment variable</span>
+[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_TEAMS_WEBHOOK"</span>, <span class="string">"&lt;your-url&gt;"</span>, <span class="string">"User"</span>)
+
+<span class="comment"># Test it</span>
+<span class="cmd">.\scripts\notify-teams.ps1</span> logs\$(Get-Date -Format yyyy-MM-dd).log</pre>
+      </div>
+    </div>
+    <h3 style="color:#e4e4ef; font-size:1.05rem; font-weight:700; margin-bottom:1rem;">Card Format</h3>
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; color: var(--text-dim); font-size: 0.92rem; line-height: 1.8;">
+      <div style="color: var(--text-bright); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;">AI News Briefing &mdash; 2026-03-13 &middot; 42 stories</div>
+      <div style="border-top: 1px solid var(--border); margin: 0.75rem 0;"></div>
+      <div><strong style="color: var(--text);">&#129302; Claude Code / Anthropic</strong></div>
+      <div style="padding-left: 1.5rem;">&bull; Claude 4 crosses 10M daily users &mdash; <span style="color: var(--accent);">source</span></div>
+      <div style="padding-left: 1.5rem;">&bull; Anthropic open-sources tool-use SDK &mdash; <span style="color: var(--accent);">source</span></div>
+      <div style="margin-top: 0.5rem;"><strong style="color: var(--text);">&#128640; AI Startups &amp; Funding</strong></div>
+      <div style="padding-left: 1.5rem;">&bull; Synthesia raises $200M Series D &mdash; <span style="color: var(--accent);">source</span></div>
+      <div style="border-top: 1px solid var(--border); margin: 0.75rem 0;"></div>
+      <div style="font-style: italic; color: var(--text-dim);">&hellip; all 9 sections with clickable source links</div>
+    </div>
+  </div>
+</section>
 <section class="section" id="cost">
   <div class="section-header">
     <div class="section-label">Cost</div>
@@ -454,7 +549,7 @@ flowchart TD
       <div class="sub">$0.70 &ndash; $1.40 typical</div>
     </div>
     <div class="cost-card">
-      <div class="label">Monthly (Daily)</div>
+      <div class="label">Monthly (Run Daily)</div>
       <div class="value orange">~$30</div>
       <div class="sub">$21 &ndash; $42 range</div>
     </div>
@@ -483,6 +578,7 @@ flowchart TD
       <a href="https://github.com/hoangsonww/AI-News-Briefing" target="_blank" rel="noopener">Repository</a>
       <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/README.md" target="_blank" rel="noopener">README</a>
       <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
+      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/NOTIFY_TEAMS.md" target="_blank" rel="noopener">Teams Setup</a>
       <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
     </div>
   </div>

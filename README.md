@@ -9,18 +9,20 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
+![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=teams&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, and publishes it to Notion -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler).
+Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler).
 
 ## Overview
 
-AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), and writing the finished page directly to a Notion database.
+AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams.
 
-The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion, and your daily AI briefing is already there.
+The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion (or Teams), and your daily AI briefing is already there.
 
 ### Why it exists
 
@@ -50,6 +52,13 @@ flowchart TD
     G -->|Step 3: Write| H[Notion MCP]
     H -->|Creates page| I[Notion Database]
 
+    B1 -->|If webhook set| T[notify-teams.sh]
+    B2 -->|If webhook set| T2[notify-teams.ps1]
+    T --> U[build-teams-card.py]
+    T2 --> U
+    U --> V[Teams Webhook]
+    V --> W[Teams Channel]
+
     B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
     B2 -->|Logs output| J
     J -->|Auto-cleanup| K[Delete logs older than 30 days]
@@ -61,7 +70,8 @@ flowchart TD
 2. The script reads the prompt from `prompt.md` and passes it to the Claude Code CLI in print mode.
 3. Claude Code executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
 4. Notion receives the finished briefing as a new database page.
-5. Logs are written to a date-stamped file and automatically pruned after 30 days.
+5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which invokes `build-teams-card.py` to post a styled Adaptive Card to the configured Teams channel.
+6. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
 ## Prerequisites
 
@@ -71,6 +81,7 @@ flowchart TD
 | **Claude Code CLI** | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
 | **Notion MCP** | The Notion MCP server must be configured in Claude Code's MCP settings with access to your workspace |
 | **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
+| **Python 3.x** | Required for Teams notification card builder (pre-installed on macOS, install from [python.org](https://www.python.org/downloads/) on Windows) |
 | **Make** (optional) | GNU Make for using the Makefile task runner (`winget install GnuWin32.Make` on Windows, pre-installed on macOS) |
 
 ## Installation
@@ -245,7 +256,7 @@ The project includes a cross-platform `Makefile` that auto-detects your OS and r
 
 ### Utility Scripts Reference
 
-The `scripts/` directory contains 12 utility script pairs (`.sh` for macOS/Linux, `.ps1` for Windows) for managing and troubleshooting the system.
+The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux, `.ps1` for Windows) plus the `build-teams-card.py` helper for managing and troubleshooting the system.
 
 | Script | Description | Example Usage |
 |---|---|---|
@@ -260,6 +271,7 @@ The `scripts/` directory contains 12 utility script pairs (`.sh` for macOS/Linux
 | `topic-edit` | Add, remove, or list topics in prompt.md | `bash scripts/topic-edit.sh --add "AI Hardware" "GPU news"` |
 | `update-schedule` | Change daily run time | `bash scripts/update-schedule.sh --hour 7 --minute 30` |
 | `notify` | Send native OS notification for briefing status | `bash scripts/notify.sh` |
+| `notify-teams` | Post briefing summary to Microsoft Teams via webhook | `bash scripts/notify-teams.sh` |
 | `uninstall` | Remove scheduler; `--all` also removes logs and backups | `bash scripts/uninstall.sh --all` |
 
 **Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
@@ -301,6 +313,47 @@ Each generated page contains:
 - **Divider**
 - **Full Briefing** -- 9 sections (one per topic), each with 3-8 detailed bullet points and source attribution
 - **Key Takeaways table** -- a summary table of major trends and signals
+
+## Teams Integration
+
+The pipeline can optionally post a styled [Adaptive Card](https://adaptivecards.io/) with the full briefing to a Microsoft Teams channel via an incoming webhook. The card includes the TL;DR bullets and topic sections formatted for quick scanning directly in Teams.
+
+### Quick setup
+
+1. Create an incoming webhook in your Teams channel (see [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md) for the full walkthrough).
+2. Set the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable to the webhook URL.
+3. The next briefing run will automatically detect the variable and post to Teams.
+
+### Set the webhook URL persistently
+
+**macOS / Linux:**
+
+```bash
+# Add to ~/.zshrc (or ~/.bashrc)
+export AI_BRIEFING_TEAMS_WEBHOOK="<url>"
+```
+
+**Windows (PowerShell):**
+
+```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "<url>", "User")
+```
+
+### Test the integration
+
+**macOS / Linux:**
+
+```bash
+bash scripts/notify-teams.sh
+```
+
+**Windows:**
+
+```powershell
+.\scripts\notify-teams.ps1
+```
+
+For detailed setup instructions, troubleshooting, and card customization, see [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md).
 
 ## How the Prompt Works
 
@@ -440,6 +493,8 @@ ai-news-briefing/
 │   ├── topic-edit.sh/.ps1       # Add/remove/list topics
 │   ├── update-schedule.sh/.ps1  # Change daily run time
 │   ├── notify.sh/.ps1           # Send native OS notifications
+│   ├── notify-teams.sh/.ps1     # Post briefing to Microsoft Teams
+│   ├── build-teams-card.py      # Build Adaptive Card JSON for Teams
 │   └── uninstall.sh/.ps1        # Full cleanup and removal
 ├── briefing.sh                  # macOS entry point (bash)
 ├── briefing.ps1                 # Windows entry point (PowerShell)
@@ -450,6 +505,7 @@ ai-news-briefing/
 ├── backups/                     # Prompt backups (git-ignored)
 ├── .gitignore
 ├── ARCHITECTURE.md              # Detailed architecture documentation
+├── NOTIFY_TEAMS.md              # Teams integration setup guide
 └── README.md                    # This file
 ```
 
