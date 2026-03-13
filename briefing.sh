@@ -32,7 +32,7 @@ TIME=$(date +%H:%M:%S)
 if [ $EXIT_CODE -eq 0 ]; then
   echo "[$DATE $TIME] Briefing complete. Check Notion for today's report." >> "$LOG_FILE"
 
-  # Post TL;DR to Teams channel if webhook is configured
+  # Post summary to Teams channel if webhook is configured
   TEAMS_SCRIPT="$SCRIPT_DIR/scripts/notify-teams.sh"
   if [[ -x "$TEAMS_SCRIPT" && -n "${AI_BRIEFING_TEAMS_WEBHOOK:-}" ]]; then
     echo "[$DATE $(date +%H:%M:%S)] Sending Teams notification..." >> "$LOG_FILE"
