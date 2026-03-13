@@ -378,6 +378,7 @@ a:hover {
 .feature-icon.cyan   { background: rgba(6, 182, 212, 0.12); color: #22d3ee; }
 .feature-icon.rose   { background: rgba(244, 63, 94, 0.12); color: #fb7185; }
 .feature-icon.amber  { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+.feature-icon.blue   { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
 
 .feature-card h3 {
   font-size: 1.15rem;

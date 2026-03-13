@@ -39,6 +39,18 @@ try {
 
     if ($exitCode -eq 0) {
         Write-Log "Briefing complete. Check Notion for today's report."
+
+        # Post TL;DR to Teams channel if webhook is configured
+        $teamsScript = Join-Path $ScriptDir "scripts\notify-teams.ps1"
+        if ((Test-Path $teamsScript) -and $env:AI_BRIEFING_TEAMS_WEBHOOK) {
+            Write-Log "Sending Teams notification..."
+            try {
+                & $teamsScript -LogFile $LogFile
+                Write-Log "Teams notification sent."
+            } catch {
+                Write-Log "Teams notification failed: $_"
+            }
+        }
     } else {
         Write-Log "Briefing FAILED with exit code $exitCode."
     }
