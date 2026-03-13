@@ -76,6 +76,24 @@ Use these EXACT parameters:
 - Use --- for dividers between TL;DR and full briefing
 - Use > for notable quotes
 
+## Step 4: Print Full Briefing to stdout (CRITICAL)
+
+**THIS STEP IS MANDATORY.** After writing to Notion, you MUST print the COMPLETE briefing to stdout. The Teams notification system parses your stdout to build the card — if you summarize or truncate, the Teams card will be incomplete.
+
+Output format:
+1. Print the Notion page URL on the first line: `Notion: <url>`
+2. Print the ENTIRE briefing content exactly as written to Notion:
+   - `## TL;DR` section with ALL bullets
+   - ALL 9 `## N. Section Name` sections with ALL bullets
+   - `## Sources` section with ALL source links
+3. Use the same Markdown formatting (##, -, **bold**, ---)
+
+**Rules:**
+- Do NOT summarize — print every single line
+- Do NOT truncate — if Notion has 80 bullets, stdout must have 80 bullets
+- Do NOT replace the briefing with a summary like "4 sections, 10 stories"
+- The stdout output must be a verbatim copy of the Notion page content
+
 ## Important Notes
 - Focus on NEWS from the past 24 hours only — not evergreen content, not older stories
 - Do NOT repeat stories already covered in the previous briefing (from Step 0)
