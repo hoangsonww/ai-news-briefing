@@ -3,3 +3,4 @@ logs/
 backups/
 .DS_Store
 .vs/
+.claude/

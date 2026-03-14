@@ -161,6 +161,20 @@ def parse_log(lines):
                 sections.append(current)
             continue
 
+        # Table row: | Section | Key Stories |
+        m = re.match(r"^\|\s*(.+?)\s*\|\s*(.+?)\s*\|$", t)
+        if m:
+            col1 = m.group(1).strip()
+            col2 = m.group(2).strip()
+            # Skip header/separator rows
+            if col1.startswith("---") or col1.lower() == "section":
+                continue
+            # Each row becomes a section with stories split on ; or ,
+            stories = re.split(r"\s*[;]\s*", col2)
+            section = {"header": col1, "bullets": [s.strip() for s in stories if s.strip()]}
+            sections.append(section)
+            continue
+
         # Bullet point
         m = re.match(r"^-\s+(.+)", t)
         if m and current is not None:

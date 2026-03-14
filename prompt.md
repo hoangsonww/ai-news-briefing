@@ -92,7 +92,24 @@ Output format:
 - Do NOT summarize — print every single line
 - Do NOT truncate — if Notion has 80 bullets, stdout must have 80 bullets
 - Do NOT replace the briefing with a summary like "4 sections, 10 stories"
+- Do NOT use markdown tables — use **bold headers** and `- bullet` format ONLY
 - The stdout output must be a verbatim copy of the Notion page content
+
+**Required stdout format (follow exactly):**
+```
+Notion: <url>
+
+**1. Claude / Anthropic**
+- Story headline here (date, source)
+- Another story (date, source)
+
+**2. OpenAI / ChatGPT**
+- Story headline (date, source)
+
+Sources:
+- [Title](url)
+- [Title](url)
+```
 
 ## Important Notes
 - Focus on NEWS from the past 24 hours only — not evergreen content, not older stories
