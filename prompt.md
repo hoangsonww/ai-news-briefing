@@ -76,40 +76,38 @@ Use these EXACT parameters:
 - Use --- for dividers between TL;DR and full briefing
 - Use > for notable quotes
 
-## Step 4: Print Full Briefing to stdout (CRITICAL)
+## Step 4: Print Briefing to stdout
 
-**THIS STEP IS MANDATORY.** After writing to Notion, you MUST print the COMPLETE briefing to stdout. The Teams notification system parses your stdout to build the card — if you summarize or truncate, the Teams card will be incomplete.
+After writing to Notion, print a structured summary. A parser reads this output to build the Microsoft Teams notification card — deviate from the format and the card breaks.
 
-Output format:
-1. Print the Notion page URL on the first line: `Notion: <url>`
-2. Print the ENTIRE briefing content exactly as written to Notion:
-   - `## TL;DR` section with ALL bullets
-   - ALL 9 `## N. Section Name` sections with ALL bullets
-   - `## Sources` section with ALL source links
-3. Use the same Markdown formatting (##, -, **bold**, ---)
+Print EXACTLY this structure, nothing else:
 
-**Rules:**
-- Do NOT summarize — print every single line
-- Do NOT truncate — if Notion has 80 bullets, stdout must have 80 bullets
-- Do NOT replace the briefing with a summary like "4 sections, 10 stories"
-- Do NOT use markdown tables — use **bold headers** and `- bullet` format ONLY
-- The stdout output must be a verbatim copy of the Notion page content
-
-**Required stdout format (follow exactly):**
 ```
-Notion: <url>
+Notion: <page-url>
 
-**1. Claude / Anthropic**
-- Story headline here (date, source)
-- Another story (date, source)
+1. **Section Name**
+- Story headline — detail (date)
+- Another story — detail (date)
 
-**2. OpenAI / ChatGPT**
-- Story headline (date, source)
+2. **Next Section Name**
+- Story headline — detail (date)
 
 Sources:
 - [Title](url)
 - [Title](url)
 ```
+
+**FORMAT RULES — violating any of these will break the Teams card:**
+- Line 1 MUST be `Notion: ` followed by the Notion page URL
+- One blank line, then numbered sections
+- Each section header: `N. **Name**` on its own line (N = section number)
+- Each story: `- ` bullet on its own line under the section header
+- After all sections: blank line, then `Sources:` on its own line, then `- [title](url)` lines
+- List every story as a separate `- ` bullet — do NOT collapse stories into the section header line
+- Do NOT use `##` headings, `|` markdown tables, `**Section N (...)**` prefixes, or any other format
+- Do NOT print status messages ("Briefing posted to Notion", "5 sections covering...", "Done.")
+- Do NOT print meta-commentary ("All stories from yesterday were excluded", "What's new vs...")
+- ONLY print the Notion URL, numbered sections with bullets, and sources — nothing else
 
 ## Important Notes
 - Focus on NEWS from the past 24 hours only — not evergreen content, not older stories
