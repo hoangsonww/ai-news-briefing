@@ -1,10 +1,15 @@
 #Requires -Version 5.1
+
+param(
+    [string]$BriefingDate = ""
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $LogDir = Join-Path $ScriptDir "logs"
-$Date = Get-Date -Format "yyyy-MM-dd"
+$Date = if ($BriefingDate) { $BriefingDate } else { Get-Date -Format "yyyy-MM-dd" }
 $Time = Get-Date -Format "HH:mm:ss"
 $LogFile = Join-Path $LogDir "$Date.log"
 $Claude = Join-Path $env:USERPROFILE ".local\bin\claude.exe"
@@ -27,6 +32,22 @@ Write-Log "Starting AI News Briefing..."
 $PromptFile = Join-Path $ScriptDir "prompt.md"
 $Prompt = Get-Content -Path $PromptFile -Raw
 
+# Inject date override if running for a non-today date
+$today = Get-Date -Format "yyyy-MM-dd"
+if ($Date -ne $today) {
+    $datePrefix = @"
+BRIEFING DATE OVERRIDE: $Date
+Generate the briefing for $Date, NOT today ($today).
+Search for AI news from $Date (past 24 hours relative to that date).
+The Notion page title should use $Date.
+The card.json filename should use $Date (logs/$Date-card.json).
+---
+
+"@
+    $Prompt = $datePrefix + $Prompt
+    Write-Log "Date override: generating briefing for $Date"
+}
+
 try {
     $output = & $Claude -p `
         --model sonnet `
@@ -42,10 +63,11 @@ try {
 
         # Post summary to Teams channel if webhook is configured
         $teamsScript = Join-Path $ScriptDir "scripts\notify-teams.ps1"
+        $cardFile = Join-Path $LogDir "$Date-card.json"
         if ((Test-Path $teamsScript) -and $env:AI_BRIEFING_TEAMS_WEBHOOK) {
             Write-Log "Sending Teams notification..."
             try {
-                & $teamsScript -LogFile $LogFile
+                & $teamsScript -CardFile $cardFile
                 Write-Log "Teams notification sent."
             } catch {
                 Write-Log "Teams notification failed: $_"

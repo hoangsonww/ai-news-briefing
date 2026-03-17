@@ -1,56 +1,52 @@
 #!/bin/bash
 set -euo pipefail
 
-# notify-teams.sh — Post today's AI briefing TL;DR to a Teams channel via webhook.
+# notify-teams.sh — POST a pre-built Adaptive Card JSON to Teams webhook.
+# The AI generates the card JSON directly. This script just sends it.
+#
 # Usage:
-#   ./scripts/notify-teams.sh                              # Auto-detect from today's log
-#   ./scripts/notify-teams.sh --webhook-url "https://..."  # Override webhook URL
-#   ./scripts/notify-teams.sh --log-file "path/to.log"     # Use specific log file
+#   ./scripts/notify-teams.sh
+#   ./scripts/notify-teams.sh --webhook-url "https://..."
+#   ./scripts/notify-teams.sh --card-file "path/to/card.json"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DATE=$(date +%Y-%m-%d)
 
 WEBHOOK_URL="${AI_BRIEFING_TEAMS_WEBHOOK:-}"
-LOG_FILE=""
+CARD_FILE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --webhook-url) WEBHOOK_URL="$2"; shift 2 ;;
-    --log-file)    LOG_FILE="$2";    shift 2 ;;
+    --card-file)   CARD_FILE="$2";   shift 2 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
 
-if [[ -z "$LOG_FILE" ]]; then
-  LOG_FILE="$SCRIPT_DIR/logs/$DATE.log"
+if [[ -z "$CARD_FILE" ]]; then
+  CARD_FILE="$SCRIPT_DIR/logs/$DATE-card.json"
 fi
 
 if [[ -z "$WEBHOOK_URL" ]]; then
-  echo "Error: No webhook URL. Set AI_BRIEFING_TEAMS_WEBHOOK env var or pass --webhook-url." >&2
+  echo "Error: No webhook URL. Set AI_BRIEFING_TEAMS_WEBHOOK or pass --webhook-url." >&2
   exit 1
 fi
 
-if [[ ! -f "$LOG_FILE" ]]; then
-  echo "Error: Log file not found: $LOG_FILE" >&2
+if [[ ! -f "$CARD_FILE" ]]; then
+  echo "Error: Card file not found: $CARD_FILE" >&2
   exit 1
 fi
 
-if ! grep -q "Briefing complete" "$LOG_FILE"; then
-  echo "Briefing did not complete successfully. Skipping Teams notification."
-  exit 0
+# Validate it's actual JSON before sending
+if ! python3 -m json.tool "$CARD_FILE" > /dev/null 2>&1; then
+  echo "Error: $CARD_FILE is not valid JSON." >&2
+  exit 1
 fi
 
-# Build the Adaptive Card JSON payload
-TMPFILE=$(mktemp)
-trap 'rm -f "$TMPFILE"' EXIT
-
-python3 "$SCRIPT_DIR/scripts/build-teams-card.py" "$LOG_FILE" > "$TMPFILE"
-
-# POST to webhook using file input (avoids shell encoding issues)
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
   -X POST \
   -H "Content-Type: application/json; charset=utf-8" \
-  -d @"$TMPFILE" \
+  -d @"$CARD_FILE" \
   "$WEBHOOK_URL")
 
 if [[ "$HTTP_CODE" =~ ^2 ]]; then
