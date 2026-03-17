@@ -104,32 +104,32 @@
       <div class="feature-icon blue">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <h3>Teams Path Is File-Based</h3>
-      <p>`notify-teams.sh` and `notify-teams.ps1` now validate and POST a prebuilt `logs/YYYY-MM-DD-card.json` payload directly.</p>
+      <h3>Card Template Enforced</h3>
+      <p>`prompt.md` Step 4 now generates `card.json` directly with a strict Adaptive Card template: accent header, per-bullet TextBlocks, emphasis sources, and positive-style action button.</p>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon green">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
       </div>
-      <h3>E2E Flow Expanded</h3>
-      <p>`E2E_FLOW.md` now includes detailed runtime contracts, failure states, decision graphs, and implementation-grounded Mermaid diagrams.</p>
+      <h3>Covered Stories Dedup</h3>
+      <p>`logs/covered-stories.txt` tracks all previously covered headlines. Bootstraps from last 10 Notion pages on first run. 30-day auto-trim prevents unbounded growth.</p>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon orange">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </div>
-      <h3>Date Override Backfill</h3>
-      <p>Both entry scripts support backfill (`YYYY-MM-DD`) and inject date override instructions so searches and filenames match the target day.</p>
+      <h3>Opus Model + No Budget Cap</h3>
+      <p>Both entry scripts now use `--model opus` with no `--max-budget-usd` cap. Webhook URL is refreshed from registry on every run to avoid stale env vars.</p>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon rose">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
-      <h3>Operational Risk Identified</h3>
-      <p>`prompt.md` Step 4 still references stdout-for-parser format, while runtime notifier expects `card.json`. This mismatch is documented below.</p>
+      <h3>Single Delivery Guaranteed</h3>
+      <p>Prompt explicitly forbids Claude from posting to webhooks. Only the calling script delivers via `notify-teams.ps1`/`.sh`, preventing duplicate Teams messages.</p>
     </div>
   </div>
 </section>
@@ -197,8 +197,9 @@ flowchart TD
     D --> F[Notion MCP]
     F --> G[Notion briefing page]
 
+    D --> CS[logs/covered-stories.txt]
     D --> H[logs/YYYY-MM-DD.log]
-    D --> I[logs/YYYY-MM-DD-card.json expected]
+    D --> I[logs/YYYY-MM-DD-card.json]
 
     B1 --> J{AI_BRIEFING_TEAMS_WEBHOOK set?}
     B2 --> J
@@ -226,9 +227,11 @@ sequenceDiagram
 
     S->>E: Start briefing script
     E->>E: Setup date, logs, env
-    E->>C: claude -p --model sonnet --max-budget-usd 2.00
+    E->>E: Refresh webhook from registry
+    E->>C: claude -p --model opus
 
-    C->>N: Step 0 fetch previous briefing
+    C->>C: Step 0a read logs/covered-stories.txt
+    C->>N: Step 0b fetch most recent briefing
     N-->>C: prior coverage
 
     loop 9 topic areas
@@ -238,6 +241,8 @@ sequenceDiagram
 
     C->>N: Step 3 create today's page
     N-->>C: page URL
+
+    C->>C: Step 5 append to covered-stories.txt
 
     C-->>E: exit 0 + output
     E->>E: append logs/YYYY-MM-DD.log
@@ -273,7 +278,8 @@ sequenceDiagram
       <tbody>
         <tr><td>Trigger</td><td>08:00 schedule or manual command</td><td>Script execution starts</td><td><code>com.ainews.briefing.plist</code>, <code>install-task.ps1</code>, <code>Makefile</code></td></tr>
         <tr><td>Bootstrap</td><td>Date + environment</td><td>Prompt text + runtime context</td><td><code>briefing.sh</code>, <code>briefing.ps1</code></td></tr>
-        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + log output</td><td><code>claude -p</code>, WebSearch, Notion MCP</td></tr>
+        <tr><td>Dedup</td><td><code>logs/covered-stories.txt</code> + latest Notion page</td><td>Exclusion list for this run</td><td>Step 0a (file) + Step 0b (Notion MCP)</td></tr>
+        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + covered-stories update</td><td><code>claude -p --model opus</code>, WebSearch, Notion MCP</td></tr>
         <tr><td>Teams Prepare</td><td><code>logs/YYYY-MM-DD-card.json</code></td><td>Validated JSON payload</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
         <tr><td>Delivery</td><td>Webhook URL</td><td>Teams channel message</td><td>Power Automate webhook</td></tr>
         <tr><td>Cleanup</td><td>Historic log files</td><td>Old <code>*.log</code> removed</td><td>Entry script cleanup step</td></tr>
@@ -281,16 +287,10 @@ sequenceDiagram
     </table>
   </div>
 
-  <div style="background: rgba(249, 115, 22, 0.10); border: 1px solid rgba(249, 115, 22, 0.35); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
-    <h3 style="color: #fb923c; font-size: 1rem; margin-bottom: 0.5rem;">Current Known Divergence</h3>
-    <p style="color: var(--text); font-size: 0.92rem; margin-bottom: 0.5rem;">
-      <strong>Prompt path:</strong> `prompt.md` Step 4 still instructs structured stdout output for parser-based card generation.
-    </p>
-    <p style="color: var(--text); font-size: 0.92rem; margin-bottom: 0.5rem;">
-      <strong>Runtime path:</strong> notifier scripts expect a prebuilt `logs/YYYY-MM-DD-card.json` and do not invoke `build-teams-card.py`.
-    </p>
-    <p style="color: var(--text-dim); font-size: 0.86rem; margin: 0;">
-      Impact: Teams notify can fail with "Card file not found" if no external skill/workflow writes the card file.
+  <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+    <h3 style="color: #10b981; font-size: 1rem; margin-bottom: 0.5rem;">Prompt/Runtime Aligned</h3>
+    <p style="color: var(--text); font-size: 0.92rem; margin: 0;">
+      <strong>Resolved:</strong> `prompt.md` Step 4 now generates `logs/YYYY-MM-DD-card.json` directly using the Adaptive Card template. The notifier scripts POST this file as-is. No parser intermediary.
     </p>
   </div>
 
@@ -479,7 +479,7 @@ flowchart TD
   <div class="mermaid-wrap" style="margin-bottom: 2rem;">
     <pre class="mermaid">
 flowchart LR
-    A[Claude writes logs/YYYY-MM-DD-card.json expected] --> B[notify-teams.sh / notify-teams.ps1]
+    A[Claude writes logs/YYYY-MM-DD-card.json] --> B[notify-teams.sh / notify-teams.ps1]
     B --> C{JSON valid?}
     C -->|No| D[Fail fast]
     C -->|Yes| E[POST payload to webhook]
@@ -535,28 +535,28 @@ flowchart LR
   <div class="section-header">
     <div class="section-label">Cost & Runtime</div>
     <h2 class="section-title">Default operating envelope</h2>
-    <p class="section-desc">Baseline estimates with Sonnet model, 9 topics, and a $2.00 hard budget cap.</p>
+    <p class="section-desc">Baseline estimates with Opus model, 9 topics, no hard budget cap.</p>
   </div>
   <div class="cost-grid">
     <div class="cost-card">
       <div class="label">Per Run</div>
-      <div class="value accent">~$1.00</div>
-      <div class="sub">Typical: $0.70 to $1.40</div>
+      <div class="value accent">~$3-5</div>
+      <div class="sub">Opus model, uncapped</div>
     </div>
     <div class="cost-card">
       <div class="label">Monthly (Daily)</div>
-      <div class="value orange">~$30</div>
-      <div class="sub">Typical: $21 to $42</div>
+      <div class="value orange">~$90-150</div>
+      <div class="sub">Typical: varies by news volume</div>
     </div>
     <div class="cost-card">
       <div class="label">Hard Cap</div>
-      <div class="value green">$2.00</div>
-      <div class="sub">Configured via --max-budget-usd</div>
+      <div class="value green">None</div>
+      <div class="sub">No --max-budget-usd set</div>
     </div>
     <div class="cost-card">
       <div class="label">Runtime</div>
-      <div class="value">3-5 min</div>
-      <div class="sub">Search, compile, publish</div>
+      <div class="value">4-8 min</div>
+      <div class="sub">Search, dedup, compile, publish</div>
     </div>
   </div>
 </section>
@@ -608,6 +608,7 @@ flowchart LR
     <div>&nbsp;&nbsp;<span class="file">briefing.sh / briefing.ps1</span> <span class="dim"># orchestration entry points</span></div>
     <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
     <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># runtime output (gitignored)</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">covered-stories.txt</span> <span class="dim"># dedup headline tracker (auto-managed)</span></div>
   </div>
 </section>
 
