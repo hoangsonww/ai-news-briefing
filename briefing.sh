@@ -34,13 +34,12 @@ The card.json filename should use $DATE (logs/$DATE-card.json).
 fi
 
 # Run Claude in print mode with the news prompt
-# --model sonnet: cost-efficient for search+compilation
+# --model opus: better adherence to card template constraints
 # --dangerously-skip-permissions: required for headless/automated execution
 # --max-budget-usd: safety cap per run
 "$CLAUDE" -p \
-  --model sonnet \
+  --model opus \
   --dangerously-skip-permissions \
-  --max-budget-usd 2.00 \
   "$PROMPT" \
   >> "$LOG_FILE" 2>&1
 

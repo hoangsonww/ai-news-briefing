@@ -44,10 +44,16 @@ try {
 $bytes = [System.IO.File]::ReadAllBytes($CardFile)
 
 try {
-    $response = Invoke-RestMethod -Uri $WebhookUrl -Method Post -Body $bytes -ContentType "application/json; charset=utf-8"
-    Write-Host "Teams notification sent successfully."
+    $resp = Invoke-WebRequest -Uri $WebhookUrl -Method Post -Body $bytes -ContentType "application/json; charset=utf-8" -UseBasicParsing
+    if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 300) {
+        Write-Host "Teams notification sent successfully (HTTP $($resp.StatusCode))."
+    } else {
+        Write-Error "Teams notification failed (HTTP $($resp.StatusCode)): $($resp.Content)"
+        exit 1
+    }
 } catch {
-    $status = $_.Exception.Response.StatusCode.value__
+    $status = $null
+    if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
     Write-Error "Teams notification failed (HTTP $status): $_"
     exit 1
 }
