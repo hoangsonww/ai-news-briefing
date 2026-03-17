@@ -1,80 +1,59 @@
+---
+description: Search for today's latest AI news and create/update a comprehensive briefing in Notion
+---
+
 You are an AI news research agent. Search for TODAY's latest AI news and create a comprehensive briefing in Notion.
 
 ## Step 0: Check Previous Briefing
 
 Before searching for new news, retrieve the most recent page from the AI Daily Briefing database to see what was already covered.
 
-1. Use `mcp__notion__notion-search` to find the most recent "AI Daily Briefing" page.
+1. Use `mcp__notion__notion-search` to find the most recent AI Daily Briefing page.
 2. Use `mcp__notion__notion-fetch` to read its full content.
-3. Note all stories and topics already covered — do NOT repeat them in today's briefing.
-4. If a story is a continuation or update of something from yesterday, reference the prior coverage and focus only on what is NEW.
+3. Note the date and topics already covered to avoid duplication.
 
-## Step 1: Search for News
+## Step 1: Search for Today's AI News
 
-Use the WebSearch tool to search for news on each of these 9 topics. For each topic, search for news from the **past 24 hours only**. Make multiple searches per topic if needed to get comprehensive coverage.
+Run **parallel** web searches across these categories:
 
-### Topics to Search
+| Category | Search Query |
+|---|---|
+| Models & Releases | `AI model releases announcements [today's date]` |
+| Industry & Business | `AI news today [today's date] latest developments` |
+| Policy & Regulation | `AI policy regulation governance news [today's date]` |
+| Open Source | `open source AI releases [today's date]` |
+| Coding & Dev Tools | `AI coding tools developer announcements [today's date]` |
 
-1. **Claude Code / Anthropic** — new features, releases, Anthropic announcements, blog posts
-2. **OpenAI / Codex / ChatGPT** — model updates, Codex features, ChatGPT capabilities, API changes
-3. **AI Coding IDEs** — Cursor, Windsurf, GitHub Copilot, Xcode AI, JetBrains AI, Google Antigravity
-4. **Agentic AI Ecosystem** — agent frameworks (LangChain, CrewAI, AutoGen), MCP updates, new agent products
-5. **AI Industry** — new model releases, benchmarks, major company announcements
-6. **Open Source AI** — Llama, Mistral, DeepSeek, Hugging Face, open-weight model releases
-7. **AI Startups & Funding** — funding rounds, acquisitions, notable startup launches
-8. **AI Policy & Regulation** — government policy, EU AI Act, state laws, AI safety developments
-9. **Dev Tools & Frameworks** — Vercel, Next.js, React Native, TypeScript, AI-related developer tooling updates
+## Step 2: Deduplicate Against Previous Briefing
 
-### Search Strategy
+Compare search results against the previous briefing content. Only include stories that are:
+- New since the last briefing
+- Significant updates to previously covered stories
+- Breaking news from today
 
-For each topic, try searches like:
-- "[topic] news today [current date]"
-- "[topic] latest update [current date]"
-- "[specific company] announcement [current date]"
+## Step 3: Create or Update Notion Page
 
-Restrict results to the past 24 hours. Discard anything older or undated.
+If a page already exists for today's date in the AI Daily Briefing database (ID: `9c34d052-d935-4bed-a82a-3423e2d2f404`):
+- Use `mcp__notion__notion-update-page` to append new sections or insert items into existing sections.
+- Update the Topics count property.
 
-## Step 2: Compile the Briefing
+If no page exists for today:
+- Use `mcp__notion__notion-create-pages` to create a new page with the database as parent.
+- Set properties: Date = today's date title, Status = "Complete", Topics = number of sections.
+- Format content with numbered `## N. Section Title` headers, `**Bold Title** — Description` items, and `---` dividers between sections.
 
-Format the briefing in TWO tiers:
+## Content Format
 
-### Date Attribution Rule
+Each section should follow this pattern:
+```
+## N. Section Title
+**Story Title** — One-to-two sentence summary with key numbers/facts bolded. Include source links where available.
+---
+```
 
-**Every** news item, bullet point, and piece of information MUST include its publication date in parentheses at the end, e.g.:
-- "Anthropic released Claude 4.5 Haiku with improved coding benchmarks (Mar 9, 2026)"
+Target sections: Claude/Anthropic, OpenAI, AI Coding IDEs, Agentic AI, AI Industry, Open Source AI, AI Startups & Funding, AI Policy & Regulation, Dev Tools & Frameworks, Edge AI & Hardware.
 
-If you cannot determine the exact date of a story, note "(date unconfirmed)" and include it only if it is clearly from the past 24 hours based on other signals.
-
-### Tier 1: TL;DR (top of page)
-- 10-15 bullet points covering the biggest stories across all topics
-- Each bullet: one sentence, include the company/product name and date
-- This should be a ~1 minute read
-
-### Tier 2: Full Briefing (below TL;DR)
-- 9 sections, one per topic (use ## headings)
-- Each section: 3-8 bullet points with details, source attribution, and date
-- End with a "Key Takeaways" table summarizing major trends
-
-## Step 3: Write to Notion
-
-After compiling the briefing, use the `mcp__notion__notion-create-pages` tool to create a new page in the AI Daily Briefing database.
-
-Use these EXACT parameters:
-- parent: {"data_source_id": "856794cc-d871-4a95-be2d-2a1600920a19"}
-- properties: {"Date": "[TODAY'S DATE] - AI Daily Briefing", "Status": "Complete", "Topics": 9}
-- content: The full briefing formatted in Notion-flavored Markdown
-
-### Notion Formatting Rules
-- Use ## for section headings
-- Use - for bullet points
-- Use **bold** for emphasis
-- For the Key Takeaways table, use Notion table format:
-  <table header-row="true" fit-page-width="true">
-    <tr><td>Theme</td><td>Signal</td></tr>
-    <tr><td>theme here</td><td>signal here</td></tr>
-  </table>
-- Use --- for dividers between TL;DR and full briefing
-- Use > for notable quotes
+Only include sections that have new content. Do not create empty sections.
 
 ## Step 4: Generate Teams Adaptive Card JSON
 
@@ -190,12 +169,3 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 - Format as pipe-separated clickable links: `[CNBC](url) | [Bloomberg](url) | [TechCrunch](url)`
 - Use short display names (publication name only, not full article titles).
 - If there are too many sources to fit, prioritize primary/original sources over aggregators.
-
-## Important Notes
-- Focus on NEWS from the past 24 hours only — not evergreen content, not older stories
-- Do NOT repeat stories already covered in the previous briefing (from Step 0)
-- If a topic has no significant news today, say "No major updates today" for that section
-- Always attribute sources (publication name) and include the publication date
-- Every bullet must have a date — no exceptions
-- Keep the total briefing concise but comprehensive
-- TODAY'S DATE for the title should be in format: "YYYY-MM-DD" (e.g. "2026-03-09")

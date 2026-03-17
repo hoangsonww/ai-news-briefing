@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI News Briefing - Automated Daily AI Intelligence</title>
-  <meta name="description" content="Automated daily AI news research agent powered by Claude Code. Searches the web, compiles structured briefings, publishes to Notion.">
+  <title>AI News Briefing - Project Wiki</title>
+  <meta name="description" content="Comprehensive wiki for AI News Briefing: architecture, E2E flow, operations, Teams delivery, and maintenance runbook.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
         activationBkgColor: '#1e1e2e',
         activationBorderColor: '#6366f1',
         sequenceNumberColor: '#6366f1',
-        loopTextColor: '#8888a0',
+        loopTextColor: '#8888a0'
       }
     });
   </script>
@@ -46,6 +46,7 @@
 <body>
 <div class="bg-grid"></div>
 <div class="bg-glow"></div>
+
 <nav class="nav">
   <div class="nav-inner">
     <a href="#" class="nav-logo">
@@ -53,16 +54,16 @@
         <path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2zm0 0a2 2 0 01-2-2v-9c0-1.1.9-2 2-2h2"/>
         <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
       </svg>
-      AI News Briefing
+      AI News Briefing Wiki
     </a>
     <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
+      <li><a href="#updates">Updates</a></li>
       <li><a href="#architecture">Architecture</a></li>
-      <li><a href="#topics">Topics</a></li>
-      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#e2e">E2E</a></li>
+      <li><a href="#operations">Operations</a></li>
       <li><a href="#makefile">Makefile</a></li>
       <li><a href="#teams">Teams</a></li>
-      <li><a href="#cost">Cost</a></li>
+      <li><a href="#docs">Docs</a></li>
     </ul>
     <button class="nav-hamburger" aria-label="Toggle navigation">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -71,518 +72,562 @@
     </button>
   </div>
 </nav>
+
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Runs daily at 8:00 AM</div>
-  <h1>Your AI News.<br><span class="gradient">Automated. Daily.</span></h1>
+  <div class="hero-badge"><span class="dot"></span> Last refreshed: March 17, 2026</div>
+  <h1>AI News Briefing<br><span class="gradient">Comprehensive Project Wiki</span></h1>
   <p class="hero-sub">
-    A headless Claude Code agent that searches the web across 9 AI topic areas,
-    compiles a two-tier briefing, and publishes it to Notion and Microsoft Teams &mdash;
-    every morning, zero intervention.
+    End-to-end reference for the automated daily pipeline: scheduler triggers, Claude CLI execution,
+    Notion publishing, Teams delivery, troubleshooting, and maintenance workflows.
   </p>
   <div class="hero-actions">
-    <a href="#quickstart" class="btn btn-primary">
+    <a href="#updates" class="btn btn-primary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Get Started
+      View Latest Changes
     </a>
-    <a href="https://github.com/hoangsonww/AI-News-Briefing" class="btn btn-secondary" target="_blank" rel="noopener">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
+    <a href="README.md" class="btn btn-secondary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Open README
     </a>
   </div>
 </section>
-<section class="section" id="features">
+
+<section class="section" id="updates">
   <div class="section-header">
-    <div class="section-label">Features</div>
-    <h2 class="section-title">Everything runs on autopilot</h2>
-    <p class="section-desc">Set it up once. Get a comprehensive AI briefing in Notion every morning.</p>
+    <div class="section-label">Latest Updates</div>
+    <h2 class="section-title">What changed recently</h2>
+    <p class="section-desc">Project status and behavior updates reflected across the docs and runtime flow.</p>
   </div>
+
   <div class="features">
     <div class="feature-card">
-      <div class="feature-icon purple">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div class="feature-icon blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <h3>9-Topic Web Search</h3>
-      <p>Claude searches the web across 9 AI topic areas with multiple queries per topic, targeting news from the past 24 hours only.</p>
+      <h3>Teams Path Is File-Based</h3>
+      <p>`notify-teams.sh` and `notify-teams.ps1` now validate and POST a prebuilt `logs/YYYY-MM-DD-card.json` payload directly.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon orange">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <h3>Two-Tier Briefing</h3>
-      <p>TL;DR with 10-15 bullet points for a 1-minute scan, plus a full 9-section deep dive with source attribution and dates.</p>
-    </div>
+
     <div class="feature-card">
       <div class="feature-icon green">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
       </div>
-      <h3>Notion Integration</h3>
-      <p>Publishes directly to a Notion database via MCP. Each briefing is a searchable, tagged page with structured properties.</p>
+      <h3>E2E Flow Expanded</h3>
+      <p>`E2E_FLOW.md` now includes detailed runtime contracts, failure states, decision graphs, and implementation-grounded Mermaid diagrams.</p>
     </div>
+
     <div class="feature-card">
-      <div class="feature-icon cyan">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <div class="feature-icon orange">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </div>
-      <h3>Cross-Platform</h3>
-      <p>Runs on macOS (launchd) and Windows (Task Scheduler). Shared prompt, platform-native scheduling.</p>
+      <h3>Date Override Backfill</h3>
+      <p>Both entry scripts support backfill (`YYYY-MM-DD`) and inject date override instructions so searches and filenames match the target day.</p>
     </div>
+
     <div class="feature-card">
       <div class="feature-icon rose">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
-      <h3>Deduplication</h3>
-      <p>Reads the previous Notion briefing before searching, so it never repeats stories already covered yesterday.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon amber">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-      </div>
-      <h3>Budget Capped</h3>
-      <p>Hard $2.00 cap per run. Typical cost: $0.70-1.40. Safety-first design prevents runaway API spend.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon blue">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      </div>
-      <h3>Teams Delivery</h3>
-      <p>Automatically posts a styled Adaptive Card to Microsoft Teams with the full briefing, section icons, and clickable source links.</p>
+      <h3>Operational Risk Identified</h3>
+      <p>`prompt.md` Step 4 still references stdout-for-parser format, while runtime notifier expects `card.json`. This mismatch is documented below.</p>
     </div>
   </div>
 </section>
+
 <section class="section" id="architecture">
   <div class="section-header">
     <div class="section-label">Architecture</div>
-    <h2 class="section-title">How it works</h2>
-    <p class="section-desc">Six stages, fully automated, from scheduler trigger to Notion page and Teams channel.</p>
+    <h2 class="section-title">Current system topology</h2>
+    <p class="section-desc">From scheduler trigger to Notion and optional Teams delivery.</p>
   </div>
+
   <div class="arch-flow">
     <div class="arch-node">
       <div class="arch-node-icon">&#9200;</div>
-      <div class="arch-node-label">Scheduler</div>
+      <div class="arch-node-label">Schedulers</div>
       <div class="arch-node-sub">launchd / Task Scheduler</div>
     </div>
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-node">
       <div class="arch-node-icon">&#128221;</div>
       <div class="arch-node-label">Entry Script</div>
-      <div class="arch-node-sub">briefing.sh / .ps1</div>
+      <div class="arch-node-sub">briefing.sh / briefing.ps1</div>
     </div>
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-node">
       <div class="arch-node-icon">&#129302;</div>
-      <div class="arch-node-label">Claude Code</div>
-      <div class="arch-node-sub">Headless CLI agent</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128270;</div>
-      <div class="arch-node-label">WebSearch</div>
-      <div class="arch-node-sub">9 topics &times; N queries</div>
+      <div class="arch-node-label">Claude CLI</div>
+      <div class="arch-node-sub">Headless execution</div>
     </div>
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-node">
       <div class="arch-node-icon">&#128214;</div>
-      <div class="arch-node-label">Notion</div>
-      <div class="arch-node-sub">MCP &rarr; Database page</div>
+      <div class="arch-node-label">Notion MCP</div>
+      <div class="arch-node-sub">Read previous + create page</div>
     </div>
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-node">
       <div class="arch-node-icon">&#128172;</div>
       <div class="arch-node-label">Teams</div>
-      <div class="arch-node-sub">Adaptive Card webhook</div>
+      <div class="arch-node-sub">Webhook (optional)</div>
     </div>
   </div>
-  <div style="margin-top: 3.5rem;">
-    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Data Flow Pipeline</h3>
+
+  <div style="margin-top: 3rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;">Runtime Topology</h3>
     <div class="mermaid-wrap">
       <pre class="mermaid">
 flowchart TD
-    subgraph Schedulers
+    subgraph Triggers
         A1[macOS launchd]
         A2[Windows Task Scheduler]
+        A3[Manual make run]
     end
 
-    A1 -->|8:00 AM daily| B1[briefing.sh]
-    A2 -->|8:00 AM daily| B2[briefing.ps1]
+    A1 --> B1[briefing.sh]
+    A2 --> B2[briefing.ps1]
+    A3 --> B1
+    A3 --> B2
 
-    B1 -->|Reads| C[prompt.md]
-    B2 -->|Reads| C
+    B1 --> C[prompt.md]
+    B2 --> C
 
-    B1 -->|Invokes| D[Claude Code CLI]
-    B2 -->|Invokes| D
+    C --> D[Claude CLI]
+    D --> E[WebSearch]
+    D --> F[Notion MCP]
+    F --> G[Notion briefing page]
 
-    D -->|Step 0: Dedup| N0[Notion MCP - Read Previous]
-    N0 -->|Already covered stories| D
-    D -->|Step 1: Search| E[WebSearch Tool]
-    E -->|9 topics x multiple queries| F[Web Results]
-    F -->|Step 2: Compile| G[Two-Tier Briefing]
-    G -->|Step 3: Write| H[Notion MCP - Create Page]
-    H -->|Creates page| I[(Notion Database)]
+    D --> H[logs/YYYY-MM-DD.log]
+    D --> I[logs/YYYY-MM-DD-card.json expected]
 
-    B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
-    B2 -->|Logs output| J
-
-    B1 -->|If webhook set| T1[notify-teams.sh]
-    B2 -->|If webhook set| T2[notify-teams.ps1]
-    T1 & T2 --> PY[build-teams-card.py]
-    PY --> TW[Teams Webhook]
-    TW --> TC[Teams Channel]
+    B1 --> J{AI_BRIEFING_TEAMS_WEBHOOK set?}
+    B2 --> J
+    J -->|No| K[Skip Teams]
+    J -->|Yes| L[notify-teams.sh/.ps1]
+    L --> M{card.json exists + valid JSON?}
+    M -->|Yes| N[POST card payload to Teams]
+    M -->|No| O[Notify step fails]
       </pre>
     </div>
   </div>
-  <div style="margin-top: 3.5rem;">
-    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Execution Lifecycle</h3>
+
+  <div style="margin-top: 3rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;">Successful Execution Sequence</h3>
     <div class="mermaid-wrap">
       <pre class="mermaid">
 sequenceDiagram
-    participant S as Scheduler
+    participant S as Scheduler/Manual
     participant E as Entry Script
-    participant C as Claude Code
-    participant NR as Notion (Read)
+    participant C as Claude CLI
     participant W as WebSearch
-    participant NW as Notion (Write)
+    participant N as Notion MCP
+    participant T as notify-teams
     participant TW as Teams Webhook
 
-    Note over S: 08:00 AM or manual trigger
-    S->>E: Execute entry script
-    E->>E: Setup env, create log dir
-    E->>E: Read prompt.md
-    E->>C: claude -p --model sonnet
+    S->>E: Start briefing script
+    E->>E: Setup date, logs, env
+    E->>C: claude -p --model sonnet --max-budget-usd 2.00
 
-    C->>NR: Fetch previous briefing
-    NR-->>C: Yesterday's stories
+    C->>N: Step 0 fetch previous briefing
+    N-->>C: prior coverage
 
-    loop For each of 9 topics
-        C->>W: Search query
-        W-->>C: Results
+    loop 9 topic areas
+      C->>W: search recent news
+      W-->>C: results
     end
 
-    C->>C: Filter duplicates
-    C->>C: Compile TLDR tier
-    C->>C: Compile Full Briefing
-    C->>C: Build Key Takeaways
+    C->>N: Step 3 create today's page
+    N-->>C: page URL
 
-    C->>NW: Create page with briefing
-    NW-->>C: Page URL
-    C-->>E: Done
-    E->>E: Log result
+    C-->>E: exit 0 + output
+    E->>E: append logs/YYYY-MM-DD.log
 
-    opt Teams webhook configured
-        E->>E: notify-teams.sh / .ps1
-        E->>E: build-teams-card.py (parse log)
-        E->>TW: POST Adaptive Card to webhook
-        TW-->>E: 202 Accepted
+    opt webhook configured
+      E->>T: call notify-teams script
+      T->>T: validate card.json
+      T->>TW: POST payload
+      TW-->>T: 2xx
     end
       </pre>
     </div>
   </div>
-  <div style="margin-top: 3.5rem;">
-    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Error Handling</h3>
-    <div class="mermaid-wrap">
-      <pre class="mermaid">
-flowchart TD
-    A[Entry script starts] --> B{Log dir exists?}
-    B -->|No| C[Create it]
-    B -->|Yes| D[Continue]
-    C --> D
-    D --> E{CLAUDECODE env set?}
-    E -->|Yes| F[Clear it]
-    E -->|No| G[Continue]
-    F --> G
-    G --> H[Invoke Claude Code]
-    H --> I{Budget exceeded?}
-    I -->|Yes| J[Exit with error]
-    H --> K{Search failures?}
-    K -->|Partial| L[Note: No updates for topic]
-    K -->|Total| M[Empty briefing]
-    H --> N{Notion API error?}
-    N -->|Yes| O[Report in output]
-    H --> P{Success}
-    J --> Q[Log: FAILED]
-    M --> Q
-    O --> Q
-    L --> P
-    P --> R[Log: Complete]
-    Q --> S[Cleanup old logs]
-    R --> S
-      </pre>
-    </div>
-  </div>
-  <div class="file-tree" style="margin-top: 3rem;">
-    <div><span class="dir">ai-news-briefing/</span></div>
-    <div>&nbsp;&nbsp;<span class="file">Makefile</span> <span class="new-badge">NEW</span></div>
-    <div>&nbsp;&nbsp;<span class="file">briefing.sh</span> <span class="dim"># macOS entry point</span></div>
-    <div>&nbsp;&nbsp;<span class="file">briefing.ps1</span> <span class="dim"># Windows entry point</span></div>
-    <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># Agent instructions</span></div>
-    <div>&nbsp;&nbsp;<span class="file">com.ainews.briefing.plist</span> <span class="dim"># macOS scheduler</span></div>
-    <div>&nbsp;&nbsp;<span class="file">install-task.ps1</span> <span class="dim"># Windows scheduler</span></div>
-    <div>&nbsp;&nbsp;<span class="dir">scripts/</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.sh</span> <span class="new-badge">NEW</span> <span class="dim"># macOS/Linux Teams notifier</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.ps1</span> <span class="new-badge">NEW</span> <span class="dim"># Windows Teams notifier</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">build-teams-card.py</span> <span class="new-badge">NEW</span> <span class="dim"># Adaptive Card builder</span></div>
-    <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md</span> <span class="new-badge">NEW</span> <span class="dim"># Teams integration docs</span></div>
-    <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># Run output (git-ignored)</span></div>
-    <div>&nbsp;&nbsp;<span class="dir">wiki/</span> <span class="dim"># Landing page assets</span></div>
-    <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># This page</span></div>
-  </div>
 </section>
-<section class="section" id="topics">
+
+<section class="section" id="e2e">
   <div class="section-header">
-    <div class="section-label">Coverage</div>
-    <h2 class="section-title">9 topics, every day</h2>
-    <p class="section-desc">Each topic gets multiple targeted web searches for comprehensive coverage.</p>
-  </div>
-  <div class="topics-grid">
-    <div class="topic-card">
-      <div class="topic-num">1</div>
-      <div>
-        <h4>Claude Code / Anthropic</h4>
-        <p>Releases, features, announcements, blog posts</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">2</div>
-      <div>
-        <h4>OpenAI / Codex / ChatGPT</h4>
-        <p>Model updates, API changes, capabilities</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">3</div>
-      <div>
-        <h4>AI Coding IDEs</h4>
-        <p>Cursor, Windsurf, Copilot, Xcode AI, JetBrains</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">4</div>
-      <div>
-        <h4>Agentic AI Ecosystem</h4>
-        <p>LangChain, CrewAI, AutoGen, MCP updates</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">5</div>
-      <div>
-        <h4>AI Industry</h4>
-        <p>Model releases, benchmarks, company news</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">6</div>
-      <div>
-        <h4>Open Source AI</h4>
-        <p>Llama, Mistral, DeepSeek, Hugging Face</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">7</div>
-      <div>
-        <h4>AI Startups &amp; Funding</h4>
-        <p>Rounds, acquisitions, notable launches</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">8</div>
-      <div>
-        <h4>AI Policy &amp; Regulation</h4>
-        <p>Government policy, EU AI Act, safety</p>
-      </div>
-    </div>
-    <div class="topic-card">
-      <div class="topic-num">9</div>
-      <div>
-        <h4>Dev Tools &amp; Frameworks</h4>
-        <p>Vercel, Next.js, React Native, TypeScript</p>
-      </div>
-    </div>
-  </div>
-</section>
-<section class="section" id="quickstart">
-  <div class="section-header">
-    <div class="section-label">Quick Start</div>
-    <h2 class="section-title">Up and running in 2 minutes</h2>
+    <div class="section-label">E2E Contracts</div>
+    <h2 class="section-title">Execution guarantees and gaps</h2>
+    <p class="section-desc">What each stage expects, produces, and where failures usually happen.</p>
   </div>
 
-  <div class="code-section" style="max-width: 720px; margin: 0 auto 2rem;">
-    <div class="code-header">
-      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-      <span class="code-title">terminal</span>
-      <button class="code-copy">Copy</button>
-    </div>
-    <div class="code-body">
-<pre><span class="comment"># Clone</span>
-<span class="cmd">git clone</span> <span class="string">https://github.com/hoangsonww/AI-News-Briefing</span>
-<span class="cmd">cd</span> AI-News-Briefing
-<span class="comment"># Install scheduler (auto-detects platform)</span>
-<span class="cmd">make</span> install
-<span class="comment"># Or run immediately</span>
-<span class="cmd">make</span> run
-<span class="comment"># Watch progress</span>
-<span class="cmd">make</span> tail</pre>
-    </div>
-  </div>
-  <div class="code-section" style="max-width: 720px; margin: 0 auto;">
-    <div class="code-header">
-      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-      <span class="code-title">platform-native (without Make)</span>
-      <button class="code-copy">Copy</button>
-    </div>
-    <div class="code-body">
-<pre><span class="comment"># macOS</span>
-<span class="cmd">chmod +x</span> briefing.sh
-<span class="cmd">cp</span> com.ainews.briefing.plist ~/Library/LaunchAgents/
-<span class="cmd">launchctl load</span> ~/Library/LaunchAgents/com.ainews.briefing.plist
-<span class="comment"># Windows (PowerShell)</span>
-<span class="cmd">.\install-task.ps1</span></pre>
-    </div>
-  </div>
-</section>
-<section class="section" id="makefile">
-  <div class="section-header">
-    <div class="section-label">Makefile</div>
-    <h2 class="section-title">One interface, every platform</h2>
-    <p class="section-desc">Auto-detects macOS, Windows (Git Bash), or Linux and routes to native tools.</p>
-  </div>
-  <div class="table-wrap">
+  <div class="table-wrap" style="margin-bottom: 2rem;">
     <table>
       <thead>
         <tr>
-          <th>Command</th>
-          <th>Category</th>
-          <th>Description</th>
+          <th>Stage</th>
+          <th>Input</th>
+          <th>Output</th>
+          <th>Primary File/Tool</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><code>make run</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in foreground</td></tr>
-        <tr><td><code>make run-bg</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in background</td></tr>
-        <tr><td><code>make run-scheduled</code></td><td><span class="cat-badge exec">Execution</span></td><td>Trigger via OS scheduler</td></tr>
-        <tr><td><code>make tail</code></td><td><span class="cat-badge logs">Logs</span></td><td>Tail today's log live</td></tr>
-        <tr><td><code>make log</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print today's log</td></tr>
-        <tr><td><code>make logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>List all log files with sizes</td></tr>
-        <tr><td><code>make log-date D=...</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print log for a specific date</td></tr>
-        <tr><td><code>make clean-logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>Delete logs older than 30 days</td></tr>
-        <tr><td><code>make purge-logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>Delete all logs</td></tr>
-        <tr><td><code>make install</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Install platform scheduler</td></tr>
-        <tr><td><code>make uninstall</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Remove platform scheduler</td></tr>
-        <tr><td><code>make status</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Show scheduler status</td></tr>
-        <tr><td><code>make check</code></td><td><span class="cat-badge valid">Validate</span></td><td>Verify Claude CLI is installed</td></tr>
-        <tr><td><code>make validate</code></td><td><span class="cat-badge valid">Validate</span></td><td>Validate all project files</td></tr>
-        <tr><td><code>make prompt</code></td><td><span class="cat-badge info">Info</span></td><td>Print the current prompt</td></tr>
-        <tr><td><code>make info</code></td><td><span class="cat-badge info">Info</span></td><td>Show config summary</td></tr>
-        <tr><td><code>make help</code></td><td><span class="cat-badge info">Info</span></td><td>Show all targets</td></tr>
+        <tr><td>Trigger</td><td>08:00 schedule or manual command</td><td>Script execution starts</td><td><code>com.ainews.briefing.plist</code>, <code>install-task.ps1</code>, <code>Makefile</code></td></tr>
+        <tr><td>Bootstrap</td><td>Date + environment</td><td>Prompt text + runtime context</td><td><code>briefing.sh</code>, <code>briefing.ps1</code></td></tr>
+        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + log output</td><td><code>claude -p</code>, WebSearch, Notion MCP</td></tr>
+        <tr><td>Teams Prepare</td><td><code>logs/YYYY-MM-DD-card.json</code></td><td>Validated JSON payload</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
+        <tr><td>Delivery</td><td>Webhook URL</td><td>Teams channel message</td><td>Power Automate webhook</td></tr>
+        <tr><td>Cleanup</td><td>Historic log files</td><td>Old <code>*.log</code> removed</td><td>Entry script cleanup step</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: rgba(249, 115, 22, 0.10); border: 1px solid rgba(249, 115, 22, 0.35); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+    <h3 style="color: #fb923c; font-size: 1rem; margin-bottom: 0.5rem;">Current Known Divergence</h3>
+    <p style="color: var(--text); font-size: 0.92rem; margin-bottom: 0.5rem;">
+      <strong>Prompt path:</strong> `prompt.md` Step 4 still instructs structured stdout output for parser-based card generation.
+    </p>
+    <p style="color: var(--text); font-size: 0.92rem; margin-bottom: 0.5rem;">
+      <strong>Runtime path:</strong> notifier scripts expect a prebuilt `logs/YYYY-MM-DD-card.json` and do not invoke `build-teams-card.py`.
+    </p>
+    <p style="color: var(--text-dim); font-size: 0.86rem; margin: 0;">
+      Impact: Teams notify can fail with "Card file not found" if no external skill/workflow writes the card file.
+    </p>
+  </div>
+
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart TD
+    A[Entry script exits success] --> B{Webhook env set?}
+    B -->|No| C[Run complete without Teams]
+    B -->|Yes| D[notify-teams]
+    D --> E{Card file exists?}
+    E -->|No| F[Fail: missing card.json]
+    E -->|Yes| G{JSON valid?}
+    G -->|No| H[Fail: invalid JSON]
+    G -->|Yes| I[POST webhook]
+    I --> J{HTTP 2xx?}
+    J -->|Yes| K[Teams delivered]
+    J -->|No| L[Fail: webhook rejection]
+    </pre>
+  </div>
+</section>
+
+<section class="section" id="topics">
+  <div class="section-header">
+    <div class="section-label">Coverage</div>
+    <h2 class="section-title">9 topic areas searched daily</h2>
+    <p class="section-desc">The briefing targets short-horizon AI news (past 24 hours) across the following domains.</p>
+  </div>
+  <div class="topics-grid">
+    <div class="topic-card"><div class="topic-num">1</div><div><h4>Claude Code / Anthropic</h4><p>Releases, features, Anthropic updates</p></div></div>
+    <div class="topic-card"><div class="topic-num">2</div><div><h4>OpenAI / Codex / ChatGPT</h4><p>Model changes, API updates, product launches</p></div></div>
+    <div class="topic-card"><div class="topic-num">3</div><div><h4>AI Coding IDEs</h4><p>Cursor, Windsurf, Copilot, JetBrains, Xcode AI</p></div></div>
+    <div class="topic-card"><div class="topic-num">4</div><div><h4>Agentic AI Ecosystem</h4><p>LangChain, CrewAI, AutoGen, MCP and agents</p></div></div>
+    <div class="topic-card"><div class="topic-num">5</div><div><h4>AI Industry</h4><p>Major lab announcements, benchmarks, launches</p></div></div>
+    <div class="topic-card"><div class="topic-num">6</div><div><h4>Open Source AI</h4><p>Llama, Mistral, DeepSeek, Hugging Face</p></div></div>
+    <div class="topic-card"><div class="topic-num">7</div><div><h4>AI Startups &amp; Funding</h4><p>Rounds, acquisitions, startup launches</p></div></div>
+    <div class="topic-card"><div class="topic-num">8</div><div><h4>AI Policy &amp; Regulation</h4><p>Government policy and AI safety regulation</p></div></div>
+    <div class="topic-card"><div class="topic-num">9</div><div><h4>Dev Tools &amp; Frameworks</h4><p>Vercel, Next.js, React Native, TypeScript tooling</p></div></div>
+  </div>
+</section>
+
+<section class="section" id="operations">
+  <div class="section-header">
+    <div class="section-label">Operations</div>
+    <h2 class="section-title">Install, run, backfill, inspect</h2>
+    <p class="section-desc">Daily operation commands for both standard runs and historical date backfills.</p>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.5rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">quick start (make)</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Clone + install scheduler</span>
+<span class="cmd">git clone</span> <span class="string">https://github.com/hoangsonww/AI-News-Briefing</span>
+<span class="cmd">cd</span> AI-News-Briefing
+<span class="cmd">make</span> install
+
+<span class="comment"># Run now</span>
+<span class="cmd">make</span> run
+
+<span class="comment"># Backfill a specific date</span>
+<span class="cmd">make</span> run D=<span class="string">2026-03-15</span>
+
+<span class="comment"># Watch logs</span>
+<span class="cmd">make</span> tail</pre>
+    </div>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.5rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">platform-native scheduling</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># macOS install (launchd)</span>
+<span class="cmd">chmod +x</span> briefing.sh
+<span class="cmd">cp</span> com.ainews.briefing.plist ~/Library/LaunchAgents/
+<span class="cmd">launchctl load</span> ~/Library/LaunchAgents/com.ainews.briefing.plist
+
+<span class="comment"># Windows install (Task Scheduler)</span>
+<span class="cmd">.\install-task.ps1</span>
+
+<span class="comment"># Windows custom schedule example</span>
+<span class="cmd">.\install-task.ps1</span> <span class="flag">-Hour</span> 7 <span class="flag">-Minute</span> 30</pre>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="max-width: 900px; margin: 0 auto;">
+    <table>
+      <thead>
+      <tr>
+        <th>Action</th>
+        <th>macOS/Linux</th>
+        <th>Windows</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td>Run now</td><td><code>bash briefing.sh</code></td><td><code>.\briefing.ps1</code></td></tr>
+      <tr><td>Backfill date</td><td><code>bash briefing.sh 2026-03-15</code></td><td><code>.\briefing.ps1 -BriefingDate 2026-03-15</code></td></tr>
+      <tr><td>Trigger scheduler</td><td><code>launchctl kickstart "gui/$(id -u)/com.ainews.briefing"</code></td><td><code>schtasks /run /tn AiNewsBriefing</code></td></tr>
+      <tr><td>Tail today log</td><td><code>tail -f logs/$(date +%Y-%m-%d).log</code></td><td><code>Get-Content .\logs\$(Get-Date -Format yyyy-MM-dd).log -Wait</code></td></tr>
+      <tr><td>Scheduler status</td><td><code>launchctl list | grep ainews</code></td><td><code>schtasks /query /tn AiNewsBriefing</code></td></tr>
       </tbody>
     </table>
   </div>
 </section>
+
+<section class="section" id="makefile">
+  <div class="section-header">
+    <div class="section-label">Makefile</div>
+    <h2 class="section-title">Cross-platform command surface</h2>
+    <p class="section-desc">Single interface for execution, logs, scheduler management, and validation.</p>
+  </div>
+
+  <div class="table-wrap" style="margin-bottom: 2rem;">
+    <table>
+      <thead>
+      <tr>
+        <th>Command</th>
+        <th>Category</th>
+        <th>Description</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td><code>make run</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in foreground</td></tr>
+      <tr><td><code>make run-bg</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in background</td></tr>
+      <tr><td><code>make run D=YYYY-MM-DD</code></td><td><span class="cat-badge exec">Execution</span></td><td>Backfill for a target date</td></tr>
+      <tr><td><code>make run-scheduled</code></td><td><span class="cat-badge exec">Execution</span></td><td>Trigger via scheduler service</td></tr>
+      <tr><td><code>make tail</code></td><td><span class="cat-badge logs">Logs</span></td><td>Tail today log</td></tr>
+      <tr><td><code>make logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>List all logs</td></tr>
+      <tr><td><code>make log-date D=YYYY-MM-DD</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print date-specific log</td></tr>
+      <tr><td><code>make clean-logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>Delete logs older than 30 days</td></tr>
+      <tr><td><code>make install</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Install scheduler for current platform</td></tr>
+      <tr><td><code>make uninstall</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Remove scheduler</td></tr>
+      <tr><td><code>make status</code></td><td><span class="cat-badge sched">Scheduler</span></td><td>Show scheduler status</td></tr>
+      <tr><td><code>make check</code></td><td><span class="cat-badge valid">Validate</span></td><td>Verify Claude binary path</td></tr>
+      <tr><td><code>make validate</code></td><td><span class="cat-badge valid">Validate</span></td><td>Validate key project files and prompt steps</td></tr>
+      <tr><td><code>make info</code></td><td><span class="cat-badge info">Info</span></td><td>Show platform/model/topic summary</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-header" style="margin-bottom: 1.5rem;">
+    <h3 class="section-title" style="font-size: 1.4rem;">Utility Script Catalog</h3>
+    <p class="section-desc" style="margin-top: 0.5rem;">Script pairs exist for both `.sh` and `.ps1` variants.</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+      <tr>
+        <th>Script</th>
+        <th>Purpose</th>
+        <th>Example</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td><code>health-check</code></td><td>Verify install, prompt structure, scheduler, CLI</td><td><code>bash scripts/health-check.sh</code></td></tr>
+      <tr><td><code>dry-run</code></td><td>Run pipeline without writing to Notion</td><td><code>bash scripts/dry-run.sh --model haiku --budget 1.00</code></td></tr>
+      <tr><td><code>test-notion</code></td><td>Test Notion MCP connectivity</td><td><code>bash scripts/test-notion.sh</code></td></tr>
+      <tr><td><code>log-summary</code></td><td>Summarize recent run outcomes</td><td><code>bash scripts/log-summary.sh 14</code></td></tr>
+      <tr><td><code>log-search</code></td><td>Search logs with optional context</td><td><code>bash scripts/log-search.sh --search "Anthropic" --context 2</code></td></tr>
+      <tr><td><code>cost-report</code></td><td>Estimate spend by period</td><td><code>bash scripts/cost-report.sh --month 2026-03</code></td></tr>
+      <tr><td><code>export-logs</code></td><td>Archive logs to tar.gz/zip</td><td><code>bash scripts/export-logs.sh --from 2026-03-01 --to 2026-03-09</code></td></tr>
+      <tr><td><code>backup-prompt</code></td><td>Version and restore prompt.md</td><td><code>bash scripts/backup-prompt.sh --list</code></td></tr>
+      <tr><td><code>topic-edit</code></td><td>Add/remove/list topics in prompt.md</td><td><code>bash scripts/topic-edit.sh --list</code></td></tr>
+      <tr><td><code>update-schedule</code></td><td>Adjust scheduler time</td><td><code>bash scripts/update-schedule.sh --hour 7 --minute 30</code></td></tr>
+      <tr><td><code>notify</code></td><td>Native OS status notification</td><td><code>bash scripts/notify.sh</code></td></tr>
+      <tr><td><code>notify-teams</code></td><td>Validate and POST Adaptive Card JSON</td><td><code>bash scripts/notify-teams.sh --card-file logs/2026-03-17-card.json</code></td></tr>
+      <tr><td><code>uninstall</code></td><td>Remove scheduler and optional artifacts</td><td><code>bash scripts/uninstall.sh --all</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="section" id="teams">
   <div class="section-header">
     <div class="section-label">Teams</div>
-    <h2 class="section-title">Delivered to your channel</h2>
-    <p class="section-desc">Full briefing as a styled Adaptive Card, posted automatically after each run.</p>
+    <h2 class="section-title">Adaptive Card delivery path</h2>
+    <p class="section-desc">Current notifier scripts post a prebuilt card payload file directly to the webhook.</p>
   </div>
-  <div style="margin-top: 2rem;">
-    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.5rem;">Teams Notification Pipeline</h3>
-    <div class="mermaid-wrap">
-      <pre class="mermaid">
+
+  <div class="mermaid-wrap" style="margin-bottom: 2rem;">
+    <pre class="mermaid">
 flowchart LR
-    A[Briefing Log] --> B[build-teams-card.py]
-    B --> C[Adaptive Card JSON]
-    C --> D[Power Automate Webhook]
-    D --> E[Teams Channel]
-      </pre>
+    A[Claude writes logs/YYYY-MM-DD-card.json expected] --> B[notify-teams.sh / notify-teams.ps1]
+    B --> C{JSON valid?}
+    C -->|No| D[Fail fast]
+    C -->|Yes| E[POST payload to webhook]
+    E --> F[Teams channel message]
+    </pre>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">set webhook + test (macOS/Linux)</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Set webhook URL</span>
+<span class="cmd">export</span> AI_BRIEFING_TEAMS_WEBHOOK=<span class="string">"&lt;webhook-url&gt;"</span>
+
+<span class="comment"># Send today's default card file</span>
+<span class="cmd">bash</span> scripts/notify-teams.sh
+
+<span class="comment"># Or send explicit file</span>
+<span class="cmd">bash</span> scripts/notify-teams.sh <span class="flag">--card-file</span> logs/2026-03-17-card.json</pre>
     </div>
   </div>
-  <div style="max-width: 720px; margin: 2.5rem auto 0;">
-    <h3 style="color:#e4e4ef; font-size:1.05rem; font-weight:700; margin-bottom:1rem;">Setup</h3>
-    <div class="code-section" style="margin-bottom: 1.5rem;">
-      <div class="code-header">
-        <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-        <span class="code-title">macOS / Linux</span>
-        <button class="code-copy">Copy</button>
-      </div>
-      <div class="code-body">
-<pre><span class="comment"># Add to ~/.zshrc or ~/.bashrc</span>
-<span class="cmd">export</span> AI_BRIEFING_TEAMS_WEBHOOK=<span class="string">"&lt;your-power-automate-webhook-url&gt;"</span>
 
-<span class="comment"># Test it</span>
-<span class="cmd">./scripts/notify-teams.sh</span> logs/$(date +%Y-%m-%d).log</pre>
-      </div>
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">set webhook + test (Windows PowerShell)</span>
+      <button class="code-copy">Copy</button>
     </div>
-    <div class="code-section" style="margin-bottom: 1.5rem;">
-      <div class="code-header">
-        <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-        <span class="code-title">Windows (PowerShell)</span>
-        <button class="code-copy">Copy</button>
-      </div>
-      <div class="code-body">
-<pre><span class="comment"># Set persistent environment variable</span>
-[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_TEAMS_WEBHOOK"</span>, <span class="string">"&lt;your-url&gt;"</span>, <span class="string">"User"</span>)
+    <div class="code-body">
+<pre><span class="comment"># Persist webhook URL</span>
+[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_TEAMS_WEBHOOK"</span>, <span class="string">"&lt;webhook-url&gt;"</span>, <span class="string">"User"</span>)
 
-<span class="comment"># Test it</span>
-<span class="cmd">.\scripts\notify-teams.ps1</span> logs\$(Get-Date -Format yyyy-MM-dd).log</pre>
-      </div>
+<span class="comment"># Send today's default card file</span>
+<span class="cmd">.\scripts\notify-teams.ps1</span>
+
+<span class="comment"># Or send explicit file</span>
+<span class="cmd">.\scripts\notify-teams.ps1</span> <span class="flag">-CardFile</span> <span class="string">".\logs\2026-03-17-card.json"</span></pre>
     </div>
-    <h3 style="color:#e4e4ef; font-size:1.05rem; font-weight:700; margin-bottom:1rem;">Card Format</h3>
-    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; color: var(--text-dim); font-size: 0.92rem; line-height: 1.8;">
-      <div style="color: var(--text-bright); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;">AI News Briefing &mdash; 2026-03-13 &middot; 42 stories</div>
-      <div style="border-top: 1px solid var(--border); margin: 0.75rem 0;"></div>
-      <div><strong style="color: var(--text);">&#129302; Claude Code / Anthropic</strong></div>
-      <div style="padding-left: 1.5rem;">&bull; Claude 4 crosses 10M daily users &mdash; <span style="color: var(--accent);">source</span></div>
-      <div style="padding-left: 1.5rem;">&bull; Anthropic open-sources tool-use SDK &mdash; <span style="color: var(--accent);">source</span></div>
-      <div style="margin-top: 0.5rem;"><strong style="color: var(--text);">&#128640; AI Startups &amp; Funding</strong></div>
-      <div style="padding-left: 1.5rem;">&bull; Synthesia raises $200M Series D &mdash; <span style="color: var(--accent);">source</span></div>
-      <div style="border-top: 1px solid var(--border); margin: 0.75rem 0;"></div>
-      <div style="font-style: italic; color: var(--text-dim);">&hellip; all 9 sections with clickable source links</div>
-    </div>
+  </div>
+
+  <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1rem 1.25rem; max-width: 860px; margin: 0 auto;">
+    <p style="color: var(--text); margin: 0; font-size: 0.92rem;">
+      <strong>Legacy note:</strong> `scripts/build-teams-card.py` remains in the repo for historical parser-based flow,
+      but it is not invoked by default in current entry scripts.
+    </p>
   </div>
 </section>
+
 <section class="section" id="cost">
   <div class="section-header">
-    <div class="section-label">Cost</div>
-    <h2 class="section-title">Transparent pricing</h2>
-    <p class="section-desc">Default configuration: Sonnet model, 9 topics, $2.00 budget cap per run.</p>
+    <div class="section-label">Cost & Runtime</div>
+    <h2 class="section-title">Default operating envelope</h2>
+    <p class="section-desc">Baseline estimates with Sonnet model, 9 topics, and a $2.00 hard budget cap.</p>
   </div>
   <div class="cost-grid">
     <div class="cost-card">
       <div class="label">Per Run</div>
       <div class="value accent">~$1.00</div>
-      <div class="sub">$0.70 &ndash; $1.40 typical</div>
+      <div class="sub">Typical: $0.70 to $1.40</div>
     </div>
     <div class="cost-card">
-      <div class="label">Monthly (Run Daily)</div>
+      <div class="label">Monthly (Daily)</div>
       <div class="value orange">~$30</div>
-      <div class="sub">$21 &ndash; $42 range</div>
+      <div class="sub">Typical: $21 to $42</div>
     </div>
     <div class="cost-card">
-      <div class="label">Budget Cap</div>
+      <div class="label">Hard Cap</div>
       <div class="value green">$2.00</div>
-      <div class="sub">Hard ceiling per run</div>
+      <div class="sub">Configured via --max-budget-usd</div>
     </div>
     <div class="cost-card">
-      <div class="label">Run Time</div>
+      <div class="label">Runtime</div>
       <div class="value">3-5 min</div>
-      <div class="sub">Search + compile + publish</div>
+      <div class="sub">Search, compile, publish</div>
     </div>
   </div>
 </section>
+
+<section class="section" id="docs">
+  <div class="section-header">
+    <div class="section-label">Documentation</div>
+    <h2 class="section-title">Source docs and references</h2>
+    <p class="section-desc">Primary docs to keep this wiki and runtime behavior aligned.</p>
+  </div>
+
+  <div class="features">
+    <div class="feature-card">
+      <h3><a href="README.md">README.md</a></h3>
+      <p>User-facing setup, topic scope, scheduler installation, Makefile commands, and Teams overview.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="ARCHITECTURE.md">ARCHITECTURE.md</a></h3>
+      <p>Deep architecture walkthrough with component-level design decisions and operational constraints.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="E2E_FLOW.md">E2E_FLOW.md</a></h3>
+      <p>Detailed end-to-end execution, sequence, failure paths, artifact contracts, and alignment options.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="NOTIFY_TEAMS.md">NOTIFY_TEAMS.md</a></h3>
+      <p>Teams webhook setup, Adaptive Card behavior, and troubleshooting delivery issues.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="prompt.md">prompt.md</a></h3>
+      <p>Agent instructions for search scope, formatting requirements, and Notion write operation.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="Makefile">Makefile</a></h3>
+      <p>Cross-platform operator interface for run, schedule, log, validation, and status workflows.</p>
+    </div>
+  </div>
+
+  <div class="file-tree" style="margin-top: 2rem;">
+    <div><span class="dir">ai-news-briefing/</span></div>
+    <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># this wiki page</span></div>
+    <div>&nbsp;&nbsp;<span class="file">wiki/style.css</span> <span class="dim"># shared visual styling</span></div>
+    <div>&nbsp;&nbsp;<span class="file">wiki/script.js</span> <span class="dim"># nav, copy buttons, section tracking</span></div>
+    <div>&nbsp;&nbsp;<span class="file">README.md</span> <span class="dim"># setup + usage</span></div>
+    <div>&nbsp;&nbsp;<span class="file">ARCHITECTURE.md</span> <span class="dim"># deep architecture</span></div>
+    <div>&nbsp;&nbsp;<span class="file">E2E_FLOW.md</span> <span class="dim"># execution contracts and flow</span></div>
+    <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md</span> <span class="dim"># Teams integration details</span></div>
+    <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># agent instructions</span></div>
+    <div>&nbsp;&nbsp;<span class="file">briefing.sh / briefing.ps1</span> <span class="dim"># orchestration entry points</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># runtime output (gitignored)</span></div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="footer-inner">
-    <p>AI News Briefing &mdash; Powered by Claude Code CLI &amp; Notion MCP</p>
+    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, and WebSearch.</p>
     <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
-      Created by <a href="https://github.com/hoangsonww" target="_blank" rel="noopener" style="color: #6366f1;">Son Nguyen</a>
-      &middot; <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener" style="color: #6366f1;">sonnguyenhoang.com</a>
+      Maintained as an operational knowledge base for daily automated AI briefings.
     </p>
     <div class="footer-links">
-      <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">GitHub Profile</a>
-      <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener">Website</a>
-      <a href="https://github.com/hoangsonww/AI-News-Briefing" target="_blank" rel="noopener">Repository</a>
-      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/README.md" target="_blank" rel="noopener">README</a>
-      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
-      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/NOTIFY_TEAMS.md" target="_blank" rel="noopener">Teams Setup</a>
-      <a href="https://github.com/hoangsonww/AI-News-Briefing/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <a href="README.md">README</a>
+      <a href="ARCHITECTURE.md">Architecture</a>
+      <a href="E2E_FLOW.md">E2E Flow</a>
+      <a href="NOTIFY_TEAMS.md">Teams Setup</a>
+      <a href="prompt.md">Prompt</a>
+      <a href="LICENSE">MIT License</a>
     </div>
   </div>
 </footer>
+
 <script src="wiki/script.js"></script>
 </body>
 </html>

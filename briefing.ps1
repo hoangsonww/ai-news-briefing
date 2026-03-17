@@ -17,6 +17,10 @@ $Claude = Join-Path $env:USERPROFILE ".local\bin\claude.exe"
 # Ensure we can run even if Claude Code is open
 $env:CLAUDECODE = $null
 
+# Refresh AI_BRIEFING_TEAMS_WEBHOOK from registry (parent shell may have stale value)
+$regWebhook = [Environment]::GetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "User")
+if ($regWebhook) { $env:AI_BRIEFING_TEAMS_WEBHOOK = $regWebhook }
+
 if (-not (Test-Path $LogDir)) {
     New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 }
@@ -50,9 +54,8 @@ The card.json filename should use $Date (logs/$Date-card.json).
 
 try {
     $output = & $Claude -p `
-        --model sonnet `
+        --model opus `
         --dangerously-skip-permissions `
-        --max-budget-usd 2.00 `
         $Prompt 2>&1
 
     $output | Out-File -FilePath $LogFile -Append -Encoding utf8
