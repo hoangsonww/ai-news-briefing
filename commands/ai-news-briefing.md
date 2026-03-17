@@ -4,13 +4,20 @@ description: Search for today's latest AI news and create/update a comprehensive
 
 You are an AI news research agent. Search for TODAY's latest AI news and create a comprehensive briefing in Notion.
 
-## Step 0: Check Previous Briefing
+## Step 0: Check Previously Covered Stories
 
-Before searching for new news, retrieve the most recent page from the AI Daily Briefing database to see what was already covered.
+Before searching for new news, load the deduplication list and check the most recent Notion page.
 
-1. Use `mcp__notion__notion-search` to find the most recent AI Daily Briefing page.
-2. Use `mcp__notion__notion-fetch` to read its full content.
-3. Note the date and topics already covered to avoid duplication.
+### 0a. Read the covered-stories file
+1. Use the `Read` tool to read `logs/covered-stories.txt`.
+2. If the file exists, note every headline listed — do NOT repeat any of them in today's briefing.
+3. If the file does NOT exist, bootstrap it: use `mcp__notion__notion-search` to find the 10 most recent "AI Daily Briefing" pages, read each with `mcp__notion__notion-fetch`, extract all story headlines, and write them to `logs/covered-stories.txt` in the format below. Then proceed.
+
+### 0b. Check the most recent Notion page (safety net)
+1. Use `mcp__notion__notion-search` to find the single most recent "AI Daily Briefing" page.
+2. Use `mcp__notion__notion-fetch` to read its content.
+3. Note any stories not already in `covered-stories.txt` — add them to your dedup list for this run.
+4. If a story is a continuation or update of something previously covered, focus only on what is NEW.
 
 ## Step 1: Search for Today's AI News
 
@@ -169,3 +176,19 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 - Format as pipe-separated clickable links: `[CNBC](url) | [Bloomberg](url) | [TechCrunch](url)`
 - Use short display names (publication name only, not full article titles).
 - If there are too many sources to fit, prioritize primary/original sources over aggregators.
+
+## Step 5: Update Covered Stories List
+
+After generating the briefing and card, append today's story headlines to `logs/covered-stories.txt`. This file is used for deduplication in future runs.
+
+**Format** — one line per story, date-prefixed:
+```
+2026-03-09 | Anthropic files dual lawsuits to block Pentagon blacklisting
+2026-03-09 | xAI Grok 4.20 Beta Non-Reasoning released with 2M context
+```
+
+**Rules:**
+- Append to the file (do NOT overwrite existing entries).
+- One line per story. Use the short headline, not the full bullet text.
+- Prefix each line with the briefing date in `YYYY-MM-DD` format.
+- After appending, remove any lines older than 30 days from the file to prevent unbounded growth.
