@@ -37,6 +37,9 @@ The system is cross-platform, supporting macOS (launchd) and Windows (Task Sched
 11. [Teams Notification Pipeline](#11-teams-notification-pipeline)
 12. [Future Enhancements / Extension Points](#12-future-enhancements--extension-points)
 
+> [!NOTE]
+> **Live Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
+
 ---
 
 ## 1. System Architecture Overview
