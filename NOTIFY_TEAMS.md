@@ -26,7 +26,7 @@ This document describes the Microsoft Teams notification feature -- an optional 
 
 ## 1. Overview
 
-After a successful briefing run, the entry point scripts (`briefing.sh` on macOS, `briefing.ps1` on Windows) call a platform-native notification script (`notify-teams.sh` or `notify-teams.ps1`). Those scripts invoke a shared Python script (`scripts/build-teams-card.py`) that parses the run's log file, builds a Microsoft Adaptive Card JSON payload, and POSTs it to a Power Automate webhook URL.
+During the briefing run, the Claude Code AI agent writes a fully-formed Adaptive Card JSON file directly to `logs/YYYY-MM-DD-card.json`. After the run completes, the entry point scripts (`briefing.sh` on macOS, `briefing.ps1` on Windows) call a platform-native notification script (`notify-teams.sh` or `notify-teams.ps1`). Those scripts validate that the card file exists and contains valid JSON, then POST it as-is to a Power Automate webhook URL. No Python. No log parsing. No intermediate transformation.
 
 The result is a rich, interactive summary card delivered directly to your Teams channel -- giving the team immediate visibility into the daily briefing without opening Notion.
 
@@ -42,14 +42,14 @@ Not everyone on a team checks Notion first thing in the morning. Teams is where 
 |---|---|
 | **Microsoft Teams** | A Teams workspace where you have permission to add workflows to a channel |
 | **Power Automate** | Access to the Workflows app in Teams (included with most Microsoft 365 plans) |
-| **Python 3.8+** | Required to run `scripts/build-teams-card.py` -- must be accessible as `python3` (macOS/Linux) or `python` (Windows) |
 | **Webhook URL** | A Power Automate webhook URL for your target Teams channel (setup instructions below) |
-| **A completed briefing run** | The notification parses a log file, so at least one successful run must exist in `logs/` |
+| **A completed briefing run** | The notification reads a card JSON file, so at least one successful run must exist in `logs/` |
 
 ---
 
 ## 3. Setup: Creating the Webhook in Teams
 
+> [!IMPORTANT]
 > **Important:** The legacy "Incoming Webhook" connector in Teams is deprecated and will stop working. Use the Power Automate Workflows approach described below instead.
 
 There are two ways to create the webhook. Both produce the same result -- a URL that accepts HTTP POST requests and delivers an Adaptive Card to your channel.
@@ -181,6 +181,7 @@ Close and reopen your terminal for the change to take effect.
 [Environment]::GetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "User")
 ```
 
+> [!NOTE]
 > **Note:** Do not commit the webhook URL to version control. The `AI_BRIEFING_TEAMS_WEBHOOK` variable is read at runtime by the notification scripts and is never written to any tracked file.
 
 ---
@@ -192,24 +193,22 @@ Close and reopen your terminal for the change to take effect.
 ```mermaid
 sequenceDiagram
     participant BS as Entry Script<br/>(briefing.sh / briefing.ps1)
+    participant AI as Claude Code AI Agent
     participant NT as Notify Script<br/>(notify-teams.sh / notify-teams.ps1)
-    participant PY as build-teams-card.py
     participant PA as Power Automate Webhook
     participant TC as Teams Channel
 
-    BS->>BS: Briefing run completes successfully
-    BS->>NT: Call notify script with log file path
+    BS->>AI: Invoke Claude Code with prompt
+    AI->>AI: Search, deduplicate, create Notion page
+    AI->>AI: Write Adaptive Card JSON to logs/YYYY-MM-DD-card.json
+
+    AI-->>BS: Session completes
+    BS->>NT: Call notify script with card file path
 
     NT->>NT: Validate webhook URL is set
-    NT->>NT: Validate log file exists
-    NT->>PY: Invoke with log file path
-
-    PY->>PY: Parse log file for date, stories, topics, sections
-    PY->>PY: Extract bullet items and source links
-    PY->>PY: Build Adaptive Card JSON payload
-    PY-->>NT: Return JSON payload to stdout
-
-    NT->>PA: HTTP POST payload to webhook URL
+    NT->>NT: Validate card JSON file exists
+    NT->>NT: Validate file contains valid JSON
+    NT->>PA: HTTP POST card JSON to webhook URL
     PA->>TC: Deliver Adaptive Card to channel
 
     Note over TC: Card appears with header,<br/>sections, bullets, links,<br/>and "Open in Notion" button
@@ -219,20 +218,18 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    A["logs/YYYY-MM-DD.log"] -->|Parsed by| B[build-teams-card.py]
-    B -->|Produces| C[Adaptive Card JSON]
-    C -->|POSTed by| D[notify-teams.sh / .ps1]
-    D -->|HTTP POST| E[Power Automate Webhook]
-    E -->|Delivers| F[Teams Channel Card]
+    A["Claude Code AI Agent"] -->|Writes| B["logs/YYYY-MM-DD-card.json"]
+    B -->|Validated by| C[notify-teams.sh / .ps1]
+    C -->|HTTP POST| D[Power Automate Webhook]
+    D -->|Delivers| E[Teams Channel Card]
 ```
 
 ### Step-by-Step
 
-1. **Trigger.** After a successful briefing run, the entry script (`briefing.sh` or `briefing.ps1`) calls the platform-native notify script.
-2. **Validation.** The notify script checks that the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set and that the log file for the current run exists. If either is missing, it exits silently (notifications are optional -- a missing webhook does not fail the run).
-3. **Log parsing.** The notify script invokes `scripts/build-teams-card.py`, passing the log file path as an argument. The Python script reads the log, extracts the briefing date, story count, topic count, section headers, bullet items, and source URLs.
-4. **Card building.** The Python script constructs a Microsoft Adaptive Card JSON payload following the schema described in [Section 7](#7-adaptive-card-format).
-5. **Delivery.** The notify script captures the JSON from stdout and POSTs it to the Power Automate webhook URL. Power Automate receives the payload and delivers the Adaptive Card to the configured Teams channel.
+1. **Card generation.** During the briefing run, the Claude Code AI agent writes the final Adaptive Card JSON directly to `logs/YYYY-MM-DD-card.json` as the last step of its session. This is the exact payload that Teams will receive -- no intermediate format, no transformation.
+2. **Trigger.** After the Claude Code session completes, the entry script (`briefing.sh` or `briefing.ps1`) calls the platform-native notify script.
+3. **Validation.** The notify script checks that the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set and that the card JSON file for the current run exists. If either is missing, it exits silently (notifications are optional -- a missing webhook does not fail the run). It then validates that the file contains well-formed JSON.
+4. **Delivery.** The notify script POSTs the card JSON file as-is to the Power Automate webhook URL using `curl` (macOS/Linux) or `Invoke-RestMethod` (Windows). Power Automate receives the payload and delivers the Adaptive Card to the configured Teams channel.
 
 ---
 
@@ -245,7 +242,7 @@ You can test the Teams notification independently of a full briefing run by call
 ```bash
 ./scripts/notify-teams.sh \
   --webhook-url "https://prod-XX.westus.logic.azure.com:443/workflows/..." \
-  --log-file ./logs/2026-03-13.log
+  --card-file ./logs/2026-03-13-card.json
 ```
 
 ### Windows (PowerShell)
@@ -253,34 +250,31 @@ You can test the Teams notification independently of a full briefing run by call
 ```powershell
 .\scripts\notify-teams.ps1 `
   -WebhookUrl "https://prod-XX.westus.logic.azure.com:443/workflows/..." `
-  -LogFile .\logs\2026-03-13.log
+  -CardFile .\logs\2026-03-13-card.json
 ```
 
 ### What to Expect
 
-- If the webhook URL and log file are valid, you should see a card appear in your Teams channel within a few seconds.
+- If the webhook URL and card file are valid, you should see a card appear in your Teams channel within a few seconds.
 - The script prints the HTTP response status code to stdout. A `200` or `202` indicates success.
-- If you do not have a log file from a real run, create a test log or use an existing one from the `logs/` directory.
+- If you do not have a card file from a real run, you can craft a test card JSON following the format in [Section 7](#7-adaptive-card-format) or use an existing one from the `logs/` directory.
 
-### Testing the Python Script Directly
+### Inspecting a Card File
 
-To inspect the generated JSON payload without actually sending it:
-
-```bash
-python3 scripts/build-teams-card.py ./logs/2026-03-13.log
-```
-
-This prints the full Adaptive Card JSON to stdout. You can pipe it to `jq` for pretty-printing:
+> [!NOTE]
+> To verify a card file is valid JSON before sending:
 
 ```bash
-python3 scripts/build-teams-card.py ./logs/2026-03-13.log | python3 -m json.tool
+python3 -m json.tool ./logs/2026-03-13-card.json
 ```
+
+You can also paste the `content` object (inside `attachments[0].content`) into the [Adaptive Card Designer](https://adaptivecards.io/designer/) to preview how it will render in Teams.
 
 ---
 
 ## 7. Adaptive Card Format
 
-The Adaptive Card is built to provide a comprehensive at-a-glance summary of the daily briefing. It follows the [Microsoft Adaptive Card schema v1.4](https://adaptivecards.io/explorer/).
+The Adaptive Card is generated directly by the Claude Code AI agent during the briefing run and written to `logs/YYYY-MM-DD-card.json`. There is no separate parser or builder -- the AI writes the final JSON payload following the [Microsoft Adaptive Card schema v1.4](https://adaptivecards.io/explorer/). The skill prompt enforces the structure, size limits, and encoding rules described below.
 
 ### Card Structure
 
@@ -353,8 +347,8 @@ graph TD
 
 **Fix:**
 
-1. Run the Python script directly and inspect the output: `python3 scripts/build-teams-card.py ./logs/2026-03-13.log | python3 -m json.tool`
-2. Validate the output against the [Adaptive Card Designer](https://adaptivecards.io/designer/) by pasting the `content` object.
+1. Inspect the card file: `python3 -m json.tool ./logs/2026-03-13-card.json`
+2. Validate the output against the [Adaptive Card Designer](https://adaptivecards.io/designer/) by pasting the `attachments[0].content` object.
 3. Common causes: unescaped special characters in news text, missing required fields (`type`, `version`), or payload exceeding the 28 KB size limit for Teams cards.
 
 ### HTTP 401 or 403
@@ -366,14 +360,29 @@ graph TD
 1. Verify the flow is still active in the Workflows app in Teams.
 2. If the flow was deleted or recreated, you will need to update `AI_BRIEFING_TEAMS_WEBHOOK` with the new URL.
 
-### "python3: command not found" / "'python3' is not recognized"
+### Card File Not Found
 
-**Cause:** Python 3 is not installed or not on the system PATH.
+**Symptom:** The notify script exits with "Card file not found" and no card appears in Teams.
+
+**Cause:** The Claude Code AI agent did not write the card JSON file during the briefing run. This can happen if the session ended early, hit a budget limit, or the skill prompt's Step 4 was not reached.
 
 **Fix:**
 
-- **macOS:** Install via `brew install python3` or download from [python.org](https://www.python.org/downloads/).
-- **Windows:** Install from [python.org](https://www.python.org/downloads/) or via `winget install Python.Python.3.12`. Ensure "Add Python to PATH" is checked during installation. The Windows notify script looks for `python` rather than `python3`.
+1. Check the log file (`logs/YYYY-MM-DD.log`) to see how far the AI session progressed.
+2. Re-run the briefing. The skill prompt explicitly requires Step 4 (Write Teams Card JSON).
+3. If the problem persists, verify the skill prompt in `~/.claude/commands/ai-news-briefing.md` still includes the card-writing step.
+
+### Card File Is Not Valid JSON
+
+**Symptom:** The notify script exits with "not valid JSON" and no card appears in Teams.
+
+**Cause:** The AI wrote malformed JSON to the card file. This is rare but can happen if the session was interrupted or the AI produced truncated output.
+
+**Fix:**
+
+1. Inspect the file: `python3 -m json.tool ./logs/YYYY-MM-DD-card.json` -- the error message will indicate where the JSON is malformed.
+2. If the fix is minor (e.g., a trailing comma or missing brace), edit the file and re-run the notify script directly.
+3. If the file is severely malformed, delete it and re-run the briefing.
 
 ### Environment Variable Not Set
 
@@ -399,18 +408,19 @@ graph TD
 
 ### Card Appears But Is Empty or Truncated
 
-**Cause:** The log file does not contain a completed briefing, or the Python parser could not extract the expected sections.
+**Cause:** The AI wrote a structurally valid card but with incomplete content. This can happen if the briefing run hit a budget limit mid-way through card generation or if it was a slow news day with very few stories.
 
 **Fix:**
 
-1. Confirm the log file contains a full briefing output: `grep -c "##" ./logs/2026-03-13.log` should return a count matching the number of topic sections.
-2. If the briefing run failed mid-way, the log will be incomplete. Re-run the briefing and the next notification will use the complete log.
+1. Inspect the card file: `python3 -m json.tool ./logs/YYYY-MM-DD-card.json` and check if it contains the expected sections and bullets.
+2. If the card is truncated, re-run the briefing. The AI will generate a fresh card from the new run.
+3. The "Open Full Briefing in Notion" button provides access to the complete content even if the card itself is abbreviated.
 
 ### Card Exceeds Size Limit
 
 **Cause:** Adaptive Cards in Teams have a ~28 KB payload limit. An unusually long briefing can exceed this.
 
-**Fix:** The `build-teams-card.py` script truncates content to stay within limits. If you see truncation warnings in the script output, the card will still be delivered but some trailing sections may be shortened. The "Open Full Briefing in Notion" button provides access to the complete content.
+**Fix:** The AI skill prompt enforces a 26 KB limit on the card JSON. If the card still exceeds the limit, trim bullet text in the card file and re-run the notify script. The "Open Full Briefing in Notion" button provides access to the complete content.
 
 ---
 
@@ -418,9 +428,10 @@ graph TD
 
 | File | Platform | Purpose |
 |---|---|---|
-| `scripts/notify-teams.sh` | macOS / Linux | Shell wrapper -- validates inputs, calls `build-teams-card.py`, POSTs the result to the webhook |
+| `scripts/notify-teams.sh` | macOS / Linux | Shell wrapper -- validates card JSON file, POSTs it to the webhook |
 | `scripts/notify-teams.ps1` | Windows | PowerShell wrapper -- same logic as the shell variant using `Invoke-RestMethod` |
-| `scripts/build-teams-card.py` | Shared | Parses the log file, extracts briefing content, and builds the Adaptive Card JSON payload |
+| `scripts/build-teams-card.py` | Shared | **Legacy.** Old log parser that extracted briefing content from log files. Kept in repo but no longer referenced by any active script |
+| `logs/YYYY-MM-DD-card.json` | Shared | Adaptive Card JSON payload written directly by the Claude Code AI agent during the briefing run. This is the file that gets POSTed to Teams |
 | `briefing.sh` | macOS | Entry point that calls `notify-teams.sh` after a successful run |
 | `briefing.ps1` | Windows | Entry point that calls `notify-teams.ps1` after a successful run |
 
@@ -435,12 +446,14 @@ flowchart TD
     B -->|No| D[Log failure and exit]
     C -->|Yes| E[Call notify-teams.sh / .ps1]
     C -->|No| F[Skip notification silently]
-    E --> G[build-teams-card.py parses log]
-    G --> H[POST Adaptive Card to webhook]
-    H --> I[Card delivered to Teams channel]
-    F --> J[Done]
-    I --> J
-    D --> J
+    E --> G{card.json exists and valid?}
+    G -->|Yes| H[POST card JSON to webhook]
+    G -->|No| I[Log error and exit]
+    H --> J[Card delivered to Teams channel]
+    F --> K[Done]
+    J --> K
+    D --> K
+    I --> K
 ```
 
 ---

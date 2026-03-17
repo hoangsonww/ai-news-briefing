@@ -16,7 +16,7 @@
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler).
+Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler). Fully automated pipeline with zero manual intervention required after setup.
 
 ## Overview
 
@@ -52,11 +52,12 @@ flowchart TD
     G -->|Step 3: Write| H[Notion MCP]
     H -->|Creates page| I[Notion Database]
 
+    D -->|Step 4: Write card| J2[logs/YYYY-MM-DD-card.json]
+
     B1 -->|If webhook set| T[notify-teams.sh]
     B2 -->|If webhook set| T2[notify-teams.ps1]
-    T --> U[build-teams-card.py]
-    T2 --> U
-    U --> V[Teams Webhook]
+    T -->|POST card.json| V[Teams Webhook]
+    T2 -->|POST card.json| V
     V --> W[Teams Channel]
 
     B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
@@ -70,7 +71,7 @@ flowchart TD
 2. The script reads the prompt from `prompt.md` and passes it to the Claude Code CLI in print mode.
 3. Claude Code executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
 4. Notion receives the finished briefing as a new database page.
-5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which invokes `build-teams-card.py` to post a styled Adaptive Card to the configured Teams channel.
+5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which validates and POSTs the pre-built `logs/YYYY-MM-DD-card.json` file (written by Claude in Step 4) to the configured Teams webhook.
 6. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
 ## Prerequisites
@@ -81,7 +82,7 @@ flowchart TD
 | **Claude Code CLI** | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
 | **Notion MCP** | The Notion MCP server must be configured in Claude Code's MCP settings with access to your workspace |
 | **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
-| **Python 3.x** | Required for Teams notification card builder (pre-installed on macOS, install from [python.org](https://www.python.org/downloads/) on Windows) |
+| **Python 3.x** | Optional (legacy card builder only, not used in current flow) |
 | **Make** (optional) | GNU Make for using the Makefile task runner (`winget install GnuWin32.Make` on Windows, pre-installed on macOS) |
 
 ## Installation
@@ -256,7 +257,7 @@ The project includes a cross-platform `Makefile` that auto-detects your OS and r
 
 ### Utility Scripts Reference
 
-The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux, `.ps1` for Windows) plus the `build-teams-card.py` helper for managing and troubleshooting the system.
+The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux, `.ps1` for Windows) for managing and troubleshooting the system.
 
 | Script | Description | Example Usage |
 |---|---|---|
@@ -271,7 +272,7 @@ The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux
 | `topic-edit` | Add, remove, or list topics in prompt.md | `bash scripts/topic-edit.sh --add "AI Hardware" "GPU news"` |
 | `update-schedule` | Change daily run time | `bash scripts/update-schedule.sh --hour 7 --minute 30` |
 | `notify` | Send native OS notification for briefing status | `bash scripts/notify.sh` |
-| `notify-teams` | Post briefing summary to Microsoft Teams via webhook | `bash scripts/notify-teams.sh` |
+| `notify-teams` | Validate and POST pre-built `card.json` to Microsoft Teams webhook | `bash scripts/notify-teams.sh` |
 | `uninstall` | Remove scheduler; `--all` also removes logs and backups | `bash scripts/uninstall.sh --all` |
 
 **Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
@@ -316,7 +317,7 @@ Each generated page contains:
 
 ## Teams Integration
 
-The pipeline can optionally post a styled [Adaptive Card](https://adaptivecards.io/) with the full briefing to a Microsoft Teams channel via an incoming webhook. The card includes the TL;DR bullets and topic sections formatted for quick scanning directly in Teams.
+The pipeline can optionally post a styled [Adaptive Card](https://adaptivecards.io/) with the full briefing to a Microsoft Teams channel via an incoming webhook. The AI generates the Adaptive Card JSON directly during the briefing run (Step 4), writing it to `logs/YYYY-MM-DD-card.json`. The notify script validates the JSON and POSTs it to the webhook as-is -- no intermediate parsing or transformation. See [E2E_FLOW.md](E2E_FLOW.md) for the full technical walkthrough.
 
 ### Quick setup
 
@@ -357,7 +358,7 @@ For detailed setup instructions, troubleshooting, and card customization, see [N
 
 ## How the Prompt Works
 
-The prompt (`prompt.md`) instructs Claude to execute three sequential steps within a single agentic session:
+The prompt (`prompt.md`) instructs Claude to execute four sequential steps within a single agentic session:
 
 ### Step 1: Search for News
 
@@ -373,6 +374,10 @@ Search results are synthesized into a two-tier format:
 ### Step 3: Write to Notion
 
 Claude calls the `mcp__notion__notion-create-pages` tool to create a new page in the target database with the compiled briefing as Notion-flavored Markdown content.
+
+### Step 4: Generate Teams Card JSON
+
+Claude writes a complete Adaptive Card JSON payload to `logs/YYYY-MM-DD-card.json`. This is the exact file that gets POSTed to the Teams webhook -- no parser or transformation sits between the AI output and Teams. The card includes a styled header, TL;DR bullets, topic sections, and an action button linking to the full Notion page.
 
 ## Topic Coverage
 
@@ -494,7 +499,7 @@ ai-news-briefing/
 │   ├── update-schedule.sh/.ps1  # Change daily run time
 │   ├── notify.sh/.ps1           # Send native OS notifications
 │   ├── notify-teams.sh/.ps1     # Post briefing to Microsoft Teams
-│   ├── build-teams-card.py      # Build Adaptive Card JSON for Teams
+│   ├── build-teams-card.py      # Legacy card builder (not used in current flow)
 │   └── uninstall.sh/.ps1        # Full cleanup and removal
 ├── briefing.sh                  # macOS entry point (bash)
 ├── briefing.ps1                 # Windows entry point (PowerShell)
@@ -505,6 +510,7 @@ ai-news-briefing/
 ├── backups/                     # Prompt backups (git-ignored)
 ├── .gitignore
 ├── ARCHITECTURE.md              # Detailed architecture documentation
+├── E2E_FLOW.md                  # End-to-end pipeline walkthrough
 ├── NOTIFY_TEAMS.md              # Teams integration setup guide
 └── README.md                    # This file
 ```

@@ -41,7 +41,7 @@ The system is cross-platform, supporting macOS (launchd) and Windows (Task Sched
 
 ## 1. System Architecture Overview
 
-The system is composed of four primary layers: a platform-native scheduler, a scripted entry point, the Claude Code AI engine, and the Notion API as the output destination. The core logic (prompt, search, compilation, Notion write) is identical across platforms -- only the scheduling and scripting layers differ.
+The system is composed of four primary layers: a platform-native scheduler, a scripted entry point, the Claude Code AI engine, and the Notion API as the output destination. The core logic (prompt, search, compilation, Notion write, card generation) is identical across platforms -- only the scheduling and scripting layers differ.
 
 ```mermaid
 graph TD
@@ -58,14 +58,15 @@ graph TD
         D -->|WebSearch tool| E[Web Sources]
         D -->|Notion MCP tool| F[Notion API]
         F --> G[Notion Page - AI Daily Briefing]
+        D -->|Writes| CJ["logs/YYYY-MM-DD-card.json"]
     end
 
     subgraph "Post-Processing"
         B1 -->|On success| T1[notify-teams.sh]
         B2 -->|On success| T2[notify-teams.ps1]
-        T1 --> TC[build-teams-card.py]
-        T2 --> TC
-        TC -->|Adaptive Card JSON| TW[Teams Webhook]
+        T1 -->|Validates & POSTs| CJ
+        T2 -->|Validates & POSTs| CJ
+        CJ -->|Adaptive Card JSON| TW[Teams Webhook]
     end
 
     B1 -->|Writes logs| H[logs/ Directory]
@@ -115,8 +116,8 @@ sequenceDiagram
     participant W as WebSearch Tool
     participant N as Notion MCP Tool
     participant NP as Notion Page
+    participant CF as logs/YYYY-MM-DD-card.json
     participant T as notify-teams.sh / .ps1
-    participant P as build-teams-card.py
     participant TW as Teams Webhook
 
     Note over S: Automatic trigger at 08:00<br/>or manual trigger
@@ -140,13 +141,14 @@ sequenceDiagram
     N->>NP: Create page in AI Daily Briefing database
     N-->>C: Page URL returned
 
+    C->>CF: Write Adaptive Card JSON (Step 4)
+
     C-->>E: Output with page URL
     E->>E: Log success or failure
     E->>E: Check AI_BRIEFING_TEAMS_WEBHOOK
     E->>T: notify-teams.sh / .ps1
-    T->>P: build-teams-card.py (parse log)
-    P-->>T: Adaptive Card JSON
-    T->>TW: POST to Teams webhook
+    T->>CF: Read and validate card JSON
+    T->>TW: POST card JSON to Teams webhook
     TW-->>T: 200 OK
     E->>E: Clean up logs older than 30 days
 ```
@@ -239,15 +241,20 @@ graph TD
 
 A PowerShell script that registers (or re-registers) the Windows Task Scheduler task. Accepts `-Hour` and `-Minute` parameters for schedule customization. Removes any existing task with the same name before creating a new one, making it idempotent.
 
-### 3.4 AI Prompt (`prompt.md`)
+### 3.4 AI Prompt and Skill Definition
 
-The prompt is a structured Markdown document that serves as the complete instruction set for Claude Code. It is shared across both platforms with no platform-specific content.
+The AI's behavior is governed by two instruction files: `prompt.md` (the base prompt read by the entry scripts) and `~/.claude/commands/ai-news-briefing.md` (the Claude Code skill definition). Together they form the complete instruction set for a briefing run. Both are shared across platforms with no platform-specific content.
 
 ```mermaid
 graph TD
     A[prompt.md] --> B[Step 1: Search for News]
     A --> C[Step 2: Compile the Briefing]
     A --> D[Step 3: Write to Notion]
+
+    SK["~/.claude/commands/ai-news-briefing.md"] --> B
+    SK --> C
+    SK --> D
+    SK --> F[Step 4: Write Adaptive Card JSON]
 
     B --> B1[9 Topic Definitions]
     B --> B2[Search Strategy Templates]
@@ -259,15 +266,20 @@ graph TD
     D --> D1[Notion Page Parameters]
     D --> D2[Formatting Rules]
     D --> D3[Important Constraints]
+
+    F --> F1["logs/YYYY-MM-DD-card.json"]
+    F --> F2[Adaptive Card v1.4 Schema]
+    F --> F3["ASCII-safe, ≤26KB"]
 ```
 
-**How the prompt guides Claude:**
+**How the prompt and skill guide Claude:**
 
 1. **Topic enumeration.** The 9 topics are explicitly listed with examples of what to search for, removing ambiguity about scope.
 2. **Search strategy.** Template queries like `"[topic] news today [current date]"` guide Claude toward recent content rather than evergreen articles.
 3. **Two-tier output format.** The TL;DR tier provides a scannable summary; the full briefing tier provides depth. This separation is defined in the prompt, not in code.
 4. **Exact Notion API parameters.** The `parent` database ID, property schema, and formatting rules are hardcoded in the prompt so Claude produces the correct API call every time.
 5. **Guardrails.** Instructions like "Focus on NEWS from the past 24-48 hours only" and "If a topic has no significant news today, say 'No major updates today'" prevent hallucination and filler content.
+6. **Card generation (Step 4).** The skill definition includes the Adaptive Card JSON template and constraints (valid JSON, ASCII-safe text, ≤26KB). Claude writes the final card payload directly to `logs/YYYY-MM-DD-card.json`, eliminating any need for post-hoc log parsing.
 
 ### 3.5 Makefile (Cross-Platform Task Runner)
 
@@ -346,14 +358,14 @@ On Windows, the equivalent is `schtasks /run /tn AiNewsBriefing`, or simply `mak
 
 ### 3.9 Teams Notification Pipeline
 
-After a successful briefing run, the system can optionally post a summary to a Microsoft Teams channel via a Power Automate webhook. The notification pipeline uses a three-file architecture: a platform-native shell script dispatches to a shared Python builder, which produces an Adaptive Card JSON payload for the webhook.
+After a successful briefing run, the system can optionally post a summary to a Microsoft Teams channel via a Power Automate webhook. The pipeline has two stages: Claude Code writes the final Adaptive Card JSON directly during the briefing session (Step 4), then a thin shell script validates and POSTs the file to the webhook. There is no Python dependency and no log parsing.
 
 ```mermaid
 flowchart LR
-    L["logs/YYYY-MM-DD.log"] -->|Input| NS["notify-teams.sh / .ps1"]
-    NS -->|Invokes| PY["build-teams-card.py"]
-    PY -->|Parses sections, bullets, sources| AC["Adaptive Card JSON"]
-    AC -->|POST| WH["Teams Webhook URL"]
+    CC["Claude Code (Step 4)"] -->|Writes| CJ["logs/YYYY-MM-DD-card.json"]
+    CJ -->|Input| NS["notify-teams.sh / .ps1"]
+    NS -->|Validates JSON| NS
+    NS -->|"curl -d @file"| WH["Teams Webhook URL"]
     WH -->|200 OK| NS
 ```
 
@@ -361,17 +373,29 @@ flowchart LR
 
 | File | Language | Purpose |
 |---|---|---|
-| `scripts/notify-teams.sh` | Bash | macOS/Linux entry point. Validates log, checks webhook env var, calls Python builder, POSTs via `curl`. |
+| `~/.claude/commands/ai-news-briefing.md` | Markdown | Skill definition with the card JSON template and constraints (Step 4). |
+| `scripts/notify-teams.sh` | Bash | macOS/Linux entry point. Validates card JSON exists and is valid, POSTs via `curl`. No Python dependency. |
 | `scripts/notify-teams.ps1` | PowerShell | Windows entry point. Same logic as the Bash variant using `Invoke-RestMethod`. |
-| `scripts/build-teams-card.py` | Python 3 | Shared card builder. Parses the log file and emits an Adaptive Card JSON payload to stdout. |
+| `scripts/build-teams-card.py` | Python 3 | **Legacy.** Old log-parsing card builder. No longer referenced by any script. Kept in repo for historical reference. |
+
+#### How the Card Is Produced
+
+The AI writes the Adaptive Card JSON as Step 4 of the briefing skill (`~/.claude/commands/ai-news-briefing.md`). The skill prompt contains the exact card template and enforces these constraints:
+
+- Valid JSON, under 26KB
+- ASCII-safe text only (no em dashes, curly quotes, or emoji in bullet text)
+- One bullet per story, max ~120 characters
+- Follows the Adaptive Card v1.4 schema
+
+The resulting file (`logs/YYYY-MM-DD-card.json`) is the exact payload that the notify script POSTs to Teams. There is no intermediate transformation.
 
 #### Adaptive Card Structure
 
-The card is built as an [Adaptive Card v1.4](https://adaptivecards.io/) with the following layout:
+The card follows the [Adaptive Card v1.4](https://adaptivecards.io/) schema with the following layout:
 
-1. **Header banner.** An accent-styled container with a newspaper icon, the title "AI Daily Briefing", the date, and a story/topic count.
-2. **Section blocks.** Each briefing topic gets a separator, an icon (matched via `ICON_MAP` keyword lookup), a bold header, and its bullet points.
-3. **Sources.** If the log contains `[title](url)` links, they are collected into a collapsible sources section at the bottom.
+1. **Header banner.** An accent-styled container with the title "AI Daily Briefing", the date, and a story/topic count.
+2. **Section blocks.** Each briefing topic gets a separator, a bold header, and its bullet points.
+3. **Action button.** An "Open Full Briefing in Notion" link at the bottom of the card.
 4. **Full-width rendering.** The card sets `"msteams": {"width": "Full"}` to use the entire channel width instead of the narrow default.
 
 The card is wrapped in the Teams message envelope:
@@ -673,7 +697,7 @@ graph TD
     SC --> SC3["dry-run.sh/.ps1"]
     SC --> SC4["topic-edit.sh/.ps1"]
     SC --> SC5["notify-teams.sh/.ps1"]
-    SC --> SC6["build-teams-card.py"]
+    SC --> SC6["build-teams-card.py (legacy)"]
     SC --> SC7["+ 8 more pairs"]
     A --> B[briefing.sh]
     A --> B2[briefing.ps1]
@@ -687,6 +711,7 @@ graph TD
     A --> BK["backups/"]
 
     G --> G1["YYYY-MM-DD.log"]
+    G --> G4["YYYY-MM-DD-card.json"]
     G --> G2["launchd-stdout.log (macOS)"]
     G --> G3["launchd-stderr.log (macOS)"]
 
@@ -718,10 +743,11 @@ graph TD
 | `README.md` | Shared | User-facing documentation | Yes |
 | `scripts/notify-teams.sh` | macOS/Linux | Teams notification entry point (Bash) | Yes |
 | `scripts/notify-teams.ps1` | Windows | Teams notification entry point (PowerShell) | Yes |
-| `scripts/build-teams-card.py` | Shared | Adaptive Card JSON builder (Python 3) | Yes |
+| `scripts/build-teams-card.py` | Shared | **Legacy.** Old log-parsing card builder. No longer referenced. | Yes |
 | `scripts/*.sh` | macOS/Linux | Utility scripts (12 tools) | Yes |
 | `scripts/*.ps1` | Windows | Utility scripts (12 tools) | Yes |
 | `logs/*.log` | Shared | Daily run logs | No (gitignored) |
+| `logs/*-card.json` | Shared | Adaptive Card JSON written by Claude Code (Step 4). POSTed to Teams as-is. | No (gitignored) |
 | `backups/` | Shared | Timestamped prompt.md backups | No (gitignored) |
 | `~/.local/bin/ai-news` | macOS | Manual trigger CLI script | No (outside repo) |
 
@@ -729,8 +755,9 @@ graph TD
 
 1. **Created**: At the start of each run, the entry script creates (or appends to) `logs/YYYY-MM-DD.log`.
 2. **Appended**: Claude Code's full stdout and stderr are appended. Multiple runs on the same day share one log file.
-3. **Rotated**: At the end of each run, logs older than 30 days are deleted.
-4. **launchd logs** (macOS only): `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself. These are not rotated automatically.
+3. **Card JSON**: Claude Code writes `logs/YYYY-MM-DD-card.json` as Step 4 of the briefing skill. This file is the exact Adaptive Card payload sent to Teams.
+4. **Rotated**: At the end of each run, logs older than 30 days are deleted.
+5. **launchd logs** (macOS only): `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself. These are not rotated automatically.
 
 ---
 
@@ -772,7 +799,7 @@ No secrets are stored in any tracked file. Claude Code's API key and Notion inte
 
 ## 11. Teams Notification Pipeline
 
-See [Section 3.9](#39-teams-notification-pipeline) for full architectural details.
+See [Section 3.9](#39-teams-notification-pipeline) for full architectural details. See also `E2E_FLOW.md` for the step-by-step end-to-end walkthrough including failure modes.
 
 ---
 
@@ -790,7 +817,7 @@ Change `--model sonnet` in the entry script for your platform. Consider adjustin
 
 | Channel | Status | Implementation Approach |
 |---|---|---|
-| Microsoft Teams | **Implemented** | Power Automate webhook + Adaptive Card via `notify-teams.sh/.ps1` and `build-teams-card.py`. See [Section 3.9](#39-teams-notification-pipeline). |
+| Microsoft Teams | **Implemented** | Claude Code writes Adaptive Card JSON (Step 4), `notify-teams.sh/.ps1` validates and POSTs to Power Automate webhook. See [Section 3.9](#39-teams-notification-pipeline). |
 | macOS notification | Planned | `osascript -e 'display notification ...'` in `briefing.sh` |
 | Windows toast | Planned | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
 | Slack | Planned | Slack MCP tool call in `prompt.md` or webhook `curl`/`Invoke-RestMethod` in the entry script |

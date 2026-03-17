@@ -43,21 +43,21 @@ help: ## Show this help
 	@echo ""
 
 ## —— Run ——————————————————————————————————————————————
-run: check ## Run the briefing now (foreground, blocks until done)
+run: check ## Run the briefing now (foreground). Backfill: make run D=2026-03-15
 ifeq ($(PLATFORM),windows)
-	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1"
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D))
 else
-	@bash "$(SCRIPT_DIR)/briefing.sh"
+	@bash "$(SCRIPT_DIR)/briefing.sh" $(D)
 endif
 
-run-bg: check ## Run the briefing in background
+run-bg: check ## Run the briefing in background. Backfill: make run-bg D=2026-03-15
 ifeq ($(PLATFORM),windows)
-	@echo "[$(DATE)] Starting briefing in background..."
-	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" &
+	@echo "[$(or $(D),$(DATE))] Starting briefing in background..."
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D)) &
 	@echo "Running. Tail log with: make tail"
 else
-	@echo "[$(DATE)] Starting briefing in background..."
-	@nohup bash "$(SCRIPT_DIR)/briefing.sh" >/dev/null 2>&1 &
+	@echo "[$(or $(D),$(DATE))] Starting briefing in background..."
+	@nohup bash "$(SCRIPT_DIR)/briefing.sh" $(D) >/dev/null 2>&1 &
 	@echo "Running (PID $$!). Tail log with: make tail"
 endif
 
