@@ -2,6 +2,8 @@
 
 Usage: python3 build-teams-card.py <log_file>
 Writes JSON to stdout (UTF-8).
+
+Note: Not used actively anymore, since we now delegate card building to the AI, but still useful for debugging and as a reference implementation for the expected card structure.
 """
 
 import json
