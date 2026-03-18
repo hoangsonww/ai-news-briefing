@@ -1,0 +1,245 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 5, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "14 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "7 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**Top story:** OpenAI launches GPT-5.4 — the first frontier model with native computer use and a 1M-token context window — on the same day China's premier delivers a Government Work Report placing AI at the center of the 15th Five-Year Plan.",
+            "wrap": true,
+            "spacing": "small",
+            "isSubtle": true,
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🤖 1. OpenAI Launches GPT-5.4 with Native Computer Use**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "OpenAI released **GPT-5.4** — its most capable frontier model — combining advanced reasoning, coding, and agentic computer use. Three variants: Standard, Thinking (reasoning-first), and Pro (enterprise).\n\n• **Native computer use**: First OpenAI model that can simulate mouse, keyboard, and menus to operate software autonomously\n• **1M-token context window** — largest OpenAI has offered commercially\n• **Tool Search**: Dynamically loads tool definitions on demand — major cost/latency reduction for agentic systems\n• **83%** on GDPval knowledge work benchmark (vs 70.9% for GPT-5.2); **75%** on OSWorld-V (vs 72.4% human)\n• **33%** fewer individual claim errors vs GPT-5.2\n\nAvailable in ChatGPT Plus/Team/Pro, OpenAI API, and GitHub Copilot (same day).",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👨‍💻 2. GitHub Copilot Integrates GPT-5.4 Hours After Launch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Microsoft rolled out GPT-5.4 across all Copilot paid tiers on launch day — one of the fastest major model integrations on record. Available across **VS Code, Visual Studio, JetBrains, Xcode, Eclipse**, and GitHub web/mobile. Includes native computer control, 1M-token context, and both Thinking and Pro variants. Enterprise admins must enable in policy settings first.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🇨🇳 3. China Two Sessions: AI Gets Its Own Five-Year Plan Section**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Premier Li Qiang's Government Work Report placed AI more prominently than any prior national plan. Highlights:\n• GDP target: **4.5–5%** for 2026\n• 15th Five-Year Plan gives AI its **own section for the first time**\n• **\"AI Plus\"** initiative expanded: embed AI across all industrial sectors, accelerate agents and intelligent terminals\n• Explicit goal: explore pathways to **AGI**\n• Priority sectors: embodied AI, brain-computer interfaces, 6G\n• Target: **$1.4 trillion AI industry by 2030**\n\nBeijing explicitly frames these investments as a counter to U.S. export controls, doubling down on Huawei Ascend and Cambricon chips.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚖️ 4. Anthropic Prepares Legal Challenge to Pentagon Designation**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Following the March 4 Pentagon blacklisting, Dario Amodei issued a public statement reaffirming Anthropic's two red lines: no Claude use for **domestic mass surveillance** or **autonomous weapons**. Legal grounds: First Amendment (retaliation for safety views) and Fifth Amendment (penalties without due process). Multiple tech companies signaled support. *(Formal lawsuits filed March 9; hearing on March 24.)*",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🕐 5. DeepSeek V4: All Launch Windows Missed — Still Waiting**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "DeepSeek V4 has missed mid-February, Lunar New Year, late-February, and early-March windows. Still no official launch as of March 5. Expected specs unchanged: 1T parameters (32B active, MoE), fully multimodal, 1M+ context, $0.10–$0.30/M tokens. Community speculation suggests team may be waiting for GPT-5.4 launch day coverage to pass.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚡ Quick Hits**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **Alibaba Qwen 3.5 9B** — outperforms models 13x its size on graduate-level reasoning; major open-source attention\n• **Lightricks LTX 2.3** — open-source model generating native 4K video with synchronized audio in one pass\n• **NVIDIA Nemotron 3 Super (120B)** — enterprise coding model at GTC; 60.47% on SWE-Bench Verified\n• **China AI labeling** — mandatory AI-generated content identifiers now enforced across Douyin, Tencent, DeepSeek",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👀 What to Watch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **DeepSeek V4** — launch inevitable this week; benchmarks vs GPT-5.4 will dominate coverage\n• **GPT-5.4 computer use** — early developer testing underway; watch for real-world autonomous task completion reports\n• **Anthropic lawsuit** — formal filing expected within days\n• **China Two Sessions** — sessions run through ~March 14; more AI policy details to emerge\n• **Apple M5 hardware** — ships March 11; first real-world AI performance data incoming",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc98119aec9e1adf08a3820",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 11, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "14 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "9 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude Code / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic launches The Anthropic Institute led by co-founder Jack Clark to study AI risks across jobs, security, and society", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude experiences major outage for ~2 hours affecting Claude.ai and Claude Code, 1,400+ Down Detector reports", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- DryRun Security report finds Claude generates the most unresolved high-severity security flaws in AI-built apps", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Time magazine profiles Anthropic as \"The Most Disruptive Company in the World\" amid Pentagon dispute", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI / Codex / ChatGPT**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- GPT-5.1 models officially retired from ChatGPT -- conversations auto-migrated to GPT-5.3/5.4 variants", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Codex app now available on Windows with native PowerShell support and sandbox permissions", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Coding IDEs**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- GitHub Copilot crosses 1.8M paid users with 55% YoY enterprise growth per Microsoft earnings", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Agent mode now table stakes -- Copilot, Cursor Background Agents, and Windsurf Cascade all shipping agentic", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI Ecosystem**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Perplexity launches \"Personal Computer\" -- always-on AI agent on M4 Mac mini at $200/month, competing with OpenClaw", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Enterprise customers report 3.25 years of equivalent work completed in four weeks with Perplexity agents", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Atlassian lays off 1,600 (10%) to self-fund AI pivot, replaces CTO with two AI-focused CTOs ($225-236M charge)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NVIDIA announces Nemotron 3 Super -- 120B MoE model with 12B active params for multi-agent workloads", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Trillion-parameter model appears on OpenRouter -- strongly suspected to be DeepSeek V4 stealth test", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- DeepSeek V4 Day 12 with no official launch; OpenRouter sighting is first external evidence of model existence", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- World Labs raises $1B for 3D world generation (Fei-Fei Li); Replit raises $400M at $9B valuation", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Over $6B in AI capital deployed in three days -- most consequential week for AI funding since February mega-rounds", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- FTC issues Section 5 policy statement on deceptive AI practices -- first formal enforcement framework", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Commerce Department report on \"burdensome\" state AI laws due to White House, could trigger preemption battles", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Washington State passes chatbot safety bill HB 2225; US military confirms AI use in Iran conflict", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Perplexity Personal Computer creates new category of always-on local AI agent for file and app management", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude Excel/PowerPoint add-ins now share context bidirectionally across applications", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Anthropic](https://www.anthropic.com/news/the-anthropic-institute) | [Time](https://time.com/article/2026/03/11/anthropic-claude-disruptive-company-pentagon/) | [CNBC](https://www.cnbc.com/2026/03/11/atlassian-slashes-10percent-of-workforce-to-self-fund-investments-in-ai.html) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-11/atlassian-team-ceo-announces-layoffs-of-1-600-citing-ai-shift) | [Al Jazeera](https://www.aljazeera.com/news/2026/3/11/us-military-confirms-use-of-advanced-ai-tools-in-war-against-iran) | [9to5Mac](https://9to5mac.com/2026/03/11/perplexitys-personal-computer-is-a-cloud-based-ai-agent-running-on-mac-mini/) | [Axios](https://www.axios.com/2026/03/11/perplexity-personal-computer-mac)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981c4a784e548a4e60f5c",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,245 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 8, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "14 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "7 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**Top story:** The Intercept and EFF expose critical gaps in OpenAI's Pentagon deal safeguards — the company's protections against surveillance and autonomous weapons rely on trust, not enforcement — while Florida's AI Bill of Rights stalls in the House despite a 35-2 Senate majority, Apple's $599 MacBook Neo generates mass-market AI buzz, and DeepSeek V4 enters Day 9 with no launch.",
+            "wrap": true,
+            "spacing": "small",
+            "isSubtle": true,
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🔍 1. OpenAI's Pentagon Deal: \"You'll Just Have to Trust Us\"**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "The Intercept published \"OpenAI on Surveillance and Autonomous Killings: You're Going to Have to Trust Us\" (March 8) — the most comprehensive critical examination yet of whether OpenAI's amended Pentagon deal actually prevents mass surveillance and autonomous weapons targeting.\n\n**The core finding:** OpenAI's safeguards rely on trust and contractual promises — not technical enforcement mechanisms. The published contract excerpt \"does not give OpenAI an Anthropic-style, free-standing right to prohibit otherwise-lawful government use.\"\n\n**EFF analysis** (\"Weasel Words\"): The amended language is still ambiguous — Pentagon agreed to adhere to red lines only \"as appropriate.\" Secret agreements have never been sufficient to rein in surveillance agencies. No substitute for enforceable legal limits.\n\n**OpenAI's defense** (\"Our agreement with the Department of War\" blog post): NSA can't use tools without a separate agreement; deployment architecture will verify red lines. Sam Altman acknowledged the original deal \"looked opportunistic and sloppy\" (March 3), prompting amendments.\n\n**Why it matters:** Anthropic drew hard lines and paid with a Pentagon blacklist. OpenAI said trust us. The Intercept and EFF say that's insufficient. This question now shapes the entire industry's regulatory trajectory.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🏛️ 2. Florida AI Bill of Rights: Senate Passes 35-2, House Blocks It**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "DeSantis's \"AI Bill of Rights\" (SB 482) passed the Florida Senate 35-2 but was blocked by the House Speaker.\n\n**What the bill does:** Gives parents the right to control children's interactions with AI chatbots; creates transparency requirements for AI in consequential decisions.\n\n**Why the House blocked it:** Speaker Daniel Perez says AI regulation should be handled at the federal level, not state-by-state. A separate data center regulation bill is advancing in the House instead.\n\n**Why it matters:** The 35-2 Senate vote signals overwhelming political appetite for AI guardrails — but the House position tracks with the current federal administration's deregulatory stance. If Florida can't pass AI regulation with a 35-2 majority, that signals significant structural resistance to state-level AI law nationwide.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**💻 3. Apple MacBook Neo: Mass-Market AI Computing at $599**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Apple's MacBook Neo (announced March 4, ships March 11) dominates tech coverage as the most significant consumer AI hardware of the year:\n\n• First Mac to use an A-series chip (A18 Pro) rather than M-series — same chip family as iPhone\n• Starting price: **$599** (cheapest Mac ever, $400–$800 below MacBook Air/Pro)\n• 3x faster on-device AI workloads vs. comparable Intel Core Ultra 5 PC\n• Colors: blush, indigo, silver, citrus; 13-inch Liquid Retina display\n\nApple is explicitly positioning this as a mass-market **AI device**, not just a budget laptop. Puts structural pressure on Chromebooks and Windows budget laptops in the $400–$700 range — where AI PC marketing is most contested.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⏳ 4. DeepSeek V4: Day 9 — Still No Launch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "DeepSeek V4 enters Day 9 without an official announcement. Every anticipated release window since mid-February has been missed: Lunar New Year, late February, early March, and the \"nuclear moment\" community prediction for March 6-7.\n\n**Current signals:** Chinese tech media spotted a possible \"V4 Lite\" update on DeepSeek's website with expanded context handling — but DeepSeek has not confirmed model name, specifications, or V4 timeline.\n\n**Expected specs:** Trillion-parameter MoE model, ~32B active parameters, native multimodal, 1M-token context, Huawei Ascend optimization. Unverified benchmarks: 90% HumanEval (vs. Claude 88%, GPT-5.4 82%).\n\nEvery passing day solidifies GPT-5.4's benchmark narrative and gives OpenAI more time to entrench its post-boycott position. When V4 does arrive, expectations will be extremely elevated.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**📉 5. #QuitGPT: From Peak to Plateau?**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "March 7's peak (2.5M boycotters, Claude at #1 App Store) showing early normalization on March 8:\n\n• Claude App Store ranking holding in top 5 but no longer #1\n• ChatGPT uninstall rate normalizing from the 295% day-over-day spike\n• \"Protest downloads\" typically normalize within 3–5 days\n\nKey question: how many users who switched to Claude actually stay? Even 10% conversion = 250,000 sustained new users. OpenAI's handling of the Pentagon deal created a documented brand trust gap that didn't exist before Feb 27 — and that gap remains regardless of whether the boycott sustains.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚡ Quick Hits**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **Anthropic lawsuit preview** — Filing expected March 9; emergency TRO hearing targeting March 24; tech industry groups preparing amicus briefs; State and Treasury reviewing Claude usage\n• **GPT-5.4 consolidating** — With DeepSeek V4 absent, GPT-5.4's benchmark leadership continues unchallenged; three-variant lineup with 1.05M-token context driving enterprise adoption\n• **Oracle layoffs begin** — First wave of 20,000–30,000 cuts reportedly beginning this month to fund AI infrastructure\n• **MWC 2026 aftermath** — AI glasses partnerships (Alibaba/Qwen, Samsung, MediaTek, iFlytek) generating supply chain and ecosystem discussions post-show",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👀 What to Watch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **Anthropic lawsuit (March 9)** — TRO request determines whether the Pentagon designation is paused; sets precedent for government AI vendor relationships\n• **DeepSeek V4** — An imminent launch could dramatically shift competitive dynamics; the longer the delay, the more entrenched GPT-5.4's position\n• **MacBook Neo reviews (March 11)** — Early benchmarks will determine whether iPhone chip architecture validates Apple's mass-market AI device thesis\n• **Florida AI Bill** — Whether the House eventually takes it up; signals whether any U.S. state can pass comprehensive AI regulation in the current political environment\n• **#QuitGPT Week 2** — Whether Claude retains any meaningful portion of its new user base beyond the protest surge",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981ab99e0e40ce8878953",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

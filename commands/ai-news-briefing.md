@@ -74,7 +74,7 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 - The file must be valid JSON. No trailing commas. No comments.
 - Total file size must be under 26KB (Teams limit is 28KB; leave headroom).
 - All text must be ASCII-safe. Use `--` not em dashes. Use straight quotes. No Unicode symbols in bullet text.
-- One bullet per story, max ~120 chars each. Plain text only in bullets.
+- One bullet per story, max ~200 chars each. Plain text only in bullets.
 - Sources are clickable markdown links: `[Title](url)` -- Adaptive Cards support this in TextBlock.
 - Keep it professional and scannable. The card should look polished in a Teams channel.
 
@@ -101,7 +101,7 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
         "body": [
           {
             "type": "Container",
-            "style": "accent",
+            "style": "emphasis",
             "bleed": true,
             "spacing": "none",
             "items": [
@@ -113,8 +113,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
                     "width": "stretch",
                     "verticalContentAlignment": "center",
                     "items": [
-                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "light" },
-                      { "type": "TextBlock", "text": "MONTH DAY, YEAR", "size": "medium", "color": "light", "isSubtle": true, "spacing": "none" }
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "MONTH DAY, YEAR", "size": "medium", "isSubtle": true, "spacing": "none" }
                     ]
                   },
                   {
@@ -122,8 +122,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
                     "width": "auto",
                     "verticalContentAlignment": "center",
                     "items": [
-                      { "type": "TextBlock", "text": "N stories", "weight": "bolder", "size": "large", "color": "light", "horizontalAlignment": "right" },
-                      { "type": "TextBlock", "text": "M topics", "size": "medium", "color": "light", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                      { "type": "TextBlock", "text": "N stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "M topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
                     ]
                   }
                 ]

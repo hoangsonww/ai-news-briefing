@@ -1,0 +1,147 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 14, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "15 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "8 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic launches $100M Claude Partner Network with Accenture, Deloitte, Cognizant", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude reaches #1 on US App Store for the first time -- downloads up 51%", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Anthropic doubles Claude usage limits through March 27 during off-peak hours", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- OpenAI plans to integrate Sora video generation directly into ChatGPT", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Sora standalone installs dropped 45% in January -- integration aims for 1B weekly users", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Meta**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Meta delays flagship Avocado AI model to May -- considers licensing Google Gemini", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Meta plans to cut 20% of workforce (~16,000 jobs) amid $600B AI infrastructure push", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- BlackRock CEO Larry Fink predicts AI-driven bankruptcies: \"That's capitalism\"", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Stanford: AI cuts entry-level dev hiring 20% and call center jobs 15%", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Google**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Google Maps launches Gemini-powered Ask Maps conversational AI feature", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- New 3D Immersive Navigation -- biggest Maps driving update in over a decade", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Security**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- AI agent hacked McKinsey's Lilli in 2 hours -- accessed 46.5M messages via SQL injection", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Nscale raises $2B Series C at $14.6B -- largest European tech funding round ever", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Robotics funding boom: $1.2B+ raised in one week across Mind Robotics, Rhoda, Sunday, Oxa", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- AMI Labs (Yann LeCun) raises $1.03B -- largest European seed round for world models", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic sues Pentagon over supply-chain risk designation -- injunction requested", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Palantir exploring alternative AI partners as Pentagon phases out Claude access", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Fortune](https://fortune.com/2026/03/13/blackrock-larry-fink-tech-ai-google-microsoft-alphabet-meta-infrastructure-data-centers/) | [CNBC](https://www.cnbc.com/2026/03/12/karp-palantir-anthropic-claude-pentagon-blacklist.html) | [TechCrunch](https://techcrunch.com/2026/03/12/google-maps-is-getting-an-ai-ask-maps-feature-and-upgraded-immersive-navigation/) | [The Register](https://www.theregister.com/2026/03/09/mckinsey_ai_chatbot_hacked/) | [Time](https://time.com/article/2026/03/11/anthropic-claude-disruptive-company-pentagon/) | [Semafor](https://www.semafor.com/article/02/17/2026/palantir-partnership-is-at-heart-of-anthropic-pentagon-rift) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-12/palantir-looks-to-expand-beyond-anthropic-after-pentagon-spat)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc9819b8e4cf97dd2ffcd1c",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

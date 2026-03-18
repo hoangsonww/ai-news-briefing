@@ -1,0 +1,120 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 3, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "14 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "5 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- #QuitGPT protesters marched on OpenAI SF HQ; signs read 'Sam Altman is watching you'; demands: no autonomous weapons or mass surveillance", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Altman circulated internal memo (shared on X) revising Pentagon contract with explicit safeguards against domestic surveillance use", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- SF Standard pushes back: '#QuitGPT is more meme than movement' -- monthly actives intact; Claude's App Store lead over ChatGPT persists", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**MWC Barcelona: Day 1**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Qualcomm Snapdragon 8 Elite 2: first mobile chip to run 13B-parameter LLMs entirely on-device at interactive speeds", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Qualcomm Snapdragon Wear Elite: dedicated wearable AI chip supports up to 2B-parameter models; AI agents on wrist become real", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Nokia AirGile AI-RAN: ML models embedded in radio network controllers for autonomous spectrum/power decisions in real time", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Microsoft: Satya Nadella announces Copilot partnerships with Deutsche Telekom, Vodafone, and Telefonica across telecom operations", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GSMA launches Open Telco AI initiative + world's first open Swahili reasoning model to address Africa's AI language gap", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**DeepSeek V4**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepSeek V4 launches today -- built ground-up for Huawei Ascend and Cambricon silicon; first frontier model requiring no Nvidia GPUs", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Benchmark watch: early comparisons vs. GPT-5.3-Codex and Gemini 3.1 Pro; if Ascend closes the gap, US export controls take a hit", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Alibaba Qwen 3.5 Small Series: four Apache 2.0 models (0.8B-9B), natively multimodal (text/image/video), built for edge/on-device", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Qwen3.5-9B beats Qwen3-30B (3x larger) on MMLU-Pro (82.5) and GPQA Diamond (81.7) -- 'More Intelligence, Less Compute'", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Edge AI & Hardware**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- MWC Day 1 theme: AI moving from cloud to device edge. Qualcomm mobile (13B), wearables (2B), Nokia radio (real-time ML) all converge", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Samsung Galaxy AI keynote expected March 4; Galaxy AI + Snapdragon 8 Elite 2 integration and potential AI glasses preview anticipated", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Local News Matters](https://localnewsmatters.org/2026/03/04/openai-protest-pentagon-ai-contract-san-francisco/) | [SF Standard](https://sfstandard.com/2026/03/04/quitgpt-meme-movement/) | [MWC Barcelona](https://www.mwcbarcelona.com/highlights) | [Android Central](https://www.androidcentral.com/phones/qualcomm/qualcomm-unveils-snapdragon-wear-elite) | [MarkTechPost](https://www.marktechpost.com/2026/03/02/alibaba-just-released-qwen-3-5-small-models-a-family-of-0-8b-to-9b-parameters-built-for-on-device-applications/) | [Fierce Network](https://www.fierce-network.com/wireless/mwc-2026-seen-and-heard-day-1) | [VentureBeat](https://venturebeat.com/technology/alibabas-new-open-source-qwen3-5-medium-models-offer-sonnet-4-5-performance)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc98158afb0d1dbb77d14e4",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

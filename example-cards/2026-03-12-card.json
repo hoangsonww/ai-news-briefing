@@ -1,0 +1,144 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 12, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "22 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "7 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude Code / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Claude Partner Network launched with $100M commitment -- Accenture, Deloitte, Cognizant, Infosys join", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude gains custom charts and inline data visualizations in responses", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Opus 4.6 expands 1M context window to all subscription plans", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Brief Claude service disruption on Mar 12 following March 11 two-hour outage", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Google**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Google closes $32B Wiz acquisition -- largest deal in company history, largest VC-backed startup exit ever", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Ask Maps launched -- Gemini-powered conversational search in Google Maps, rolling out in US and India", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Gemini Embedding 2 released -- first multimodal embedding model mapping text, images, video, and audio", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- NousResearch Hermes Agent v0.2.0: 216 merged PRs from 63 contributors, full MCP support, 70+ skills", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NVIDIA previews NemoClaw -- enterprise AI agent platform built on OpenClaw with security controls", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Alibaba Page Agent: JavaScript GUI agent for web control via natural language, trending on GitHub", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Meta unveils 4-gen MTIA chip roadmap on RISC-V -- releasing new custom AI chips every 6 months", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Meta acquires Moltbook AI agent social network (1.6M agents) -- team joins Superintelligence Labs", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Microsoft Copilot Cowork enters enterprise preview -- agentic execution powered by Anthropic", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Hermes Agent v0.2.0 hits 2,200+ GitHub stars -- top open-source agent launch of 2026 so far", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- ByteDance DeerFlow 2.0 trending at 25K+ stars -- SuperAgent harness with sandboxed execution", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Helios 14B video model released under Apache 2.0 -- 1,440 frames at 19.5 FPS on a single H100", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Nebius receives $2B strategic investment from NVIDIA for multi-gigawatt AI data centers", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Legora closes $550M Series D for AI legal tech -- total funding near $1B", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Sunday Robotics reaches unicorn status: $165M Series B at $1.15B valuation", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Copilot Cowork: agentic execution layer that plans and acts across Outlook, Teams, and Excel", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GitHub Copilot adds colorized code completions with syntax highlighting in Visual Studio", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Google Maps voice guidance updated with more natural conversational phrasing", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[TechCrunch](https://techcrunch.com/2026/03/12/google-maps-is-getting-an-ai-ask-maps-feature-and-upgraded-immersive-navigation/) | [CNBC](https://www.cnbc.com/2026/03/11/meta-ai-mtia-chip-data-center.html) | [VentureBeat](https://venturebeat.com/orchestration/microsoft-announces-copilot-cowork-with-help-from-anthropic-a-cloud-powered) | [Google Blog](https://blog.google/products-and-platforms/products/maps/ask-maps-immersive-navigation/) | [The Next Web](https://thenextweb.com/news/anthropic-commits-100m-to-claude-partner-network) | [Microsoft Blog](https://www.microsoft.com/en-us/microsoft-365/blog/2026/03/09/copilot-cowork-a-new-way-of-getting-work-done/) | [GitHub](https://github.com/NousResearch/hermes-agent/releases/tag/v2026.3.12) | [SecurityWeek](https://www.securityweek.com/wiz-joins-google-cloud-as-landmark-acquisition-closes/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc98132817ec261f2578508",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

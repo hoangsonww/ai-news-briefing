@@ -432,6 +432,16 @@ export AI_BRIEFING_TEAMS_WEBHOOK="https://prod-XX.westus.logic.azure.com:443/wor
 
 Both scripts also accept command-line overrides (`--webhook-url` / `-WebhookUrl`) for testing without modifying the environment.
 
+Here is how the card looks in Microsoft Teams:
+
+#### Teams Card Example
+
+Here is what a card looks like in Teams:
+
+<p align="center">
+  <img src="example-cards/teams.png" alt="Teams Card Example" width="100%">
+</p>
+
 ---
 
 ## 4. Data Flow

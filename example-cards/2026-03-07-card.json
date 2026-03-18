@@ -1,0 +1,245 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 7, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "13 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "7 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**Top story:** Claude surges to #1 on the App Store as the #QuitGPT boycott hits 2.5 million users following OpenAI's Pentagon deal — while the Pro-Human AI Declaration reaches mainstream coverage and Google ships a Workspace CLI with native MCP server support.",
+            "wrap": true,
+            "spacing": "small",
+            "isSubtle": true,
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**📱 1. #QuitGPT Peaks: Claude Hits #1 on App Store, 2.5M Boycotters**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "The consumer backlash against OpenAI's Pentagon deal reached extraordinary scale by March 7:\n\n• **2.5 million** people cancelled subscriptions or publicly pledged to boycott ChatGPT\n• ChatGPT U.S. uninstalls: **+295% day-over-day**\n• One-star reviews: **+775% surge**\n• Claude: jumped from **#42 → #1** on the U.S. App Store, directly displacing ChatGPT\n\nInside OpenAI: Caitlin Kalinowski (hardware & robotics lead since Nov 2024) resigned over the deal; 30+ OpenAI employees signed public statements supporting Anthropic's legal challenge. The DOD signed its OpenAI deal within 24 hours of designating Anthropic a supply-chain risk — a sequence multiple OpenAI employees protested internally.\n\nThis is the first consumer-scale AI boycott in the industry's history, producing a measurable, rapid market share swing. AI brand trust is now a competitive variable.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🗺️ 2. Pro-Human AI Declaration: The Roadmap Nobody Agreed On**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "TechCrunch published \"A roadmap for AI, if anyone will listen\" (March 7), bringing mainstream attention to the Pro-Human AI Declaration.\n\n**Key demands:**\n• Development of superintelligence should be **prohibited** until broad scientific consensus + public buy-in\n• All powerful AI systems must have **kill-switch mechanisms** for human operators\n• AI must not self-replicate, autonomously self-improve, resist shutdown, or control WMDs\n\n**The unusual coalition:** Steve Bannon, Glenn Beck, Richard Branson, Ralph Nader, Susan Rice, Nobel economist Daron Acemoglu — plus Future of Life Institute, Pause AI, MIRI, and 40+ organizations.\n\n**The polling:** 95% of Americans oppose an unregulated race to superintelligence.\n\n**The gap:** The TechCrunch critique notes signatories represent almost no one with actual control over frontier AI development, and the prohibitions run directly counter to current U.S. administration policy.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🔧 3. Google Ships Workspace CLI with Built-In MCP Server**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Google released `gws` — a CLI for the entire Google Workspace API surface — designed for both developers and AI agents:\n\n• Covers Drive, Gmail, Calendar, Sheets, Docs, Chat, Admin, and all other Workspace APIs\n• Written in Rust, distributed via npm; Apache-2.0 open source\n• **Built-in MCP server** exposing all Workspace APIs to any MCP-compatible AI agent over stdio — no custom connectors needed\n• Dynamically built from Google's Discovery Service: auto-updates when Google adds new API endpoints\n• 40+ agent skills; 100+ total skills including higher-level workflows; 50+ curated recipes\n\nDirect threat to Zapier and Make for AI agent use cases. Developers no longer need third-party connectors to build agentic Workspace integrations.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🏢 4. Oracle Plans 20,000–30,000 Layoffs for AI Infrastructure Pivot**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Oracle is cutting 20,000–30,000 employees — generating $8–10B in capital — specifically to fund AI infrastructure investment. Layoffs begin this month.\n\n• Cuts span multiple divisions; AI infrastructure is the stated reallocation target\n• Follows Block's announced 4,000-person cut (~40% of staff), also explicitly citing AI efficiency\n• Together: the two largest explicitly AI-motivated workforce reductions in tech history within the same week\n\nThe pattern: boards under mounting pressure to show AI ROI in concrete financial terms. Workforce restructuring is becoming the visible output of that pressure.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚖️ 5. Anthropic Pentagon: Designation Confirmed, Lawsuit Days Away**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Anthropic officially confirmed the supply-chain risk designation — a label historically reserved for foreign adversaries like Huawei.\n\n**Legal strategy being finalized:**\n• **First Amendment** — designation punishes Anthropic for publishing AI safety positions (no mass surveillance, no autonomous weapons)\n• **Fifth Amendment** — severe penalties imposed without due process or hearing\n• **APA** — Pentagon acted arbitrarily and without statutory authority\n\n**Filing targets:** U.S. District Court (N.D. California) and federal appeals court in Washington, D.C.\n\n**Industry support:** Tech industry groups preparing amicus briefs; State and Treasury reportedly reviewing Claude usage; 30+ OpenAI and Google DeepMind employees filed public statements of support.\n\n*(Formal lawsuits filed March 9; TRO hearing set for March 24.)*",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚡ Quick Hits**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **DeepSeek V4** — Day 8+ with no launch. Possible \"V4 Lite\" update spotted on DeepSeek's website (expanded context handling) but unconfirmed. Community pressure escalating as GPT-5.4 benchmark narrative solidifies.\n• **Samsung** — Reconfirmed plans to double Gemini AI-equipped devices from ~400M to **800 million** by end of 2026 at MWC wrap-up events\n• **MWC 2026 concluded** — Barcelona (March 3–6); AI glasses from Alibaba/Qwen, Samsung, and others dominated the hardware showcase\n• **Florida AI bill** — Gov. DeSantis's comprehensive AI regulation bill advancing; final vote expected this week",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👀 What to Watch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **#QuitGPT durability** — Whether the App Store surge translates to sustained Claude retention or normalizes within days\n• **Anthropic lawsuit filing** — Expected March 9–10; emergency TRO request will determine whether the designation is paused during litigation\n• **DeepSeek V4** — Every passing day strengthens GPT-5.4's benchmark narrative; an eventual drop could dramatically shift the competitive picture\n• **Oracle layoff reaction** — Whether AI-justified workforce cuts face meaningful regulatory or customer pushback",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981d48fbcdde591953bd1",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}
