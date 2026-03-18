@@ -121,7 +121,7 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
         "body": [
           {
             "type": "Container",
-            "style": "accent",
+            "style": "emphasis",
             "bleed": true,
             "spacing": "none",
             "items": [
@@ -133,8 +133,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
                     "width": "stretch",
                     "verticalContentAlignment": "center",
                     "items": [
-                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "light" },
-                      { "type": "TextBlock", "text": "MONTH DAY, YEAR", "size": "medium", "color": "light", "isSubtle": true, "spacing": "none" }
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "MONTH DAY, YEAR", "size": "medium", "isSubtle": true, "spacing": "none" }
                     ]
                   },
                   {
@@ -142,8 +142,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
                     "width": "auto",
                     "verticalContentAlignment": "center",
                     "items": [
-                      { "type": "TextBlock", "text": "N stories", "weight": "bolder", "size": "large", "color": "light", "horizontalAlignment": "right" },
-                      { "type": "TextBlock", "text": "M topics", "size": "medium", "color": "light", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                      { "type": "TextBlock", "text": "N stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "M topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
                     ]
                   }
                 ]
