@@ -1,0 +1,139 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 1, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "15 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "7 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Trump bans Anthropic from all federal use (Feb 27), designating it a \"supply-chain risk to national security\"; 6-month agency phase-out; $60B VC investment at risk; legal challenge planned", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- OpenAI swoops in with Pentagon deal hours after Anthropic ban; CEO Altman admits on March 1 deal was \"definitely rushed\" and \"optics don't look good\" — despite having publicly agreed with Anthropic's ethical redlines", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Brown University study: AI chatbots acting as therapists routinely breach confidentiality and professional boundaries; EU and multiple US states weighing regulations", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic refused $200M DoD contract unless Pentagon agreed to ban Claude from mass surveillance and autonomous weapons — citing unreliability of current frontier models for lethal autonomous decisions", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude Opus 4.6 (Feb 5): 1M-token context, record coding/agentic benchmarks, detected 500+ zero-days in open-source libraries; Sonnet 4.6 (Feb 17): new default, preferred in 70% of Claude Code tests", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Anthropic raises $30B at $380B valuation; $14B annual revenue disclosed alongside the round", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI / ChatGPT**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- GPT-5.3-Codex (Feb 5): first model that \"helped create itself\"; dedicated to agentic coding workflows; agentic platform scale-up underway", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- OpenAI closes $110B funding round at $840B valuation: Amazon $50B, SoftBank $30B, Nvidia $30B; largest single-company funding round in history", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Google / Gemini**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Gemini 3.1 Pro (Feb 19): 77.1% on ARC-AGI-2 with three-tier thinking architecture, doubled reasoning vs. Gemini 3 Pro at same pricing", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Samsung plans to double Gemini AI-equipped devices to 800M units by end of 2026 — pre-announcement ahead of MWC 2026 (March 3–6, Barcelona)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Big Tech pledges ~$700B in 2026 data center capex: Amazon ~$200B, Alphabet ~$185B, Microsoft ~$145B, Meta $115–135B; Nvidia GPU supply is primary bottleneck", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Oracle plans 20,000–30,000 layoffs to generate $8–10B for AI infrastructure; Block (Square/CashApp) cut 4,000 employees (40%) in Feb citing cheaper AI tools replacing roles", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Apple targets March 2026 for fully AI-powered Siri on iOS 26.4; running Google Gemini (1.2T params) on Apple Private Cloud Compute", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- MWC 2026 preview (March 3–6): AI glasses from Samsung, Alibaba/Qwen, MediaTek, iFlytek (40g, real-time translation); Samsung+AMD validate AI-RAN multi-cell deployments", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Perplexity Computer (Feb 25): \"digital worker\" orchestrating 19 AI models as sub-agents — signals industry shift from single dominant model to multi-model coordination architectures", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepSeek V4 expected March 3: multimodal model optimized for Chinese chips (Huawei Ascend, Cambricon) — direct response to US export controls blocking Nvidia H100/H200", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Chinese lab wave in February: Alibaba Qwen 3.5, MiniMax M2.5, ByteDance Seed 2.0, Zhipu GLM-5 all shipped; seven frontier models released globally in 28 days", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[TechCrunch](https://techcrunch.com/2026/03/01/openai-shares-more-details-about-its-agreement-with-the-pentagon/) | [NPR](https://www.npr.org/2026/02/27/nx-s1-5729118/trump-anthropic-pentagon-openai-ai-weapons-ban) | [CNBC](https://www.cnbc.com/2026/03/09/anthropic-was-the-pentagons-choice-for-ai-now-its-banned-and-experts-are-worried.html) | [MML Studio](https://mml-studio.com/blog/ai-weekly-march-2-8-2026/) | [MIT Tech Review](https://www.technologyreview.com/2026/03/02/1133850/openais-compromise-with-the-pentagon-is-what-anthropic-feared/) | [Fortune](https://fortune.com/2026/03/05/anthropic-openai-feud-pentagon-dispute-ai-safety-dilemma-personalities/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc9818b9742f15d9819252b",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

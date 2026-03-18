@@ -1,0 +1,161 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 10, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "23 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "9 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude Code / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Microsoft launches Copilot Cowork powered by Claude inside Microsoft 365 (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude now available in Copilot mainline chat via Frontier program alongside OpenAI models (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Anthropic opens Sydney office -- fourth Asia-Pacific hub (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Bloomberg profiles Anthropic as bringing \"the power to say no\" amid Pentagon lawsuit (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI / Codex / ChatGPT**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- GPT-5.2-Codex released for all paid users -- SOTA on SWE-Bench Pro and Terminal-Bench 2.0 (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GPT-5.1 models (Instant, Thinking, Pro) retired from ChatGPT effective March 11 (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- ChatGPT adds interactive visual module for 70+ math and science formulas (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Coding IDEs**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Cursor surpasses 1M users and 360K paying customers, investing in Auto mode (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GitHub research: Copilot users complete tasks 55% faster on average (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI Ecosystem**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Azoma introduces Agentic Merchant Protocol (AMP) for AI shopping agents (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Cognizant research: plug-and-play AI is a myth -- enterprises need custom AI Builder firms (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Synopsys launches Electronics Digital Twin Platform for physical AI systems (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Google Research and Synaptics launch next-gen Coral Dev Board with Coral NPU (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Nvidia GTC preview coverage intensifies -- new inference chip expected next week (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepSeek V4 Day 11 with no launch -- community anticipation continues to build (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Gap between open and proprietary models narrowing -- right open model outperforms on specific tasks (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- AMI Labs (Yann LeCun) closes $1.03B seed at $3.5B valuation -- largest European seed ever (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Robotics funding wave: Mind Robotics, Rhoda AI, Sunday, Oxa raise $1.2B+ in one week (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Commerce Dept deadline arrives for publishing list of burdensome state AI laws (Mar 10-11)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- FTC required to issue guidance on how FTC Act applies to deceptive AI models (Mar 10-11)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- FCC initiating proceeding on federal AI reporting standard that may preempt state laws (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepL report: 71% of business leaders prioritize AI workflow transformation in 2026 (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Adaption Labs launches Research Grant Program for academic ML and AI researchers (Mar 10)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Bloomberg](https://www.bloomberg.com/opinion/articles/2026-03-10/anthropic-has-brought-something-new-to-ai-the-power-to-say-no) | [TechCrunch](https://techcrunch.com/2026/03/09/yann-lecuns-ami-labs-raises-1-03-billion-to-build-world-models/) | [Microsoft 365 Blog](https://www.microsoft.com/en-us/microsoft-365/blog/2026/03/09/powering-frontier-transformation-with-copilot-and-agents/) | [CNBC](https://www.cnbc.com/2026/03/10/cramer-this-ai-stock-is-in-the-sweet-spot-plus-an-nvidia-gtc-preview.html) | [GeekWire](https://www.geekwire.com/2026/microsofts-new-copilot-cowork-integrates-anthropics-claude-in-rollout-of-new-e7-licensing-tier/) | [Synopsys](https://news.synopsys.com/2026-03-10-Synopsys-Launches-Electronics-Digital-Twin-Platform-to-Accelerate-Physical-AI-System-Development) | [Cognizant](https://news.cognizant.com/2026-03-10-Cognizant-Research-Shows-Plug-and-Play-AI-is-a-Myth)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981a0a14efccdece31728",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

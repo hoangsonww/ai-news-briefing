@@ -1,0 +1,159 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 9, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "12 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "9 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude Code / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic sues Pentagon in two federal courts -- first American company ever designated a supply chain risk (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Designation issued after Anthropic refused to drop red lines on mass surveillance and autonomous weapons (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Launched Code Review in Claude Code for Teams/Enterprise -- AI reviewer catches bugs before merge (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI / Codex / ChatGPT**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Free ChatGPT Pro + Codex for open-source maintainers of projects with 1,000+ GitHub stars (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Codex Security flags 11,000+ critical vulnerabilities in real codebases within first 3 days (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Hardware lead Caitlin Kalinowski resigned citing insufficient Pentagon deal safeguards (Mar 7-8)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Coding IDEs**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Windsurf ships Wave 13 with Arena Mode, Plan Mode, and parallel multi-agent sessions (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Seven contenders now in AI coding agent space -- all racing toward fully agentic capabilities (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI Ecosystem**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- MCP ecosystem crosses 97M monthly SDK downloads -- adopted by all major AI providers (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- AAIF MCP Registry launched with 10,000+ public servers catalogued (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepSeek V4 enters Day 10 -- possible V4 Lite spotted on website but unconfirmed (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- MiniMax M2.5 praised for rivaling Claude Opus 4.6 at significantly lower cost (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Unverified leaks claim DeepSeek V4 scores 90% HumanEval vs Claude 88%, GPT-5.4 82% (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Open-source model gap with proprietary models has closed -- right open model now outperforms on specific tasks (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Nscale raises $2B Series C (Nvidia-backed) at $14.6B valuation for AI compute infra (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Decagon $250M Series D, Sierra Space $550M Series C, Cart.com $180M Series D (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- March 11 deadline for Commerce Secretary to publish burdensome state AI laws list (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Colorado advances two healthcare AI bills -- HB 1139 and HB 1195 -- through committees (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Washington chatbot bill passed Senate 46-3, Arizona SB 1786 passed Senate 17-13 (Mar 4-9)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Windsurf Wave 13 Plan Mode analyzes full task scope and creates structured plan before coding (Mar 9)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- TypeScript dominance confirmed -- React Compiler approach replacing manual memoization (Mar 2026)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[TechCrunch](https://techcrunch.com/2026/03/09/anthropic-sues-defense-department-over-supply-chain-risk-designation/) | [Axios](https://www.axios.com/2026/03/09/anthropic-sues-pentagon-supply-chain-risk-label) | [CNBC](https://www.cnbc.com/2026/03/09/anthropic-trump-claude-ai-supply-chain-risk.html) | [WinBuzzer](https://winbuzzer.com/2026/03/09/openai-codex-open-source-maintainers-free-chatgpt-pro-xcxwbn/) | [NPR](https://www.npr.org/2026/03/09/nx-s1-5742548/anthropic-pentagon-lawsuit-amodai-hegseth) | [Troutman](https://www.troutmanprivacy.com/2026/03/proposed-state-ai-law-update-march-9-2026/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981d89875f4dbc6d9e08d",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

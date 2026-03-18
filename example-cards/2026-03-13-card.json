@@ -1,0 +1,128 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 13, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "10 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "6 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**NVIDIA**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Nemotron 3 Super launched -- 120B open-weight hybrid Mamba-Transformer MoE with 5x throughput for agentic AI", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Published 10 trillion tokens of training data -- the largest open training data release in AI history", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GTC 2026 preview (Mar 16-19) -- $1T in Blackwell/Vera Rubin orders expected through 2027", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**xAI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Co-founder exodus accelerates -- only 2 of 11 original founders remain as Musk admits 'not built right'", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Layoffs ordered after falling behind OpenAI and Anthropic in coding tools; hired two engineers from Cursor", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Morgan Stanley warns massive AI breakthrough imminent in H1 2026 -- $2.9T in data center construction through 2028", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Big Tech data center spending hits $650B in 2026 -- 60% increase from 2025, 3,000 new US data centers under construction", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Canal+ signs multi-year AI deals with Google Cloud (Veo3) and OpenAI (search launching June 2026)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- EU Council agrees to streamline AI Act -- delays high-risk rules to Dec 2027/Aug 2028, bans AI-generated NCII", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- ITIF warns restrictive rules on public web data risk shifting AI development to more permissive jurisdictions", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Nemotron 3 Super open weights + 10T tokens + 15 RL environments published for full training reproducibility", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Ai2 releases MolmoBot -- zero-shot sim-to-real robotic manipulation trained on 1.8M synthetic trajectories", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Research**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- GPT-5.4 Thinking scores 83% on GDPVal -- at or above human expert level on economically valuable tasks", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Survey finds 50%+ of AI projects lack official approval while 85% of leaders prioritize speed over governance", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[NVIDIA Blog](https://blogs.nvidia.com/blog/nemotron-3-super-agentic-ai/) | [CNBC](https://www.cnbc.com/2026/03/13/elon-musk-xai-co-founders-spacex-ipo.html) | [Fortune](https://fortune.com/2026/03/13/elon-musk-morgan-stanley-ai-leap-2026/) | [EU Council](https://www.consilium.europa.eu/en/press/press-releases/2026/03/13/council-agrees-position-to-streamline-rules-on-artificial-intelligence/) | [TechCrunch](https://techcrunch.com/2026/03/13/the-biggest-ai-stories-of-the-year-so-far/) | [Allen Institute](https://allenai.org/blog/molmobot-robot-manipulation) | [ITIF](https://itif.org/publications/2026/03/13/how-rules-for-publicly-available-data-are-shaping-the-future-of-ai/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc9819f8b11d916b5532350",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

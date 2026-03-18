@@ -1,0 +1,147 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 2, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "9 topics", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "MWC opens", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Consumer Sentiment**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- #QuitGPT movement hits 2.5M supporters; ChatGPT uninstalls surge 295% overnight in backlash to OpenAI's Pentagon deal", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Claude jumps to #1 on US App Store (first time ever) after +51% weekend download surge — first time Claude has surpassed ChatGPT daily downloads", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Governance**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- US federal agencies (State Dept, Treasury) reportedly discontinuing Claude use after Anthropic holds its line on autonomous weapons and surveillance restrictions", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Anthropic legal challenge to federal ban still in preparation; enterprise customers evaluating compliance exposure under the six-month phase-out window", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**MWC Barcelona 2026 (Day 0)**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Agentic AI Summit (09:00–13:05): full pre-show day focused on AI agents in enterprise and telecom; \"AI and Us\" keynote drew standing-room attendance", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Huawei launches AI-Centric Network solutions embedding AI across service/network/hardware layers; debuts Mate 80 series with XMAGE AI photography at MWC", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Samsung + AMD reinforce AI-powered network collaboration; Qualcomm showcases AI-native 6G prototyping; Alibaba/Qwen AI glasses open presales today", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Nvidia announces optical partnerships (Lumentum, Coherent) for AI data center interconnects; joins telcos committing to AI-native 6G platform", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI & Jobs**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Block (Square, Cash App) cuts 4,000 jobs (~40% of workforce); CEO Jack Dorsey explicitly cites AI replacement — shares surge +15%", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- CNN analysis: US unemployment at 4.3% — up ~0.5pts since generative AI boom began but still within manageable range; economists warn 12–24 month lag before AI labor shock materializes", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Anti-AI Movement**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- London march (Feb 28): ~500 protesters from Pause AI + Pull the Plug marched through King's Cross past OpenAI, DeepMind, Meta, Google UK offices — billed as largest AI safety protest yet", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Coalition broadening: Extinction Rebellion UK joining \"March Against the Machines\" follow-up event (March 8); demands include public pause on frontier AI development", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Models & Research**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DeepSeek V4 launches tomorrow (March 3): optimized for Chinese domestic chips (Huawei Ascend, Cambricon); direct test of whether China's AI stack can match Western frontier models without Nvidia hardware", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GPT-5.4 still expected March 5: reasoning-optimized, cost-efficient; pipeline of weekly frontier releases continues", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Telecom & Infrastructure**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Deutsche Telekom + T-Mobile US launch joint 6G AI Innovation Hub (Bellevue WA + Berlin); three focus areas: Autonomous Networks, secure sensing/positioning, compute-connectivity convergence", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Hardware & Devices**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Apple MacBook Neo (A18 Pro, from $599) expected March 4 — positioned as cheapest Mac ever and mass-market AI device entry point", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Apple Siri overhaul (iOS 26.4) on track for March: Gemini 1.2T params running on Apple Private Cloud Compute — outsourced model, Apple privacy wrapper", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[CNN Business](https://www.cnn.com/2026/03/02/business/ai-tech-jobs-layoffs) | [MIT Tech Review](https://www.technologyreview.com/2026/03/02/1133814/i-checked-out-londons-biggest-ever-anti-ai-protest/) | [MWC Barcelona](https://www.mwcbarcelona.com/agenda/sessions/5977-agentic-ai-summit) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-02/mwc-barcelona-2026-preview-mobile-industry-reckons-with-ai-and-geopolitics) | [MML Studio](https://mml-studio.com/blog/ai-weekly-march-2-8-2026/) | [Pause AI](https://pauseai.info/protest-london-feb-2026) | [Champaign Mag](https://champaignmagazine.com/2026/03/08/ai-by-ai-weekly-top-5-march-2-8-2026/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981fa8d30eeaa5f6f274a",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

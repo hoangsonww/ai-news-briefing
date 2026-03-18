@@ -1,0 +1,140 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 16, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "18 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "7 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Anthropic launched the Anthropic Institute -- a 30-person think tank led by co-founder Jack Clark studying AI economic and national security impacts", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Tech coalition (CCIA, ITI, SIIA, TechNet) filed amicus brief in Anthropic v. DoW, arguing Pentagon supply-chain designation chills innovation", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**NVIDIA GTC 2026**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Vera Rubin platform unveiled -- 7 chips, 5 rack-scale systems, 10x perf/watt over Grace Blackwell, with $1T in projected orders through 2027", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Groq 3 LPU debuted -- first chip from $20B Groq acquisition, delivering 35x tokens-per-watt improvement over Rubin GPUs", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- DLSS 5 announced -- neural rendering combining 3D graphics with generative AI, called the \"GPT moment for graphics,\" arriving fall 2026", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NemoClaw open-source agent stack launched with OpenShell runtime for always-on autonomous AI agents on local hardware", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Kyber architecture prototype revealed -- 144 vertical GPUs, shipping 2027 in Vera Rubin Ultra", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Alpamayo 10B reasoning VLA model released for autonomous vehicles on Hugging Face and Foundry", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Meta signed $27B 5-year deal with Nebius for AI infrastructure -- includes first large-scale Vera Rubin deployment starting early 2027", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Meta delayed Avocado flagship model to May -- underperforms Google, OpenAI, Anthropic; leadership discussed licensing Gemini temporarily", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- BMW deployed AEON humanoid robot at Leipzig -- Europe's first automotive humanoid, built by Hexagon Robotics on NVIDIA Jetson Orin", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- NVIDIA Alpamayo, Nemotron 3 Super, and NemoClaw all released as open source at GTC 2026", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Nemotron models now available for reinforcement fine-tuning on Amazon Bedrock for domain-specific alignment", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Commerce Dept March 16 deadline passed for AI Litigation Task Force referral of state AI laws flagged as onerous under federal exec order", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- FCC and FTC reporting deadlines due March 16 for federal AI model reporting standards and enforcement policy", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- NVIDIA NemoClaw + OpenShell enables always-on agents from GeForce RTX to DGX with privacy routing to cloud frontier models", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Microsoft Foundry + NVIDIA integration announced at GTC for unified agentic and physical AI systems", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Google Gemini Workspace updates rolling out -- Docs drafts from files, Sheets fills with real-time data, Slides generates full presentations", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[CNBC](https://www.cnbc.com/2026/03/16/nvidia-gtc-2026-ceo-jensen-huang-keynote-blackwell-vera-rubin.html) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-16/meta-to-spend-up-to-27-billion-on-ai-infrastructure-from-nebius) | [TechCrunch](https://techcrunch.com/2026/03/16/jensen-just-put-nvidias-blackwell-and-vera-rubin-sales-projections-into-the-1-trillion-stratosphere/) | [Axios](https://www.axios.com/2026/03/16/tech-industry-rallies-anthropic-pentagon-fight) | [NVIDIA Blog](https://blogs.nvidia.com/blog/gtc-2026-news/) | [Tom's Hardware](https://www.tomshardware.com/news/live/nvidia-gtc-2026-keynote-live-blog-jensen-huang) | [Google Blog](https://blog.google/products-and-platform/products/workspace/gemini-workspace-updates-march-2026/)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981cabfb2c513a013c092",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

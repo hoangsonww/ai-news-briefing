@@ -1,0 +1,245 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 6, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "15 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "7 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**Top story:** First real-world GPT-5.4 developer data confirms AI surpasses humans at desktop computer use (75% vs 72.4% human baseline), while Anthropic finalizes legal arguments for what could become the most consequential AI lawsuit in the industry's history.",
+            "wrap": true,
+            "spacing": "small",
+            "isSubtle": true,
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**💻 1. GPT-5.4 Real-World Validation: Computer Use Claims Hold Up**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "24 hours of independent developer testing confirms GPT-5.4's headline computer use capability — and in some cases outperforms OpenAI's published numbers:\n\n• **OSWorld-Verified**: 75.0% (vs 72.4% human baseline) — AI surpasses humans at desktop navigation\n• **GDPval knowledge work** (44 occupations): 83.0% vs 70.9% for GPT-5.2\n• **SWE-Bench Pro**: 57.7% — edging past GPT-5.3-Codex\n• **Property/HOA portal tasks**: 95% success on first attempt (vs ~73–79% with prior CUA models)\n• **Tool Search** cutting agentic prompt overhead ~30–50% in early tests\n• Model executes via both Playwright code and direct screenshot → mouse/keyboard — two distinct cost/latency profiles\n• Some failures on non-standard desktop UIs noted",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚖️ 2. Anthropic's Pentagon Legal Strategy Takes Shape**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Anthropic's legal team is finalizing its formal complaint against the Pentagon supply-chain risk designation. Three legal pillars:\n\n• **First Amendment** — designation punishes Anthropic for publicly expressing AI safety views (no mass surveillance, no autonomous weapons)\n• **Fifth Amendment** — severe penalties imposed without due process or meaningful hearing\n• **APA** — Pentagon acted arbitrarily and without statutory authority\n\nThe Pentagon insists it cannot allow a private company to restrict AI use in a national security emergency. Industry broadly concerned this precedent could be weaponized against any developer that refuses to remove guardrails. *(Formal suits filed March 9; relief hearing March 24.)*",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🏛️ 3. AI Legislation Surge: 78 Bills in 27 States; Vermont Signs AI Election Law**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Six weeks into the 2026 state legislative session, AI bills are advancing at unprecedented pace:\n\n• **78 chatbot safety bills** alive in **27 states** — broadest multi-state AI push in U.S. history\n• **Vermont** signed **S 23** (March 5) — first U.S. law prohibiting AI synthetic media in election campaigns\n• **Oregon** gave final approval to chatbot safety bill\n• **Washington** — similar measure awaiting governor approval\n• **Florida** — Gov. DeSantis's comprehensive AI bill advancing with ~1 week to adjournment\n• White House directing DOJ to challenge state AI laws via new **AI Litigation Task Force**; federal preemption framework in development\n\nWithout federal action, companies face up to 50 conflicting state AI regulatory regimes.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🏢 4. Block's 4,000 Layoffs: AI Transformation or AI-Washing?**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Debate intensifies over Jack Dorsey's ~40% workforce cut (4,000 jobs, reducing Block to under 6,000 employees):\n\n• **Dorsey's case**: AI-equipped smaller teams outperform larger ones; restructuring now beats being forced into it reactively; predicts most tech companies follow within a year\n• **Skeptics**: Block was already underperforming financially; critics call it \"AI-washing\" — using AI as cover for standard cost-cutting\n• **Block employees** publicly stated AI tools cannot currently perform their specific roles\n\nThe episode is forcing boards to pressure-test AI productivity claims. The new boardroom question: \"If AI can replace 40% of your workforce, why haven't you restructured?\"",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🎨 5. Supreme Court Settles AI Copyright: Human Authorship Still Required**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "SCOTUS declined (March 2) to hear Stephen Thaler's appeal seeking copyright for AI-generated artwork by his DABUS system — leaving the human authorship requirement as settled law:\n\n• AI-generated content with no meaningful human creative input **cannot be copyrighted** under current U.S. law\n• Lower courts' \"human authorship requirement\" upheld across the board\n• Threshold for what counts as sufficient human creative involvement remains undefined\n• Companies using AI-generated outputs for commercial differentiation face IP vulnerability\n• Congressional action on AI copyright now looks necessary — but no legislation is currently advancing",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚡ Quick Hits**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **DeepSeek V4** — Day 6+ since Two Sessions opened; all predicted windows missed. Possible silent \"V4 Lite\" update spotted on DeepSeek's website, unconfirmed\n• **Oregon chatbot safety bill** — Final legislative approval; governor signature expected imminently\n• **Samsung** — Confirmed plan to double Gemini AI-equipped devices to **800 million** by end of 2026\n• **Florida AI bill** — Advancing with ~1 week to state adjournment; could become largest U.S. state AI law\n• **Vermont S 23** — Signed into law; first U.S. prohibition on AI synthetic media in election campaigns",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👀 What to Watch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **DeepSeek V4** — Every passing day raises the stakes; benchmark comparisons vs GPT-5.4 will dominate coverage the moment it drops\n• **Anthropic formal lawsuit** — Filing imminent; initial hearing will determine whether Pentagon designation is paused during litigation\n• **GPT-5.4 enterprise rollout** — Business/Enterprise Copilot admins enabling access; first large-scale performance reports incoming\n• **China Two Sessions** — Continuing through ~March 14; detailed AI funding and AGI pathway documents expected\n• **Florida AI bill** — Final vote likely this week",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc98164a601e575fe63279a",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

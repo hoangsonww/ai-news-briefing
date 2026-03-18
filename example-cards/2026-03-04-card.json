@@ -1,0 +1,267 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 4, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "13 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "8 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**Top story:** Pentagon designates Anthropic a national security supply-chain risk — an unprecedented move against an American AI company — while Apple holds its biggest product launch of the year.",
+            "wrap": true,
+            "spacing": "small",
+            "isSubtle": true,
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🚨 1. Pentagon Designates Anthropic a National Security Risk**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "The DoD formally labeled Anthropic a **\"supply-chain risk to national security\"** — the first American company ever designated as such. The Pentagon demanded unrestricted Claude access for mass surveillance and autonomous weapons; Anthropic refused and the DoD struck a deal with OpenAI instead. All Anthropic AI must be removed from military systems within **180 days**.\n\nAnthropic CEO Dario Amodei issued a memo calling OpenAI's messaging **\"straight up lies\"** and accusing Sam Altman of falsely presenting himself as a peacemaker.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🍎 2. Apple's Biggest Product Day of 2026**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Apple announced a sweeping hardware refresh with AI at the center:\n• **MacBook Air M5** — 2x faster AI image gen vs M4\n• **MacBook Pro M5 Pro/Max** — 4x faster LLM processing vs M4 Pro\n• **MacBook Neo** — affordable iPad-class chip laptop\n• **iPhone 17e** and **iPad Air M4** also announced\n\nM5 chips deliver up to **8x faster AI image generation** vs M1. Apple Intelligence integrates Google Gemini via Private Cloud Compute. Pre-orders open now; ships **March 11**.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🇨🇳 3. China's Two Sessions Open with AI Dominance Agenda**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "China's annual legislative sessions (全国两会) kicked off with AI as the defining policy theme. The **15th Five-Year Plan (2026–2030)** locks in AI, chips, humanoid robotics, and clean energy as national priorities. The \"AI+\" initiative expands AI integration across all industrial sectors. Beijing is explicitly countering U.S. export controls by investing in domestic chip ecosystems (Huawei, Cambricon).",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🤖 4. DeepSeek V4 Expected This Week**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "DeepSeek V4 — the most anticipated model of 2026 — has not yet launched but is imminent, timed around Two Sessions. Key specs: **1 trillion parameters** (32B active, MoE), fully multimodal (text/image/video), **1M-token context**, optimized for Huawei Ascend chips, projected at **$0.10–$0.30/M tokens** (up to 50x cheaper than GPT-5). Reportedly rivals Claude and GPT on long-context coding benchmarks.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**📰 5. Meta Signs $150M AI Content Deal with News Corp**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Meta signed a **3-year AI content licensing deal** with News Corp for up to **$50M/year** — covering Wall Street Journal, The Times, and other publications for AI training and chatbot responses. News Corp CEO Robert Thomson reframed the company as an **\"AI input company.\"** Follows News Corp's 2024 $250M OpenAI deal. Crystallizes the emerging media business model: monetize archives as AI training data.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**🏛️ 6. U.S. AI Legislation Advances in Multiple States**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "**New York** advanced two AI bills to third reading: S 6955 (AI Training Data Transparency) and S 933 (Chief AI Officer position). **Florida's AI Bill of Rights** approved by the Senate. Federal AI legislation remains quiet in 2026, leaving states to drive regulatory frameworks.",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**⚡ Quick Hits**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **xAI Grok 4.20 Beta 2** — improved instruction-following, reduced hallucinations, better LaTeX typesetting\n• **Samsung** targets 800M Gemini AI-equipped devices by end of 2026\n• **MiniMax M2.5** reportedly rivals Claude Opus 4.6 at significantly lower cost",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**👀 What to Watch**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "• **DeepSeek V4** — could drop any day; benchmark results vs GPT-5 and Claude incoming\n• **Anthropic lawsuit** against Pentagon expected in coming days\n• **China Two Sessions** policy details emerging over next week (through ~March 14)\n• **Apple hardware** ships March 11; first real-world M5 AI performance data incoming",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc9812e8ab2f214ccf3838f",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

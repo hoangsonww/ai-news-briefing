@@ -1,0 +1,126 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 18, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "12 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "6 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- DOJ calls Anthropic \"unacceptable\" national security risk in court filing defending Pentagon blacklisting", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Fourth Claude outage in March -- DownDetector reports surged ~2:17 AM ET; fix deployed", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**NVIDIA GTC 2026 (Day 3)**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Huang hosts open models panel with LangChain, A16Z, AI2, Cursor, Thinking Machines Lab", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NVIDIA restarts H200 chip production for China after US licenses; 25% revenue share with gov", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NVIDIA KVTC compresses LLM KV cache 20x without changing model weights (ICLR 2026)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- JPMorgan halts Qualtrics $5.3B debt deal as investors fear AI disruption; $800B+ wiped from sector", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Pentagon plans secure environments for AI companies to train on classified military data", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- UK publishes AI copyright report: 88% favor mandatory licensing vs. 3% for opt-out approach", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Pennsylvania Senate passes SAFECHAT Act 49-1 for AI chatbot child safety protections", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Coding & Dev Tools**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- U of Waterloo study: top AI coding tools achieve ~75% accuracy; open-source at ~65%", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GPT-5.4 mini ($0.75/M) and nano ($0.20/M) arrive on OpenRouter and third-party platforms", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Hume AI open-sources TADA TTS -- zero hallucinations, 5x faster, 700s long-form support", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Al Jazeera](https://www.aljazeera.com/economy/2026/3/18/trump-administration-defends-anthropic-blacklisting-in-us-court) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-18/trump-administration-vows-legal-fight-on-anthropic-ai-tool-ban) | [MIT Tech Review](https://www.technologyreview.com/2026/03/17/1134351/the-pentagon-is-planning-for-ai-companies-to-train-on-classified-data-defense-official-says/) | [VentureBeat](https://venturebeat.com/orchestration/nvidia-shrinks-llm-memory-20x-without-changing-model-weights) | [GOV.UK](https://www.gov.uk/government/publications/copyright-and-artificial-intelligence-progress-report/copyright-and-artificial-intelligence-statement-of-progress-under-section-137-data-use-and-access-act) | [Penn Capital-Star](https://penncapital-star.com/technology-information/pa-senate-passes-bill-regulating-ai-chatbots-used-by-children-and-teens/) | [Hume AI](https://www.hume.ai/blog/opensource-tada)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/327969f7cfc9817caa82d51f3e14044b",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

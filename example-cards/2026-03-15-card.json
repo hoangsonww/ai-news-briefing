@@ -1,0 +1,162 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": { "width": "Full" },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "AI Daily Briefing", "weight": "bolder", "size": "extraLarge", "color": "accent" },
+                      { "type": "TextBlock", "text": "March 15, 2026", "size": "medium", "isSubtle": true, "spacing": "none" }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      { "type": "TextBlock", "text": "20 stories", "weight": "bolder", "size": "large", "horizontalAlignment": "right" },
+                      { "type": "TextBlock", "text": "9 topics", "size": "medium", "isSubtle": true, "spacing": "none", "horizontalAlignment": "right" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Claude / Anthropic**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Claude service disruption on Mar 15 -- DownDetector reports surged around 1:22 AM ET across multiple plans", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Tech industry groups (CCIA, ITI, SIIA, TechNet) prepare amicus brief backing Anthropic in Pentagon dispute", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Pentagon confirms active transition planning away from Claude -- will take \"more than a month\"", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**OpenAI / Codex / ChatGPT**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- No major new announcements -- GPT-5.4 and Codex Windows app continue rolling out", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- GPT-5.1 models (Instant, Thinking, Pro) fully retired as of Mar 11", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Coding IDEs**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Windsurf integrating Cognition AI (Devin) acquisition into Cascade agent for autonomous debugging", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Windsurf launches Parallel Multi-Agent Sessions using Git worktrees with side-by-side panes", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Agentic AI Ecosystem**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Linux Foundation forms Agentic AI Foundation (AAIF) anchored by MCP, goose, and AGENTS.md", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- MCP ecosystem surpasses 10,000 public servers with remote HTTP transport and OAuth 2.1", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Industry**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Microsoft unveils GigaTIME -- AI converting pathology slides to proteomics maps across 24 cancer types, 14,256 patients", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- NVIDIA GTC 2026 opens in San Jose -- Vera Rubin, Groq 3 LPU, $1T order pipeline expected", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Meta plans to replace laid-off workers with AI as 20% workforce cut (16,000 jobs) advances", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Amazon Health AI expands to all US customers -- Prime members get 5 free virtual care visits", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Microsoft Copilot Health launches in preview with wearable data and 50,000+ hospital records", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Open Source AI**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- IBM Granite 4.0 1B Speech hits #1 on OpenASR leaderboard -- 5.52 WER, 280x real-time, Apache 2.0", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Google Gemini Embedding 2 -- first natively multimodal embedding model (text, image, video, audio, docs)", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Startups & Funding**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- No major new rounds on Mar 15 -- week of Mar 10-14 saw Nscale ($2B), AMI Labs ($1.03B), robotics ($1.2B+)", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- March 2026 on pace for record AI funding with more $100M+ rounds than any comparable period ever", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**AI Policy & Regulation**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Commerce Dept publishes state AI law evaluation -- identifies \"burdensome\" laws for federal preemption", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- FTC issues Section 5 policy statement clarifying consumer protection authority over AI systems", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Colorado delays comprehensive AI law implementation to June 30, 2026 amid federal scrutiny", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              { "type": "TextBlock", "text": "**Dev Tools & Frameworks**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
+            ]
+          },
+          { "type": "TextBlock", "text": "- Vercel ships AI SDK 6 with Agent abstraction, full MCP support, tool approval UI, and DevTools", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Next.js 16 matures with Turbopack stable (10x faster refresh), Cache Components, MCP debugging", "wrap": true, "spacing": "small", "size": "small" },
+          { "type": "TextBlock", "text": "- Vercel releases react-best-practices -- 40+ optimization rules for AI coding agents", "wrap": true, "spacing": "small", "size": "small" },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              { "type": "TextBlock", "text": "**Sources**", "weight": "bolder", "size": "medium", "spacing": "none" },
+              { "type": "TextBlock", "text": "[Microsoft Research](https://www.microsoft.com/en-us/research/blog/gigatime-scaling-tumor-microenvironment-modeling-using-virtual-population-generated-by-multimodal-ai/) | [NVIDIA Blog](https://blogs.nvidia.com/blog/gtc-2026-news/) | [SiliconAngle](https://siliconangle.com/2026/03/15/report-meta-lay-off-20-staff-replace-many-ai-workers/) | [Axios](https://www.axios.com/2026/03/16/tech-industry-rallies-anthropic-pentagon-fight) | [Google AI Blog](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-embedding-2/) | [MarkTechPost](https://www.marktechpost.com/2026/03/15/ibm-ai-releases-granite-4-0-1b-speech-as-a-compact-multilingual-speech-model-for-edge-ai-and-translation-pipelines/) | [Healthcare IT Today](https://www.healthcareittoday.com/2026/03/15/bonus-features-march-15-2026-amazon-and-microsoft-launch-healthcare-ai-agents-plus-23-more-stories/) | [Vercel](https://vercel.com/blog/ai-sdk-6)", "wrap": true, "size": "small", "isSubtle": true, "spacing": "small" }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc981d1bca8db754c836e01",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}

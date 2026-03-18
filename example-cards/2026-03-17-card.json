@@ -1,0 +1,366 @@
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.4",
+        "msteams": {
+          "width": "Full"
+        },
+        "body": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "spacing": "none",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "AI Daily Briefing",
+                        "weight": "bolder",
+                        "size": "extraLarge",
+                        "color": "accent"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "March 17, 2026",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "verticalContentAlignment": "center",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "20 stories",
+                        "weight": "bolder",
+                        "size": "large",
+                        "horizontalAlignment": "right"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "8 topics",
+                        "size": "medium",
+                        "isSubtle": true,
+                        "spacing": "none",
+                        "horizontalAlignment": "right"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**OpenAI**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- GPT-5.4 mini released -- 2x faster than GPT-5 mini, approaches full GPT-5.4 on SWE-Bench Pro, 400k context, $0.75/M input",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- GPT-5.4 nano released -- smallest/cheapest in GPT-5.4 family at $0.20/M input tokens, API-only for subagents",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Interactive math/science learning in ChatGPT -- visual modules for 70+ topics with real-time formula experimentation",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**Claude / Anthropic**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Claude Partner Network launched with $100M funding -- Deloitte, Accenture among founding enterprise partners",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Claude usage limits doubled through March 27 during off-peak hours across all plan tiers at no extra cost",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Third Claude outage in March -- ~250 users affected, free tier impacted, fix rolling out",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**Open Source AI**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Mistral Small 4 -- 119B MoE, 128 experts, 6B active params, unifies instruct/reasoning/multimodal/coding, Apache 2.0",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Mistral + NVIDIA co-development partnership at GTC for open-source models optimized for NVIDIA hardware",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**NVIDIA GTC 2026 (Day 2)**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Oracle + NVIDIA vector search partnership -- GPU-accelerated vector index builds via cuVS open-source library",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Cloud partners cross 1M deployed GPUs globally -- doubled AI factory footprint YoY, now 1.7 GW of AI capacity",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Uber AV fleet on NVIDIA Drive AV -- 28 cities across 4 continents by 2028, starting LA and SF",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**AI Infrastructure**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Nebius announces $3.75B convertible notes offering to fund AI cloud expansion after $27B Meta deal; stock drops 7.5%",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Eli Lilly LillyPod operational -- 1,016 Blackwell Ultra GPUs delivering 9,000+ petaflops for drug discovery",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**AI Startups & Funding**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Robotics mega-round era -- Mind Robotics $500M, Rhoda AI $450M, Sunday $165M unicorn, Oxa $103M in one week",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- AMI Labs (Yann LeCun) raised $1.03B -- largest European seed ever for JEPA world models, backed by Bezos + NVIDIA",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- Nscale raised $2B (UK) -- one of the largest non-US AI infrastructure funding rounds this quarter",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**AI Policy & Regulation**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- UK AI copyright reports due March 18 -- 88% of 11,500 respondents favor mandatory licensing for AI training data",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- EU Council agrees position on streamlining AI rules as part of Omnibus VII digital legislation package",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**Agentic AI**",
+                "weight": "bolder",
+                "size": "medium",
+                "wrap": true,
+                "color": "accent"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "- MCP protocol growing pains -- Perplexity CTO moves away from MCP; engineers report 40-50% context window consumption",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "- A2A protocol gaining traction as complementary standard for agent-to-agent discovery and collaboration",
+            "wrap": true,
+            "spacing": "small",
+            "size": "small"
+          },
+          {
+            "type": "Container",
+            "separator": true,
+            "spacing": "large",
+            "style": "emphasis",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "**Sources**",
+                "weight": "bolder",
+                "size": "medium",
+                "spacing": "none"
+              },
+              {
+                "type": "TextBlock",
+                "text": "[OpenAI](https://openai.com/index/introducing-gpt-5-4-mini-and-nano/) | [9to5Mac](https://9to5mac.com/2026/03/17/openai-releases-gpt-5-4-mini-and-nano-its-most-capable-small-models-yet/) | [Mistral AI](https://mistral.ai/news/mistral-small-4) | [Bloomberg](https://www.bloomberg.com/news/articles/2026-03-17/nebius-plans-to-raise-3-75-billion-in-debt-after-meta-deal) | [NVIDIA Blog](https://blogs.nvidia.com/blog/gtc-2026-news/) | [CNBC](https://www.cnbc.com/2026/03/16/nvidia-gtc-2026-ceo-jensen-huang-keynote-blackwell-vera-rubin.html) | [TechCrunch](https://techcrunch.com/2026/03/03/openai-anthropic-waymo-dominated-189-billion-vc-investments-february-crunchbase-report/) | [Crunchbase](https://news.crunchbase.com/venture/biggest-funding-rounds-ai-robotics-ecommerce-quince/)",
+                "wrap": true,
+                "size": "small",
+                "isSubtle": true,
+                "spacing": "small"
+              }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "type": "Action.OpenUrl",
+            "title": "Open Full Briefing in Notion",
+            "url": "https://www.notion.so/326969f7cfc9813c9ec2da7b4ea12ba2",
+            "style": "positive"
+          }
+        ]
+      }
+    }
+  ]
+}
