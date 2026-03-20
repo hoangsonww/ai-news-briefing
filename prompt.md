@@ -40,6 +40,29 @@ For each topic, try searches like:
 
 Restrict results to the past 24 hours. Discard anything older or undated.
 
+### Step 1b: Check Official Changelogs & Release Notes
+
+In addition to web searches, use `WebFetch` to check the following official changelog and release note pages. Extract **only entries dated today** (the current briefing date). Ignore all entries from other dates.
+
+| Provider | URL |
+|---|---|
+| Claude Code | https://code.claude.com/docs/en/changelog |
+| Claude (product) | https://support.claude.com/en/articles/12138966-release-notes |
+| OpenAI Codex | https://developers.openai.com/codex/changelog |
+| ChatGPT | https://help.openai.com/en/articles/6825453-chatgpt-release-notes |
+| Gemini | https://gemini.google/release-notes/ |
+| GitHub Copilot | https://github.blog/changelog/ |
+| Cursor | https://www.cursor.com/changelog |
+| Vercel AI SDK | https://sdk.vercel.ai/changelog |
+
+**Rules for changelog fetching:**
+- Fetch each page and scan for entries matching today's date (match against the current date in any common format: `YYYY-MM-DD`, `Month DD, YYYY`, `MMM DD`, etc.).
+- If a page is unreachable or returns an error, skip it silently — do not let a single failed fetch block the briefing.
+- Only include items that are clearly dated today. Do NOT include entries from prior days, even if they are recent.
+- Merge any findings into the appropriate topic section (e.g., Claude Code changelog items go into the "Claude Code / Anthropic" section, Copilot items go into "AI Coding IDEs", etc.).
+- If a changelog entry duplicates something already found via web search, keep the more detailed version and discard the other.
+- If none of the changelogs have entries for today, that is fine — move on.
+
 ## Step 2: Compile the Briefing
 
 Format the briefing in TWO tiers:
@@ -92,9 +115,10 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 
 **CRITICAL RULES — the card MUST match the template below exactly:**
 - The file must be valid JSON. No trailing commas. No comments.
-- Total file size must be under 26KB (Teams limit is 28KB; leave headroom).
+- Total file size must be under 24KB (Teams limit is 28KB; leave 4KB headroom).
 - All text must be ASCII-safe. Use `--` not em dashes. Use straight quotes. No Unicode symbols in bullet text.
-- One bullet per story, max ~120 chars each. Plain text only in bullets.
+- One bullet per story, max ~200 chars each. Two sentences is fine if the story warrants it. Plain text only in bullets.
+- Aim for 4-6 bullets per section when there is enough news. Do not pad thin sections — 2-3 bullets is fine if that's all there is.
 - Sources are clickable markdown links: `[Title](url)` -- Adaptive Cards support this in TextBlock.
 - Keep it professional and scannable. The card should look polished in a Teams channel.
 
@@ -187,8 +211,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
     { "type": "TextBlock", "text": "**SECTION TITLE**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
   ]
 },
-{ "type": "TextBlock", "text": "- Bullet text, plain ASCII, max ~120 chars", "wrap": true, "spacing": "small", "size": "small" },
-{ "type": "TextBlock", "text": "- Another bullet", "wrap": true, "spacing": "small", "size": "small" }
+{ "type": "TextBlock", "text": "- Bullet text, plain ASCII, max ~200 chars. Two sentences OK.", "wrap": true, "spacing": "small", "size": "small" },
+{ "type": "TextBlock", "text": "- Another bullet -- aim for 4-6 per section when news warrants it", "wrap": true, "spacing": "small", "size": "small" }
 ```
 
 **Sources section rules:**

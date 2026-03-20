@@ -31,6 +31,29 @@ Run **parallel** web searches across these categories:
 | Open Source | `open source AI releases [today's date]` |
 | Coding & Dev Tools | `AI coding tools developer announcements [today's date]` |
 
+### Step 1b: Check Official Changelogs & Release Notes
+
+In addition to web searches, use `WebFetch` to check these official changelog pages. Extract **only entries dated today** — ignore all other dates.
+
+| Provider | URL |
+|---|---|
+| Claude Code | https://code.claude.com/docs/en/changelog |
+| Claude (product) | https://support.claude.com/en/articles/12138966-release-notes |
+| OpenAI Codex | https://developers.openai.com/codex/changelog |
+| ChatGPT | https://help.openai.com/en/articles/6825453-chatgpt-release-notes |
+| Gemini | https://gemini.google/release-notes/ |
+| GitHub Copilot | https://github.blog/changelog/ |
+| Cursor | https://www.cursor.com/changelog |
+| Vercel AI SDK | https://sdk.vercel.ai/changelog |
+
+**Rules:**
+- Fetch each page and scan for entries matching today's date (any format: `YYYY-MM-DD`, `Month DD, YYYY`, `MMM DD`, etc.).
+- If a page is unreachable, skip it — do not block the briefing.
+- Only include items clearly dated today. Do NOT include prior days' entries.
+- Merge findings into the matching topic section (e.g., Claude Code → "Claude Code / Anthropic", Copilot → "AI Coding IDEs").
+- Deduplicate against web search results — keep the more detailed version.
+- If no changelogs have today's entries, move on.
+
 ## Step 2: Deduplicate Against Previous Briefing
 
 Compare search results against the previous briefing content. Only include stories that are:
@@ -72,14 +95,15 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 
 **CRITICAL RULES — the card MUST match the template below exactly:**
 - The file must be valid JSON. No trailing commas. No comments.
-- Total file size must be under 26KB (Teams limit is 28KB; leave headroom).
+- Total file size must be under 24KB (Teams limit is 28KB; leave 4KB headroom).
 - All text must be ASCII-safe. Use `--` not em dashes. Use straight quotes. No Unicode symbols in bullet text.
-- One bullet per story, max ~200 chars each. Plain text only in bullets.
+- One bullet per story, max ~200 chars each. Two sentences is fine if the story warrants it. Plain text only in bullets.
+- Aim for 4-6 bullets per section when there is enough news. Do not pad thin sections — 2-3 bullets is fine if that's all there is.
 - Sources are clickable markdown links: `[Title](url)` -- Adaptive Cards support this in TextBlock.
 - Keep it professional and scannable. The card should look polished in a Teams channel.
 
 **NON-NEGOTIABLE STRUCTURAL REQUIREMENTS — do NOT invent your own layout:**
-- **Header**: MUST be a `Container` with `style: "accent"`, `bleed: true`, containing a `ColumnSet` with title/date on the left and story/topic counts on the right. Do NOT use a plain TextBlock for the header. Do NOT add emoji to the header.
+- **Header**: MUST be a `Container` with `style: "emphasis"`, `bleed: true`, containing a `ColumnSet` with title/date on the left and story/topic counts on the right. Do NOT use a plain TextBlock for the header. Do NOT add emoji to the header.
 - **Sources**: MUST be a `Container` with `style: "emphasis"` at the bottom of the body, with pipe-separated clickable links in a single TextBlock. Do NOT omit the sources section.
 - **Action button**: MUST use `"title": "Open Full Briefing in Notion"` with `"style": "positive"`. Do NOT shorten to "View in Notion" or omit the style.
 - **Bullets**: Each bullet MUST be its own separate TextBlock with `"- "` prefix. Do NOT put multiple bullets inside a single TextBlock using `\n\n` or `•` — Teams renders them on one line. One TextBlock per bullet, no exceptions.
@@ -167,8 +191,8 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
     { "type": "TextBlock", "text": "**SECTION TITLE**", "weight": "bolder", "size": "medium", "wrap": true, "color": "accent" }
   ]
 },
-{ "type": "TextBlock", "text": "- Bullet text, plain ASCII, max ~120 chars", "wrap": true, "spacing": "small", "size": "small" },
-{ "type": "TextBlock", "text": "- Another bullet", "wrap": true, "spacing": "small", "size": "small" }
+{ "type": "TextBlock", "text": "- Bullet text, plain ASCII, max ~200 chars. Two sentences OK.", "wrap": true, "spacing": "small", "size": "small" },
+{ "type": "TextBlock", "text": "- Another bullet -- aim for 4-6 per section when news warrants it", "wrap": true, "spacing": "small", "size": "small" }
 ```
 
 **Sources section rules:**
