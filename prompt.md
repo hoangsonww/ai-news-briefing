@@ -9,11 +9,15 @@ Before searching for new news, load the deduplication list and check the most re
 2. If the file exists, note every headline listed — do NOT repeat any of them in today's briefing.
 3. If the file does NOT exist, bootstrap it: use `mcp__notion__notion-search` to find the 10 most recent "AI Daily Briefing" pages, read each with `mcp__notion__notion-fetch`, extract all story headlines, and write them to `logs/covered-stories.txt` in the format below. Then proceed.
 
-### 0b. Check the most recent Notion page (safety net)
-1. Use `mcp__notion__notion-search` to find the single most recent "AI Daily Briefing" page.
-2. Use `mcp__notion__notion-fetch` to read its content.
-3. Note any stories not already in `covered-stories.txt` — add them to your dedup list for this run.
-4. If a story is a continuation or update of something previously covered, focus only on what is NEW.
+### 0b. Check whether today's Notion page already exists
+1. Use `mcp__notion__notion-search` to search for "AI Daily Briefing" pages.
+2. Check whether any returned page has today's date in its title (e.g. "2026-03-09 - AI Daily Briefing").
+3. **Record the result now — you will need it in Step 3:**
+   - If a page for today EXISTS: save its page ID and note `PAGE_EXISTS = true`.
+   - If NO page for today exists: note `PAGE_EXISTS = false`.
+4. Use `mcp__notion__notion-fetch` to read the most recent page's content.
+5. Note any stories not already in `covered-stories.txt` — add them to your dedup list for this run.
+6. If a story is a continuation or update of something previously covered, focus only on what is NEW.
 
 ## Step 1: Search for News
 
@@ -86,12 +90,20 @@ If you cannot determine the exact date of a story, note "(date unconfirmed)" and
 
 ## Step 3: Write to Notion
 
-After compiling the briefing, use the `mcp__notion__notion-create-pages` tool to create a new page in the AI Daily Briefing database.
+**CRITICAL: Never create a duplicate page.** Use the `PAGE_EXISTS` result from Step 0b to decide:
+
+### If PAGE_EXISTS = true (page for today already exists)
+Use `mcp__notion__notion-update-page` with the page ID from Step 0b to update the existing page. Replace the content with the new briefing. Update the Topics property if it changed.
+
+### If PAGE_EXISTS = false (no page for today)
+Use `mcp__notion__notion-create-pages` to create a new page in the AI Daily Briefing database.
 
 Use these EXACT parameters:
 - parent: {"data_source_id": "856794cc-d871-4a95-be2d-2a1600920a19"}
 - properties: {"Date": "[TODAY'S DATE] - AI Daily Briefing", "Status": "Complete", "Topics": 9}
 - content: The full briefing formatted in Notion-flavored Markdown
+
+**Do NOT re-query Notion here.** Trust Step 0b's result. Re-querying risks false negatives from title format mismatches or API timing, which causes duplicate pages.
 
 ### Notion Formatting Rules
 - Use ## for section headings
