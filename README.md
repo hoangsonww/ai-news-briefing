@@ -57,11 +57,17 @@ flowchart TD
 
     D -->|Step 4: Write card| J2[logs/YYYY-MM-DD-card.json]
 
-    B1 -->|If webhook set| T[notify-teams.sh]
-    B2 -->|If webhook set| T2[notify-teams.ps1]
+    B1 -->|If Teams webhook set| T[notify-teams.sh]
+    B2 -->|If Teams webhook set| T2[notify-teams.ps1]
     T -->|POST card.json| V[Teams Webhook]
     T2 -->|POST card.json| V
     V --> W[Teams Channel]
+
+    B1 -->|If Slack webhook set| S1[notify-slack.sh]
+    B2 -->|If Slack webhook set| S2[notify-slack.ps1]
+    S1 -->|Convert + POST| SV[Slack Webhook]
+    S2 -->|Convert + POST| SV
+    SV --> SW[Slack Channel]
 
     B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
     B2 -->|Logs output| J
@@ -75,7 +81,8 @@ flowchart TD
 3. Claude Code executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
 4. Notion receives the finished briefing as a new database page.
 5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which validates and POSTs the pre-built `logs/YYYY-MM-DD-card.json` file (written by Claude in Step 4) to the configured Teams webhook.
-6. Logs are written to a date-stamped file and automatically pruned after 30 days.
+6. If the `AI_BRIEFING_SLACK_WEBHOOK` environment variable is set, the entry point script calls `notify-slack.sh` / `notify-slack.ps1`, which converts the Teams card to Slack Block Kit format and POSTs it to the configured Slack webhook.
+7. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
 ## Prerequisites
 
@@ -275,7 +282,8 @@ The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux
 | `topic-edit` | Add, remove, or list topics in prompt.md | `bash scripts/topic-edit.sh --add "AI Hardware" "GPU news"` |
 | `update-schedule` | Change daily run time | `bash scripts/update-schedule.sh --hour 7 --minute 30` |
 | `notify` | Send native OS notification for briefing status | `bash scripts/notify.sh` |
-| `notify-teams` | Validate and POST pre-built `card.json` to Microsoft Teams webhook | `bash scripts/notify-teams.sh` |
+| `notify-teams` | Validate and POST pre-built `card.json` to Microsoft Teams webhook(s) | `bash scripts/notify-teams.sh` or `--all` for multiple |
+| `notify-slack` | Convert Teams card to Slack Block Kit and POST to Slack webhook(s) | `bash scripts/notify-slack.sh` or `--all` for multiple |
 | `uninstall` | Remove scheduler; `--all` also removes logs and backups | `bash scripts/uninstall.sh --all` |
 
 **Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
@@ -322,6 +330,34 @@ Each generated page contains:
 
 The pipeline can optionally post a styled [Adaptive Card](https://adaptivecards.io/) with the full briefing to a Microsoft Teams channel via an incoming webhook. The AI generates the Adaptive Card JSON directly during the briefing run (Step 4), writing it to `logs/YYYY-MM-DD-card.json`. The notify script validates the JSON and POSTs it to the webhook as-is -- no intermediate parsing or transformation. See [E2E_FLOW.md](E2E_FLOW.md) for the full technical walkthrough.
 
+## Slack Integration
+
+The pipeline can also post a formatted briefing to Slack channels. The `notify-slack` script reads the same Teams card JSON (`logs/YYYY-MM-DD-card.json`), converts it to Slack [Block Kit](https://api.slack.com/block-kit) format using `scripts/teams-to-slack.py`, and POSTs it to a Slack incoming webhook.
+
+### Slack setup
+
+1. Create a Slack app with an incoming webhook at [api.slack.com/apps](https://api.slack.com/apps).
+2. Set the `AI_BRIEFING_SLACK_WEBHOOK` environment variable to the webhook URL.
+3. The next briefing run will automatically post to Slack.
+
+**macOS / Linux:**
+
+```bash
+export AI_BRIEFING_SLACK_WEBHOOK="https://hooks.slack.com/services/T.../B.../..."
+```
+
+**Windows (PowerShell):**
+
+```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "https://hooks.slack.com/services/T.../B.../...", "User")
+```
+
+Multiple webhook URLs work the same as Teams -- semicolon-separated, first URL by default, `--all` for all:
+
+```bash
+bash scripts/notify-slack.sh --all
+```
+
 ### Quick setup
 
 1. Create an incoming webhook in your Teams channel (see [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md) for the full walkthrough).
@@ -341,6 +377,21 @@ export AI_BRIEFING_TEAMS_WEBHOOK="<url>"
 
 ```powershell
 [Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "<url>", "User")
+```
+
+### Multiple webhook URLs
+
+You can configure multiple webhook URLs by separating them with semicolons. By default, only the **first** URL is used. Pass `--all` (bash) or `-All` (PowerShell) to post to all of them.
+
+```bash
+# Set multiple URLs (semicolon-separated)
+export AI_BRIEFING_TEAMS_WEBHOOK="https://first-webhook;https://second-webhook"
+
+# Post to first URL only (default)
+bash scripts/notify-teams.sh
+
+# Post to all URLs
+bash scripts/notify-teams.sh --all
 ```
 
 ### Test the integration
@@ -376,7 +427,7 @@ Search results are synthesized into a two-tier format:
 
 ### Step 3: Write to Notion
 
-Claude calls the `mcp__notion__notion-create-pages` tool to create a new page in the target database with the compiled briefing as Notion-flavored Markdown content.
+Claude checks whether a page for today already exists (captured during Step 0b). If one exists, it updates the page in place. If not, it creates a new page in the target database. This prevents duplicate pages when the briefing runs multiple times in a day.
 
 ### Step 4: Generate Teams Card JSON
 
@@ -386,6 +437,12 @@ Here is what a card looks like in Teams:
 
 <p align="center">
   <img src="example-cards/teams.png" alt="Teams Card Example" width="100%">
+</p>
+
+And in Slack:
+
+<p align="center">
+  <img src="example-cards/slack.png" alt="Slack Message Example" width="100%">
 </p>
 
 ## Topic Coverage
@@ -472,7 +529,7 @@ If the log shows the run stopped mid-way, the `--max-budget-usd` cap may have be
 
 ### Multiple runs in the same day
 
-Running the briefing multiple times in a day creates multiple Notion pages (one per run). Logs append to the same date-stamped file, so all runs for a given day are captured in one log.
+Running the briefing multiple times in a day updates the existing Notion page rather than creating a duplicate. The agent checks for an existing page during Step 0b and updates it if found. Logs append to the same date-stamped file, so all runs for a given day are captured in one log.
 
 ## Cost Estimate
 
@@ -510,6 +567,8 @@ ai-news-briefing/
 │   ├── update-schedule.sh/.ps1  # Change daily run time
 │   ├── notify.sh/.ps1           # Send native OS notifications
 │   ├── notify-teams.sh/.ps1     # Post briefing to Microsoft Teams
+│   ├── notify-slack.sh/.ps1     # Post briefing to Slack
+│   ├── teams-to-slack.py        # Convert Teams Adaptive Card JSON to Slack Block Kit
 │   ├── build-teams-card.py      # Legacy card builder (not used in current flow)
 │   └── uninstall.sh/.ps1        # Full cleanup and removal
 ├── briefing.sh                  # macOS entry point (bash)

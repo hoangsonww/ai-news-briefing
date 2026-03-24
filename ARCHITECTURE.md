@@ -70,6 +70,11 @@ graph TD
         T1 -->|Validates & POSTs| CJ
         T2 -->|Validates & POSTs| CJ
         CJ -->|Adaptive Card JSON| TW[Teams Webhook]
+        B1 -->|On success| S1[notify-slack.sh]
+        B2 -->|On success| S2[notify-slack.ps1]
+        S1 -->|Converts & POSTs| CJ
+        S2 -->|Converts & POSTs| CJ
+        CJ -->|Block Kit JSON| SW[Slack Webhook]
     end
 
     B1 -->|Writes logs| H[logs/ Directory]
@@ -83,7 +88,7 @@ graph TD
 - **Single responsibility.** Each file has one job: scheduling, orchestration, prompt definition, or installation.
 - **Cost containment.** A hard budget cap of $2.00 per run prevents runaway API costs.
 - **Observability.** All output (stdout and stderr) is captured in date-stamped log files.
-- **Multi-channel delivery.** Briefings publish to Notion and optionally post to Microsoft Teams via webhook.
+- **Multi-channel delivery.** Briefings publish to Notion and optionally post to Microsoft Teams and/or Slack via webhooks.
 
 ---
 
@@ -432,6 +437,54 @@ export AI_BRIEFING_TEAMS_WEBHOOK="https://prod-XX.westus.logic.azure.com:443/wor
 
 Both scripts also accept command-line overrides (`--webhook-url` / `-WebhookUrl`) for testing without modifying the environment.
 
+Both Teams and Slack support multiple webhook URLs via semicolon-separated values in the env var. By default only the first URL is used; pass `--all` / `-All` to post to all.
+
+### 3.10 Slack Notification Pipeline
+
+The Slack pipeline reuses the same card JSON file produced in Step 4. A Python converter (`scripts/teams-to-slack.py`) reads the Teams Adaptive Card JSON, extracts the header, sections, bullets, sources, and Notion URL, and builds a Slack [Block Kit](https://api.slack.com/block-kit) payload. The notify script then POSTs the converted payload to the webhook.
+
+```mermaid
+flowchart LR
+    CJ["logs/YYYY-MM-DD-card.json"] -->|Input| CV["teams-to-slack.py"]
+    CV -->|Slack Block Kit JSON| NS["notify-slack.sh / .ps1"]
+    NS -->|"curl -d @file"| WH["Slack Webhook URL"]
+    WH -->|200 OK| NS
+```
+
+#### Files Involved
+
+| File | Language | Purpose |
+|---|---|---|
+| `scripts/teams-to-slack.py` | Python 3 | Converts Teams Adaptive Card JSON to Slack Block Kit JSON. Pure stdlib, no external deps. |
+| `scripts/notify-slack.sh` | Bash | macOS/Linux entry point. Calls converter, validates result, POSTs via `curl`. |
+| `scripts/notify-slack.ps1` | PowerShell | Windows entry point. Same logic using `Invoke-WebRequest`. |
+
+#### Slack Block Kit Structure
+
+The converted message uses these Block Kit elements:
+
+1. **Header block.** Plain text title "AI Daily Briefing".
+2. **Section block.** Date, story count, and topic count with mrkdwn formatting.
+3. **Topic sections.** Each topic is a single section block with bold title and bullet points combined in mrkdwn.
+4. **Context block.** Sources rendered as clickable Slack mrkdwn links (`<url|title>`).
+5. **Actions block.** A primary-styled button linking to the full Notion page.
+
+#### Environment Variable Setup
+
+The webhook URL is read from the `AI_BRIEFING_SLACK_WEBHOOK` environment variable.
+
+**macOS / Linux:**
+
+```bash
+export AI_BRIEFING_SLACK_WEBHOOK="https://hooks.slack.com/services/T.../B.../..."
+```
+
+**Windows (PowerShell):**
+
+```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "https://hooks.slack.com/services/T.../B.../...", "User")
+```
+
 Here is how the card looks in Microsoft Teams:
 
 #### Teams Card Example
@@ -710,6 +763,8 @@ graph TD
     SC --> SC3["dry-run.sh/.ps1"]
     SC --> SC4["topic-edit.sh/.ps1"]
     SC --> SC5["notify-teams.sh/.ps1"]
+    SC --> SC8["notify-slack.sh/.ps1"]
+    SC --> SC9["teams-to-slack.py"]
     SC --> SC6["build-teams-card.py (legacy)"]
     SC --> SC7["+ 8 more pairs"]
     A --> B[briefing.sh]
@@ -756,6 +811,9 @@ graph TD
 | `README.md` | Shared | User-facing documentation | Yes |
 | `scripts/notify-teams.sh` | macOS/Linux | Teams notification entry point (Bash) | Yes |
 | `scripts/notify-teams.ps1` | Windows | Teams notification entry point (PowerShell) | Yes |
+| `scripts/notify-slack.sh` | macOS/Linux | Slack notification entry point (Bash) | Yes |
+| `scripts/notify-slack.ps1` | Windows | Slack notification entry point (PowerShell) | Yes |
+| `scripts/teams-to-slack.py` | Shared | Converts Teams Adaptive Card JSON to Slack Block Kit JSON | Yes |
 | `scripts/build-teams-card.py` | Shared | **Legacy.** Old log-parsing card builder. No longer referenced. | Yes |
 | `scripts/*.sh` | macOS/Linux | Utility scripts (12 tools) | Yes |
 | `scripts/*.ps1` | Windows | Utility scripts (12 tools) | Yes |
@@ -768,7 +826,7 @@ graph TD
 
 1. **Created**: At the start of each run, the entry script creates (or appends to) `logs/YYYY-MM-DD.log`.
 2. **Appended**: Claude Code's full stdout and stderr are appended. Multiple runs on the same day share one log file.
-3. **Card JSON**: Claude Code writes `logs/YYYY-MM-DD-card.json` as Step 4 of the briefing skill. This file is the exact Adaptive Card payload sent to Teams.
+3. **Card JSON**: Claude Code writes `logs/YYYY-MM-DD-card.json` as Step 4 of the briefing skill. This file is the exact Adaptive Card payload sent to Teams and is also the source for the Slack Block Kit conversion.
 4. **Rotated**: At the end of each run, logs older than 30 days are deleted.
 5. **launchd logs** (macOS only): `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself. These are not rotated automatically.
 
@@ -831,9 +889,9 @@ Change `--model sonnet` in the entry script for your platform. Consider adjustin
 | Channel | Status | Implementation Approach |
 |---|---|---|
 | Microsoft Teams | **Implemented** | Claude Code writes Adaptive Card JSON (Step 4), `notify-teams.sh/.ps1` validates and POSTs to Power Automate webhook. See [Section 3.9](#39-teams-notification-pipeline). |
+| Slack | **Implemented** | `notify-slack.sh/.ps1` converts the Teams card JSON to Slack Block Kit using `teams-to-slack.py` and POSTs to Slack webhook. See [Section 3.10](#310-slack-notification-pipeline). |
 | macOS notification | Planned | `osascript -e 'display notification ...'` in `briefing.sh` |
 | Windows toast | Planned | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
-| Slack | Planned | Slack MCP tool call in `prompt.md` or webhook `curl`/`Invoke-RestMethod` in the entry script |
 | Email | Planned | `mail`/`sendmail` (macOS) or `Send-MailMessage` (Windows) in the entry script |
 
 ### Adding Linux Support
@@ -872,7 +930,9 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 | Backup prompt | -- | `bash scripts/backup-prompt.sh --backup` | `.\scripts\backup-prompt.ps1 -Action backup` |
 | Edit topics | -- | `bash scripts/topic-edit.sh --list` | `.\scripts\topic-edit.ps1 -Action list` |
 | Test Teams notify | -- | `bash scripts/notify-teams.sh` | `.\scripts\notify-teams.ps1` |
+| Test Slack notify | -- | `bash scripts/notify-slack.sh` | `.\scripts\notify-slack.ps1` |
 | Set Teams webhook | -- | `export AI_BRIEFING_TEAMS_WEBHOOK="..."` | `[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "...", "User")` |
+| Set Slack webhook | -- | `export AI_BRIEFING_SLACK_WEBHOOK="..."` | `[Environment]::SetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "...", "User")` |
 
 ### Environment Requirements
 

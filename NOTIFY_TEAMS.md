@@ -143,6 +143,8 @@ If the webhook is correctly configured, you should see a card with "Webhook is w
 
 The webhook URL is stored in the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable. Set it persistently so it survives terminal restarts and system reboots.
 
+### Single webhook
+
 ### macOS / Linux
 
 Add the export to your shell profile:
@@ -180,6 +182,30 @@ Close and reopen your terminal for the change to take effect.
 ```powershell
 [Environment]::GetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "User")
 ```
+
+### Multiple webhooks
+
+To deliver the card to more than one Teams channel, separate the webhook URLs with semicolons:
+
+```bash
+# macOS / Linux
+export AI_BRIEFING_TEAMS_WEBHOOK="https://first-webhook-url;https://second-webhook-url"
+
+# Windows (PowerShell)
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "https://first-webhook-url;https://second-webhook-url", "User")
+```
+
+By default, only the **first** URL receives the card. Pass `--all` (bash) or `-All` (PowerShell) to post to every URL:
+
+```bash
+# Post to all configured URLs
+./scripts/notify-teams.sh --all
+
+# Windows
+.\scripts\notify-teams.ps1 -All
+```
+
+The automated daily run (`briefing.sh` / `briefing.ps1`) always posts to the first URL only. To change this, edit the notify call in the entry script to include the `--all` / `-All` flag.
 
 > [!NOTE]
 > **Note:** Do not commit the webhook URL to version control. The `AI_BRIEFING_TEAMS_WEBHOOK` variable is read at runtime by the notification scripts and is never written to any tracked file.
@@ -240,17 +266,25 @@ You can test the Teams notification independently of a full briefing run by call
 ### macOS / Linux
 
 ```bash
+# Post to a single webhook
 ./scripts/notify-teams.sh \
   --webhook-url "https://prod-XX.westus.logic.azure.com:443/workflows/..." \
   --card-file ./logs/2026-03-13-card.json
+
+# Post to all semicolon-separated URLs in the env var
+./scripts/notify-teams.sh --all --card-file ./logs/2026-03-13-card.json
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
+# Post to a single webhook
 .\scripts\notify-teams.ps1 `
   -WebhookUrl "https://prod-XX.westus.logic.azure.com:443/workflows/..." `
   -CardFile .\logs\2026-03-13-card.json
+
+# Post to all semicolon-separated URLs in the env var
+.\scripts\notify-teams.ps1 -All -CardFile .\logs\2026-03-13-card.json
 ```
 
 ### What to Expect
