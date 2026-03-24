@@ -54,10 +54,21 @@ if [ $EXIT_CODE -eq 0 ]; then
   CARD_FILE="$LOG_DIR/$DATE-card.json"
   if [[ -x "$TEAMS_SCRIPT" && -n "${AI_BRIEFING_TEAMS_WEBHOOK:-}" ]]; then
     echo "[$DATE $(date +%H:%M:%S)] Sending Teams notification..." >> "$LOG_FILE"
-    if "$TEAMS_SCRIPT" --card-file "$CARD_FILE"; then
+    if "$TEAMS_SCRIPT" --all --card-file "$CARD_FILE"; then
       echo "[$DATE $(date +%H:%M:%S)] Teams notification sent." >> "$LOG_FILE"
     else
       echo "[$DATE $(date +%H:%M:%S)] Teams notification failed." >> "$LOG_FILE"
+    fi
+  fi
+
+  # Post summary to Slack channel if webhook is configured
+  SLACK_SCRIPT="$SCRIPT_DIR/scripts/notify-slack.sh"
+  if [[ -x "$SLACK_SCRIPT" && -n "${AI_BRIEFING_SLACK_WEBHOOK:-}" ]]; then
+    echo "[$DATE $(date +%H:%M:%S)] Sending Slack notification..." >> "$LOG_FILE"
+    if "$SLACK_SCRIPT" --all --card-file "$CARD_FILE"; then
+      echo "[$DATE $(date +%H:%M:%S)] Slack notification sent." >> "$LOG_FILE"
+    else
+      echo "[$DATE $(date +%H:%M:%S)] Slack notification failed." >> "$LOG_FILE"
     fi
   fi
 else

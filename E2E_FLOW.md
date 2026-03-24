@@ -143,21 +143,31 @@ When date override is used, scripts prepend a runtime instruction block to the p
 
 `prompt.md` defines the internal flow:
 
-1. Step 0: fetch previous briefing from Notion for de-duplication.
-2. Step 1: search 9 topic areas for past-24-hour updates.
-3. Step 2: compile TLDR + full briefing sections with dates.
-4. Step 3: write a new Notion page with fixed parent `data_source_id` and properties.
-5. Step 4: currently instructs model to print structured stdout for parsing.
+1. Step 0a: load `logs/covered-stories.txt` for deduplication.
+2. Step 0b: search Notion for existing "AI Daily Briefing" pages. If today's page exists, record its page ID (`PAGE_EXISTS = true`). Read the most recent page for additional dedup context.
+3. Step 1: search 9 topic areas for past-24-hour updates. Check official changelogs.
+4. Step 2: compile TL;DR + full briefing sections with dates.
+5. Step 3: if `PAGE_EXISTS = true`, update the existing Notion page. Otherwise, create a new page. This prevents duplicate pages on re-runs.
+6. Step 4: write Adaptive Card JSON to `logs/YYYY-MM-DD-card.json`.
+7. Step 5: append today's headlines to `logs/covered-stories.txt`.
 
-### Stage D: Teams Delivery
+### Stage D: Teams & Slack Delivery
 
-Current notifier scripts are intentionally thin:
+**Teams** notifier scripts are intentionally thin:
 
 - Find card file (default `logs/<today>-card.json`, or passed `--card-file` / `-CardFile`).
 - Validate JSON (`python3 -m json.tool` on shell, `ConvertFrom-Json` on PowerShell).
-- POST payload directly to webhook.
+- Resolve target URLs from `AI_BRIEFING_TEAMS_WEBHOOK` (semicolon-separated). By default only the first URL is used; pass `--all` / `-All` to post to all.
+- POST payload directly to webhook(s).
 
-They do **not** build cards from logs.
+**Slack** notifier scripts follow the same pattern but add a conversion step:
+
+- Read the Teams card JSON file.
+- Convert to Slack Block Kit format using `scripts/teams-to-slack.py` (pure Python stdlib, no external deps).
+- Resolve target URLs from `AI_BRIEFING_SLACK_WEBHOOK` (same semicolon / `--all` pattern).
+- POST converted payload to webhook(s).
+
+Neither builds cards from logs. Both are resilient to individual webhook failures.
 
 ---
 
@@ -174,31 +184,30 @@ flowchart TD
     E -->|Yes| G{JSON valid?}
 
     G -->|No| H[Fail: Invalid JSON]
-    G -->|Yes| I[POST to webhook]
+    G -->|Yes| I{--all flag?}
 
-    I --> J{HTTP 2xx?}
-    J -->|Yes| K[Teams notification sent]
-    J -->|No| L[Fail: webhook rejected]
+    I -->|No| J[POST to first URL only]
+    I -->|Yes| K[POST to all URLs]
+
+    J --> L{HTTP 2xx?}
+    K --> L
+    L -->|Yes| M[Teams notification sent]
+    L -->|No| N[Fail: webhook rejected]
 ```
 
 ---
 
-## 5. Current Divergence: Prompt vs Runtime Expectations
+## 5. Alignment Status
 
-There is a material mismatch in the repo right now:
+The prompt and runtime pipeline are now aligned on the direct card JSON path:
 
-| Component | What it expects |
+| Component | Behavior |
 |---|---|
-| `prompt.md` Step 4 | AI prints strict stdout format for a parser |
-| `scripts/notify-teams.sh/.ps1` | A prebuilt `logs/YYYY-MM-DD-card.json` exists |
-| `scripts/build-teams-card.py` | Parser exists but is legacy and not called by entry scripts |
+| `prompt.md` Step 4 | AI writes `logs/YYYY-MM-DD-card.json` directly |
+| `scripts/notify-teams.sh/.ps1` | Validates and POSTs the prebuilt card JSON |
+| `scripts/build-teams-card.py` | Legacy parser, not called by any active script |
 
-Practical impact:
-
-- If Claude follows `prompt.md` literally and does **not** write `-card.json`, Teams notify fails with `Card file not found`.
-- If a separate local skill or custom command makes Claude write `-card.json`, notify succeeds.
-
-This is the most important operational risk in the current E2E path.
+Additionally, `prompt.md` Step 3 now prevents duplicate Notion pages by checking for an existing page during Step 0b and updating rather than creating when one is found.
 
 ---
 
@@ -260,20 +269,9 @@ Notes:
 
 ---
 
-## 9. Suggested Alignment Work (High Priority)
+## 9. Recent Changes
 
-To eliminate ambiguity and make E2E deterministic, choose one canonical path:
-
-### Option A (recommended): Direct card JSON path
-
-- Update `prompt.md` Step 4 to require writing `logs/YYYY-MM-DD-card.json`.
-- Keep `notify-teams.sh/.ps1` as-is (thin validator/sender).
-- Keep `build-teams-card.py` as archival or remove it.
-
-### Option B: Parser path
-
-- Keep stdout-format Step 4 in prompt.
-- Reintroduce parser call (`build-teams-card.py`) in entry scripts before notify.
-- Notify scripts can continue posting file output from parser.
-
-Until one option is standardized end-to-end, Teams delivery remains environment-dependent.
+- **Duplicate Notion page prevention:** Step 0b now captures `PAGE_EXISTS` and the page ID. Step 3 updates the existing page when one is found, and only creates a new page otherwise. The agent no longer re-queries Notion in Step 3.
+- **Multiple webhook support:** Both `AI_BRIEFING_TEAMS_WEBHOOK` and `AI_BRIEFING_SLACK_WEBHOOK` accept semicolon-separated URLs. By default only the first URL is used. Pass `--all` (bash) or `-All` (PowerShell) to post to all configured URLs.
+- **Slack integration:** `notify-slack.sh/.ps1` converts the Teams card JSON to Slack Block Kit format using `teams-to-slack.py` and POSTs it to Slack webhooks. No separate card generation needed — reuses the Teams card.
+- **Prompt/runtime alignment:** `prompt.md` Step 4 now writes `logs/YYYY-MM-DD-card.json` directly. The legacy `build-teams-card.py` parser is no longer part of the active pipeline.

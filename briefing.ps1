@@ -17,9 +17,11 @@ $Claude = Join-Path $env:USERPROFILE ".local\bin\claude.exe"
 # Ensure we can run even if Claude Code is open
 $env:CLAUDECODE = $null
 
-# Refresh AI_BRIEFING_TEAMS_WEBHOOK from registry (parent shell may have stale value)
-$regWebhook = [Environment]::GetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "User")
-if ($regWebhook) { $env:AI_BRIEFING_TEAMS_WEBHOOK = $regWebhook }
+# Refresh webhook env vars from registry (parent shell may have stale values)
+$regTeams = [Environment]::GetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "User")
+if ($regTeams) { $env:AI_BRIEFING_TEAMS_WEBHOOK = $regTeams }
+$regSlack = [Environment]::GetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "User")
+if ($regSlack) { $env:AI_BRIEFING_SLACK_WEBHOOK = $regSlack }
 
 if (-not (Test-Path $LogDir)) {
     New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
@@ -70,10 +72,22 @@ try {
         if ((Test-Path $teamsScript) -and $env:AI_BRIEFING_TEAMS_WEBHOOK) {
             Write-Log "Sending Teams notification..."
             try {
-                & $teamsScript -CardFile $cardFile
+                & $teamsScript -All -CardFile $cardFile
                 Write-Log "Teams notification sent."
             } catch {
                 Write-Log "Teams notification failed: $_"
+            }
+        }
+
+        # Post summary to Slack channel if webhook is configured
+        $slackScript = Join-Path $ScriptDir "scripts\notify-slack.ps1"
+        if ((Test-Path $slackScript) -and $env:AI_BRIEFING_SLACK_WEBHOOK) {
+            Write-Log "Sending Slack notification..."
+            try {
+                & $slackScript -All -CardFile $cardFile
+                Write-Log "Slack notification sent."
+            } catch {
+                Write-Log "Slack notification failed: $_"
             }
         }
     } else {
