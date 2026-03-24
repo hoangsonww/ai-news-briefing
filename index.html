@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI News Briefing - Project Wiki</title>
-  <meta name="description" content="Comprehensive wiki for AI News Briefing: architecture, E2E flow, operations, Teams delivery, and maintenance runbook.">
+  <meta name="description" content="Comprehensive wiki for AI News Briefing: architecture, E2E flow, operations, multi-channel delivery (Teams + Slack), and maintenance runbook.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -62,7 +62,7 @@
       <li><a href="#e2e">E2E</a></li>
       <li><a href="#operations">Operations</a></li>
       <li><a href="#makefile">Makefile</a></li>
-      <li><a href="#teams">Teams</a></li>
+      <li><a href="#delivery">Delivery</a></li>
       <li><a href="#docs">Docs</a></li>
     </ul>
     <button class="nav-hamburger" aria-label="Toggle navigation">
@@ -74,11 +74,11 @@
 </nav>
 
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Last refreshed: March 17, 2026</div>
+  <div class="hero-badge"><span class="dot"></span> Last refreshed: March 24, 2026</div>
   <h1>AI News Briefing<br><span class="gradient">Comprehensive Project Wiki</span></h1>
   <p class="hero-sub">
     End-to-end reference for the automated daily pipeline: scheduler triggers, Claude CLI execution,
-    Notion publishing, Teams delivery, troubleshooting, and maintenance workflows.
+    Notion publishing, Teams and Slack delivery, multi-webhook fan-out, troubleshooting, and maintenance workflows.
   </p>
   <div class="hero-actions">
     <a href="#updates" class="btn btn-primary">
@@ -112,24 +112,24 @@
       <div class="feature-icon green">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
       </div>
-      <h3>Covered Stories Dedup</h3>
-      <p>`logs/covered-stories.txt` tracks all previously covered headlines. Bootstraps from last 10 Notion pages on first run. 30-day auto-trim prevents unbounded growth.</p>
+      <h3>Duplicate Page Prevention</h3>
+      <p>Step 0b captures whether today's Notion page already exists, and Step 3 updates in place instead of creating duplicates on retries.</p>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon orange">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </div>
-      <h3>Opus Model + No Budget Cap</h3>
-      <p>Both entry scripts now use `--model opus` with no `--max-budget-usd` cap. Webhook URL is refreshed from registry on every run to avoid stale env vars.</p>
+      <h3>Slack Delivery Added</h3>
+      <p>`notify-slack.sh`/`.ps1` now converts the same Teams card JSON to Slack Block Kit via `scripts/teams-to-slack.py` and posts to Slack webhooks.</p>
     </div>
 
     <div class="feature-card">
       <div class="feature-icon rose">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
-      <h3>Single Delivery Guaranteed</h3>
-      <p>Prompt explicitly forbids Claude from posting to webhooks. Only the calling script delivers via `notify-teams.ps1`/`.sh`, preventing duplicate Teams messages.</p>
+      <h3>Multi-Webhook Fan-Out</h3>
+      <p>`AI_BRIEFING_TEAMS_WEBHOOK` and `AI_BRIEFING_SLACK_WEBHOOK` accept semicolon-separated URLs. Default sends to first URL; `--all`/`-All` posts to all.</p>
     </div>
   </div>
 </section>
@@ -138,7 +138,7 @@
   <div class="section-header">
     <div class="section-label">Architecture</div>
     <h2 class="section-title">Current system topology</h2>
-    <p class="section-desc">From scheduler trigger to Notion and optional Teams delivery.</p>
+    <p class="section-desc">From scheduler trigger to Notion and optional multi-channel webhook delivery (Teams + Slack).</p>
   </div>
 
   <div class="arch-flow">
@@ -168,8 +168,8 @@
     <div class="arch-arrow">&rarr;</div>
     <div class="arch-node">
       <div class="arch-node-icon">&#128172;</div>
-      <div class="arch-node-label">Teams</div>
-      <div class="arch-node-sub">Webhook (optional)</div>
+      <div class="arch-node-label">Channel Delivery</div>
+      <div class="arch-node-sub">Teams + Slack (optional)</div>
     </div>
   </div>
 
@@ -179,35 +179,43 @@
       <pre class="mermaid">
 flowchart TD
     subgraph Triggers
-        A1[macOS launchd]
-        A2[Windows Task Scheduler]
-        A3[Manual make run]
+        A1["macOS launchd"]
+        A2["Windows Task Scheduler"]
+        A3["Manual make run"]
     end
 
-    A1 --> B1[briefing.sh]
-    A2 --> B2[briefing.ps1]
+    A1 --> B1["briefing.sh"]
+    A2 --> B2["briefing.ps1"]
     A3 --> B1
     A3 --> B2
 
-    B1 --> C[prompt.md]
+    B1 --> C["prompt.md"]
     B2 --> C
 
-    C --> D[Claude CLI]
-    D --> E[WebSearch]
-    D --> F[Notion MCP]
-    F --> G[Notion briefing page]
+    C --> D["Claude CLI"]
+    D --> E["WebSearch"]
+    D --> F["Notion MCP"]
+    F --> G["Notion briefing page"]
 
-    D --> CS[logs/covered-stories.txt]
-    D --> H[logs/YYYY-MM-DD.log]
-    D --> I[logs/YYYY-MM-DD-card.json]
+    D --> CS["logs/covered-stories.txt"]
+    D --> H["logs/YYYY-MM-DD.log"]
+    D --> I["logs/YYYY-MM-DD-card.json"]
 
-    B1 --> J{AI_BRIEFING_TEAMS_WEBHOOK set?}
-    B2 --> J
-    J -->|No| K[Skip Teams]
-    J -->|Yes| L[notify-teams.sh/.ps1]
-    L --> M{card.json exists + valid JSON?}
-    M -->|Yes| N[POST card payload to Teams]
-    M -->|No| O[Notify step fails]
+    B1 --> JT{"AI_BRIEFING_TEAMS_WEBHOOK set?"}
+    B2 --> JT
+    JT -->|"No"| KT["Skip Teams"]
+    JT -->|"Yes"| LT["notify-teams script"]
+    LT --> MT{"card JSON exists and is valid?"}
+    MT -->|"Yes"| NT["POST Adaptive Card to Teams webhooks"]
+    MT -->|"No"| OT["Teams notify failed"]
+
+    B1 --> JS{"AI_BRIEFING_SLACK_WEBHOOK set?"}
+    B2 --> JS
+    JS -->|"No"| KS["Skip Slack"]
+    JS -->|"Yes"| LS["notify-slack script"]
+    LS --> MS{"card JSON exists and conversion succeeds?"}
+    MS -->|"Yes"| NS["Convert to Block Kit and POST to Slack webhooks"]
+    MS -->|"No"| OS["Slack notify failed"]
       </pre>
     </div>
   </div>
@@ -223,11 +231,13 @@ sequenceDiagram
     participant W as WebSearch
     participant N as Notion MCP
     participant T as notify-teams
-    participant TW as Teams Webhook
+    participant TW as Teams Webhook(s)
+    participant SL as notify-slack
+    participant SW as Slack Webhook(s)
 
     S->>E: Start briefing script
     E->>E: Setup date, logs, env
-    E->>E: Refresh webhook from registry
+    E->>E: Refresh webhook env (Windows)
     E->>C: claude -p --model opus
 
     C->>C: Step 0a read logs/covered-stories.txt
@@ -247,11 +257,18 @@ sequenceDiagram
     C-->>E: exit 0 + output
     E->>E: append logs/YYYY-MM-DD.log
 
-    opt webhook configured
-      E->>T: call notify-teams script
+    opt Teams webhook configured
+      E->>T: call notify-teams --all
       T->>T: validate card.json
       T->>TW: POST payload
       TW-->>T: 2xx
+    end
+
+    opt Slack webhook configured
+      E->>SL: call notify-slack --all
+      SL->>SL: convert card via teams-to-slack.py
+      SL->>SW: POST Block Kit payload
+      SW-->>SL: 2xx
     end
       </pre>
     </div>
@@ -280,8 +297,9 @@ sequenceDiagram
         <tr><td>Bootstrap</td><td>Date + environment</td><td>Prompt text + runtime context</td><td><code>briefing.sh</code>, <code>briefing.ps1</code></td></tr>
         <tr><td>Dedup</td><td><code>logs/covered-stories.txt</code> + latest Notion page</td><td>Exclusion list for this run</td><td>Step 0a (file) + Step 0b (Notion MCP)</td></tr>
         <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + covered-stories update</td><td><code>claude -p --model opus</code>, WebSearch, Notion MCP</td></tr>
-        <tr><td>Teams Prepare</td><td><code>logs/YYYY-MM-DD-card.json</code></td><td>Validated JSON payload</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
-        <tr><td>Delivery</td><td>Webhook URL</td><td>Teams channel message</td><td>Power Automate webhook</td></tr>
+        <tr><td>Teams Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_TEAMS_WEBHOOK</code></td><td>Adaptive Card post(s)</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
+        <tr><td>Slack Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_SLACK_WEBHOOK</code></td><td>Block Kit post(s)</td><td><code>notify-slack.sh</code>, <code>notify-slack.ps1</code>, <code>teams-to-slack.py</code></td></tr>
+        <tr><td>Multi-URL Routing</td><td>Semicolon-separated webhook URLs</td><td>First URL by default, all URLs with <code>--all</code>/<code>-All</code></td><td>Teams + Slack notify scripts</td></tr>
         <tr><td>Cleanup</td><td>Historic log files</td><td>Old <code>*.log</code> removed</td><td>Entry script cleanup step</td></tr>
       </tbody>
     </table>
@@ -290,24 +308,29 @@ sequenceDiagram
   <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
     <h3 style="color: #10b981; font-size: 1rem; margin-bottom: 0.5rem;">Prompt/Runtime Aligned</h3>
     <p style="color: var(--text); font-size: 0.92rem; margin: 0;">
-      <strong>Resolved:</strong> `prompt.md` Step 4 now generates `logs/YYYY-MM-DD-card.json` directly using the Adaptive Card template. The notifier scripts POST this file as-is. No parser intermediary.
+      <strong>Resolved:</strong> `prompt.md` Step 4 generates `logs/YYYY-MM-DD-card.json` directly. Teams notifier posts this file as-is, and Slack notifier converts the same file to Block Kit before POST.
     </p>
   </div>
 
   <div class="mermaid-wrap">
     <pre class="mermaid">
 flowchart TD
-    A[Entry script exits success] --> B{Webhook env set?}
-    B -->|No| C[Run complete without Teams]
-    B -->|Yes| D[notify-teams]
-    D --> E{Card file exists?}
-    E -->|No| F[Fail: missing card.json]
-    E -->|Yes| G{JSON valid?}
-    G -->|No| H[Fail: invalid JSON]
-    G -->|Yes| I[POST webhook]
-    I --> J{HTTP 2xx?}
-    J -->|Yes| K[Teams delivered]
-    J -->|No| L[Fail: webhook rejection]
+    A[Entry script exits success] --> B{card.json exists?}
+    B -->|No| B1[Notify paths fail fast]
+    B -->|Yes| T{Teams webhook env set?}
+    B -->|Yes| S{Slack webhook env set?}
+
+    T -->|No| T0[Skip Teams]
+    T -->|Yes| T1[notify-teams]
+    T1 --> T2{JSON valid + URL list valid?}
+    T2 -->|No| T3[Teams notify failed]
+    T2 -->|Yes| T4[POST to first URL or all URLs]
+
+    S -->|No| S0[Skip Slack]
+    S -->|Yes| S1[notify-slack]
+    S1 --> S2{teams-to-slack conversion OK?}
+    S2 -->|No| S3[Slack notify failed]
+    S2 -->|Yes| S4[POST Block Kit to first URL or all URLs]
     </pre>
   </div>
 </section>
@@ -462,71 +485,86 @@ flowchart TD
       <tr><td><code>topic-edit</code></td><td>Add/remove/list topics in prompt.md</td><td><code>bash scripts/topic-edit.sh --list</code></td></tr>
       <tr><td><code>update-schedule</code></td><td>Adjust scheduler time</td><td><code>bash scripts/update-schedule.sh --hour 7 --minute 30</code></td></tr>
       <tr><td><code>notify</code></td><td>Native OS status notification</td><td><code>bash scripts/notify.sh</code></td></tr>
-      <tr><td><code>notify-teams</code></td><td>Validate and POST Adaptive Card JSON</td><td><code>bash scripts/notify-teams.sh --card-file logs/2026-03-17-card.json</code></td></tr>
+      <tr><td><code>notify-teams</code></td><td>Validate and POST Adaptive Card JSON to Teams webhook(s)</td><td><code>bash scripts/notify-teams.sh --all --card-file logs/2026-03-24-card.json</code></td></tr>
+      <tr><td><code>notify-slack</code></td><td>Convert Teams card JSON to Block Kit and POST to Slack webhook(s)</td><td><code>bash scripts/notify-slack.sh --all --card-file logs/2026-03-24-card.json</code></td></tr>
       <tr><td><code>uninstall</code></td><td>Remove scheduler and optional artifacts</td><td><code>bash scripts/uninstall.sh --all</code></td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
-<section class="section" id="teams">
+<section class="section" id="delivery">
   <div class="section-header">
-    <div class="section-label">Teams</div>
-    <h2 class="section-title">Adaptive Card delivery path</h2>
-    <p class="section-desc">Current notifier scripts post a prebuilt card payload file directly to the webhook.</p>
+    <div class="section-label">Delivery</div>
+    <h2 class="section-title">Teams + Slack webhook paths</h2>
+    <p class="section-desc">Both channels use the same generated <code>logs/YYYY-MM-DD-card.json</code>, with Slack converting it to Block Kit first.</p>
   </div>
 
   <div class="mermaid-wrap" style="margin-bottom: 2rem;">
     <pre class="mermaid">
 flowchart LR
-    A[Claude writes logs/YYYY-MM-DD-card.json] --> B[notify-teams.sh / notify-teams.ps1]
-    B --> C{JSON valid?}
-    C -->|No| D[Fail fast]
-    C -->|Yes| E[POST payload to webhook]
-    E --> F[Teams channel message]
+    A["Claude writes logs/YYYY-MM-DD-card.json"] --> B{"Channel notifier"}
+    B --> C["notify-teams.sh / notify-teams.ps1"]
+    B --> D["notify-slack.sh / notify-slack.ps1"]
+    C --> E["POST Adaptive Card JSON to Teams webhooks"]
+    D --> F["teams-to-slack.py conversion"]
+    F --> G["POST Block Kit JSON to Slack webhooks"]
     </pre>
   </div>
 
   <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
     <div class="code-header">
       <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-      <span class="code-title">set webhook + test (macOS/Linux)</span>
+      <span class="code-title">configure + test delivery (macOS/Linux)</span>
       <button class="code-copy">Copy</button>
     </div>
     <div class="code-body">
-<pre><span class="comment"># Set webhook URL</span>
-<span class="cmd">export</span> AI_BRIEFING_TEAMS_WEBHOOK=<span class="string">"&lt;webhook-url&gt;"</span>
+<pre><span class="comment"># Configure multiple webhook URLs (semicolon-separated)</span>
+<span class="cmd">export</span> AI_BRIEFING_TEAMS_WEBHOOK=<span class="string">"https://teams-one;https://teams-two"</span>
+<span class="cmd">export</span> AI_BRIEFING_SLACK_WEBHOOK=<span class="string">"https://hooks.slack.com/services/T.../B.../one;https://hooks.slack.com/services/T.../B.../two"</span>
 
-<span class="comment"># Send today's default card file</span>
+<span class="comment"># Default: first URL only</span>
 <span class="cmd">bash</span> scripts/notify-teams.sh
+<span class="cmd">bash</span> scripts/notify-slack.sh
 
-<span class="comment"># Or send explicit file</span>
-<span class="cmd">bash</span> scripts/notify-teams.sh <span class="flag">--card-file</span> logs/2026-03-17-card.json</pre>
+<span class="comment"># Fan out to all configured URLs</span>
+<span class="cmd">bash</span> scripts/notify-teams.sh <span class="flag">--all</span>
+<span class="cmd">bash</span> scripts/notify-slack.sh <span class="flag">--all</span>
+
+<span class="comment"># Explicit card file for replay/testing</span>
+<span class="cmd">bash</span> scripts/notify-teams.sh <span class="flag">--all --card-file</span> logs/2026-03-24-card.json
+<span class="cmd">bash</span> scripts/notify-slack.sh <span class="flag">--all --card-file</span> logs/2026-03-24-card.json</pre>
     </div>
   </div>
 
   <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
     <div class="code-header">
       <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
-      <span class="code-title">set webhook + test (Windows PowerShell)</span>
+      <span class="code-title">configure + test delivery (Windows PowerShell)</span>
       <button class="code-copy">Copy</button>
     </div>
     <div class="code-body">
-<pre><span class="comment"># Persist webhook URL</span>
-[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_TEAMS_WEBHOOK"</span>, <span class="string">"&lt;webhook-url&gt;"</span>, <span class="string">"User"</span>)
+<pre><span class="comment"># Persist multiple webhook URLs (semicolon-separated)</span>
+[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_TEAMS_WEBHOOK"</span>, <span class="string">"https://teams-one;https://teams-two"</span>, <span class="string">"User"</span>)
+[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_SLACK_WEBHOOK"</span>, <span class="string">"https://hooks.slack.com/services/T.../B.../one;https://hooks.slack.com/services/T.../B.../two"</span>, <span class="string">"User"</span>)
 
-<span class="comment"># Send today's default card file</span>
+<span class="comment"># Default: first URL only</span>
 <span class="cmd">.\scripts\notify-teams.ps1</span>
+<span class="cmd">.\scripts\notify-slack.ps1</span>
 
-<span class="comment"># Or send explicit file</span>
-<span class="cmd">.\scripts\notify-teams.ps1</span> <span class="flag">-CardFile</span> <span class="string">".\logs\2026-03-17-card.json"</span></pre>
+<span class="comment"># Fan out to all configured URLs</span>
+<span class="cmd">.\scripts\notify-teams.ps1</span> <span class="flag">-All</span>
+<span class="cmd">.\scripts\notify-slack.ps1</span> <span class="flag">-All</span>
+
+<span class="comment"># Explicit card file for replay/testing</span>
+<span class="cmd">.\scripts\notify-teams.ps1</span> <span class="flag">-All -CardFile</span> <span class="string">".\logs\2026-03-24-card.json"</span>
+<span class="cmd">.\scripts\notify-slack.ps1</span> <span class="flag">-All -CardFile</span> <span class="string">".\logs\2026-03-24-card.json"</span></pre>
     </div>
   </div>
 
   <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1rem 1.25rem; max-width: 860px; margin: 0 auto;">
     <p style="color: var(--text); margin: 0; font-size: 0.92rem;">
-      <strong>Legacy note:</strong> `scripts/build-teams-card.py` remains in the repo for historical parser-based flow,
-      but it is not invoked by default in current entry scripts.
+      <strong>Legacy note:</strong> `scripts/build-teams-card.py` remains for historical parser flow, but current runtime uses direct card generation in `prompt.md` Step 4. Slack reuses that same card through `scripts/teams-to-slack.py`.
     </p>
   </div>
 </section>
@@ -571,7 +609,7 @@ flowchart LR
   <div class="features">
     <div class="feature-card">
       <h3><a href="README.md">README.md</a></h3>
-      <p>User-facing setup, topic scope, scheduler installation, Makefile commands, and Teams overview.</p>
+      <p>User-facing setup, topic scope, scheduler installation, Makefile commands, and Teams + Slack delivery overview.</p>
     </div>
     <div class="feature-card">
       <h3><a href="ARCHITECTURE.md">ARCHITECTURE.md</a></h3>
@@ -583,7 +621,11 @@ flowchart LR
     </div>
     <div class="feature-card">
       <h3><a href="NOTIFY_TEAMS.md">NOTIFY_TEAMS.md</a></h3>
-      <p>Teams webhook setup, Adaptive Card behavior, and troubleshooting delivery issues.</p>
+      <p>Teams webhook setup, multi-webhook configuration, Adaptive Card behavior, and troubleshooting delivery issues.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="scripts/teams-to-slack.py">scripts/teams-to-slack.py</a></h3>
+      <p>Converter that transforms Teams Adaptive Card JSON into Slack Block Kit payloads for Slack webhook delivery.</p>
     </div>
     <div class="feature-card">
       <h3><a href="prompt.md">prompt.md</a></h3>
@@ -604,6 +646,9 @@ flowchart LR
     <div>&nbsp;&nbsp;<span class="file">ARCHITECTURE.md</span> <span class="dim"># deep architecture</span></div>
     <div>&nbsp;&nbsp;<span class="file">E2E_FLOW.md</span> <span class="dim"># execution contracts and flow</span></div>
     <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md</span> <span class="dim"># Teams integration details</span></div>
+    <div>&nbsp;&nbsp;<span class="file">scripts/notify-teams.sh / .ps1</span> <span class="dim"># Teams webhook notifier with multi-URL support</span></div>
+    <div>&nbsp;&nbsp;<span class="file">scripts/notify-slack.sh / .ps1</span> <span class="dim"># Slack webhook notifier with multi-URL support</span></div>
+    <div>&nbsp;&nbsp;<span class="file">scripts/teams-to-slack.py</span> <span class="dim"># Adaptive Card to Block Kit converter</span></div>
     <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># agent instructions</span></div>
     <div>&nbsp;&nbsp;<span class="file">briefing.sh / briefing.ps1</span> <span class="dim"># orchestration entry points</span></div>
     <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
@@ -614,7 +659,7 @@ flowchart LR
 
 <footer class="footer">
   <div class="footer-inner">
-    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, and WebSearch.</p>
+    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, WebSearch, and multi-channel webhook delivery.</p>
     <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
       Maintained as an operational knowledge base for daily automated AI briefings.
     </p>
@@ -623,6 +668,7 @@ flowchart LR
       <a href="ARCHITECTURE.md">Architecture</a>
       <a href="E2E_FLOW.md">E2E Flow</a>
       <a href="NOTIFY_TEAMS.md">Teams Setup</a>
+      <a href="README.md#slack-integration">Slack Setup</a>
       <a href="prompt.md">Prompt</a>
       <a href="LICENSE">MIT License</a>
     </div>
