@@ -10,6 +10,7 @@
 ![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
 ![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=teams&logoColor=white)
+![Slack](https://img.shields.io/badge/Slack-Webhook-4A154B?logo=slack&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
@@ -282,8 +283,8 @@ The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux
 | `topic-edit` | Add, remove, or list topics in prompt.md | `bash scripts/topic-edit.sh --add "AI Hardware" "GPU news"` |
 | `update-schedule` | Change daily run time | `bash scripts/update-schedule.sh --hour 7 --minute 30` |
 | `notify` | Send native OS notification for briefing status | `bash scripts/notify.sh` |
-| `notify-teams` | Validate and POST pre-built `card.json` to Microsoft Teams webhook(s) | `bash scripts/notify-teams.sh` or `--all` for multiple |
-| `notify-slack` | Convert Teams card to Slack Block Kit and POST to Slack webhook(s) | `bash scripts/notify-slack.sh` or `--all` for multiple |
+| `notify-teams` | Validate and POST pre-built `card.json` to Microsoft Teams webhooks | `bash scripts/notify-teams.sh` or `--all` for multiple |
+| `notify-slack` | Convert Teams card to Slack Block Kit and POST to Slack webhooks | `bash scripts/notify-slack.sh` or `--all` for multiple |
 | `uninstall` | Remove scheduler; `--all` also removes logs and backups | `bash scripts/uninstall.sh --all` |
 
 **Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
@@ -326,89 +327,100 @@ Each generated page contains:
 - **Full Briefing** -- 9 sections (one per topic), each with 3-8 detailed bullet points and source attribution
 - **Key Takeaways table** -- a summary table of major trends and signals
 
-## Teams Integration
+## Delivery Integrations (Teams + Slack)
 
-The pipeline can optionally post a styled [Adaptive Card](https://adaptivecards.io/) with the full briefing to a Microsoft Teams channel via an incoming webhook. The AI generates the Adaptive Card JSON directly during the briefing run (Step 4), writing it to `logs/YYYY-MM-DD-card.json`. The notify script validates the JSON and POSTs it to the webhook as-is -- no intermediate parsing or transformation. See [E2E_FLOW.md](E2E_FLOW.md) for the full technical walkthrough.
+The notification system supports both Microsoft Teams and Slack after a successful briefing run. Both channels are optional and can be enabled independently.
 
-## Slack Integration
+- **Shared source artifact:** Claude writes one card file, `logs/YYYY-MM-DD-card.json`, in Step 4.
+- **Teams path:** `notify-teams.sh/.ps1` validates JSON and POSTs the payload directly to Teams webhook URL(s).
+- **Slack path:** `notify-slack.sh/.ps1` converts the same card file to Slack [Block Kit](https://api.slack.com/block-kit) using `scripts/teams-to-slack.py`, then POSTs to Slack webhook URL(s).
+- **Fan-out support:** Both channels support semicolon-separated webhook URLs.
 
-The pipeline can also post a formatted briefing to Slack channels. The `notify-slack` script reads the same Teams card JSON (`logs/YYYY-MM-DD-card.json`), converts it to Slack [Block Kit](https://api.slack.com/block-kit) format using `scripts/teams-to-slack.py`, and POSTs it to a Slack incoming webhook.
+```mermaid
+flowchart LR
+    A["Claude writes logs/YYYY-MM-DD-card.json"] --> B{"Channel"}
+    B --> C["notify-teams.sh / notify-teams.ps1"]
+    B --> D["notify-slack.sh / notify-slack.ps1"]
+    C --> E["POST Adaptive Card JSON to Teams webhooks"]
+    D --> F["teams-to-slack.py conversion"]
+    F --> G["POST Block Kit JSON to Slack webhooks"]
+```
 
-### Slack setup
+### Teams Setup
 
-1. Create a Slack app with an incoming webhook at [api.slack.com/apps](https://api.slack.com/apps).
-2. Set the `AI_BRIEFING_SLACK_WEBHOOK` environment variable to the webhook URL.
-3. The next briefing run will automatically post to Slack.
+1. Create a Teams webhook (Power Automate workflow).  
+   Full guide: [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md)
+2. Set `AI_BRIEFING_TEAMS_WEBHOOK`.
+3. Run the briefing or call `notify-teams` directly.
 
-**macOS / Linux:**
+### Slack Setup
+
+1. Create a Slack app incoming webhook at [api.slack.com/apps](https://api.slack.com/apps).
+2. Set `AI_BRIEFING_SLACK_WEBHOOK`.
+3. Run the briefing or call `notify-slack` directly.
+
+### Set Webhook URL(s) Persistently
+
+**macOS / Linux**
 
 ```bash
+# Teams
+export AI_BRIEFING_TEAMS_WEBHOOK="https://first-teams-webhook"
+
+# Slack
 export AI_BRIEFING_SLACK_WEBHOOK="https://hooks.slack.com/services/T.../B.../..."
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell)**
 
 ```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "https://first-teams-webhook", "User")
 [Environment]::SetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "https://hooks.slack.com/services/T.../B.../...", "User")
 ```
 
-Multiple webhook URLs work the same as Teams -- semicolon-separated, first URL by default, `--all` for all:
+### Multiple Webhooks and `--all` / `-All`
+
+Configure multiple URLs with semicolons:
 
 ```bash
+export AI_BRIEFING_TEAMS_WEBHOOK="https://teams-webhook-1;https://teams-webhook-2"
+export AI_BRIEFING_SLACK_WEBHOOK="https://slack-webhook-1;https://slack-webhook-2"
+```
+
+- `notify-teams` / `notify-slack` default: send to first URL only.
+- `--all` (bash) / `-All` (PowerShell): send to all configured URLs.
+- Current `briefing.sh` and `briefing.ps1` call both notifiers with all URLs.
+
+```bash
+# First URL only
+bash scripts/notify-teams.sh
+bash scripts/notify-slack.sh
+
+# All configured URLs
+bash scripts/notify-teams.sh --all
 bash scripts/notify-slack.sh --all
 ```
 
-### Quick setup
+### Test Delivery Directly
 
-1. Create an incoming webhook in your Teams channel (see [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md) for the full walkthrough).
-2. Set the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable to the webhook URL.
-3. The next briefing run will automatically detect the variable and post to Teams.
-
-### Set the webhook URL persistently
-
-**macOS / Linux:**
+**macOS / Linux**
 
 ```bash
-# Add to ~/.zshrc (or ~/.bashrc)
-export AI_BRIEFING_TEAMS_WEBHOOK="<url>"
+bash scripts/notify-teams.sh --all --card-file logs/2026-03-24-card.json
+bash scripts/notify-slack.sh --all --card-file logs/2026-03-24-card.json
 ```
 
-**Windows (PowerShell):**
+**Windows (PowerShell)**
 
 ```powershell
-[Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "<url>", "User")
+.\scripts\notify-teams.ps1 -All -CardFile .\logs\2026-03-24-card.json
+.\scripts\notify-slack.ps1 -All -CardFile .\logs\2026-03-24-card.json
 ```
 
-### Multiple webhook URLs
+For full setup and troubleshooting:
 
-You can configure multiple webhook URLs by separating them with semicolons. By default, only the **first** URL is used. Pass `--all` (bash) or `-All` (PowerShell) to post to all of them.
-
-```bash
-# Set multiple URLs (semicolon-separated)
-export AI_BRIEFING_TEAMS_WEBHOOK="https://first-webhook;https://second-webhook"
-
-# Post to first URL only (default)
-bash scripts/notify-teams.sh
-
-# Post to all URLs
-bash scripts/notify-teams.sh --all
-```
-
-### Test the integration
-
-**macOS / Linux:**
-
-```bash
-bash scripts/notify-teams.sh
-```
-
-**Windows:**
-
-```powershell
-.\scripts\notify-teams.ps1
-```
-
-For detailed setup instructions, troubleshooting, and card customization, see [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md).
+- [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md)
+- [NOTIFY_SLACK.md](NOTIFY_SLACK.md)
 
 ## How the Prompt Works
 

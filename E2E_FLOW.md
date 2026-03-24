@@ -1,6 +1,6 @@
 # End-to-End Flow: AI News Briefing Pipeline
 
-This document describes the real runtime flow of this repository as of March 17, 2026.
+This document describes the real runtime flow of this repository as of March 24, 2026.
 It is based on the current implementation in:
 
 - `briefing.sh`
@@ -8,6 +8,9 @@ It is based on the current implementation in:
 - `prompt.md`
 - `scripts/notify-teams.sh`
 - `scripts/notify-teams.ps1`
+- `scripts/notify-slack.sh`
+- `scripts/notify-slack.ps1`
+- `scripts/teams-to-slack.py`
 - `scripts/build-teams-card.py` (legacy reference)
 - `Makefile`
 
@@ -34,7 +37,7 @@ flowchart TD
     B1 --> C[prompt.md loaded into memory]
     B2 --> C
 
-    C --> D[Claude Code CLI\n-p --model sonnet --max-budget-usd 2.00\n--dangerously-skip-permissions]
+    C --> D[Claude Code CLI\n-p --model opus\n--dangerously-skip-permissions]
 
     D --> E[WebSearch tool calls]
     D --> F[Notion MCP calls]
@@ -46,15 +49,21 @@ flowchart TD
 
     B1 --> J{AI_BRIEFING_TEAMS_WEBHOOK set?}
     B2 --> J
-
     J -->|No| K[Skip Teams notify]
     J -->|Yes| L[notify-teams.sh / notify-teams.ps1]
-
     L --> M{card.json exists\nand valid JSON?}
-    M -->|No| N[Notify step fails\nrun still completed]
-    M -->|Yes| O[POST card JSON to Teams webhook]
-
+    M -->|No| N[Teams notify fails\nrun still completed]
+    M -->|Yes| O[POST card JSON to Teams webhooks]
     O --> P[Teams channel card]
+
+    B1 --> R{AI_BRIEFING_SLACK_WEBHOOK set?}
+    B2 --> R
+    R -->|No| S[Skip Slack notify]
+    R -->|Yes| T[notify-slack.sh / notify-slack.ps1]
+    T --> U{card.json exists\nand conversion valid?}
+    U -->|No| V[Slack notify fails\nrun still completed]
+    U -->|Yes| W[Convert + POST to Slack webhooks]
+    W --> X[Slack channel message]
 
     B1 --> Q[Delete *.log older than 30 days]
     B2 --> Q
@@ -74,7 +83,9 @@ sequenceDiagram
     participant L as logs/YYYY-MM-DD.log
     participant CF as logs/YYYY-MM-DD-card.json
     participant T as notify-teams
-    participant TW as Teams Webhook
+    participant TW as Teams Webhook(s)
+    participant S2 as notify-slack
+    participant SW as Slack Webhook(s)
 
     S->>E: Start briefing.sh or briefing.ps1
     E->>E: Resolve dirs and date
@@ -92,11 +103,18 @@ sequenceDiagram
     C-->>CF: Write Adaptive Card JSON (expected)
     E->>E: Record success in log
 
-    E->>T: Call notify-teams (if webhook env var set)
+    E->>T: Call notify-teams (if Teams webhook env var set)
     T->>CF: Read + validate JSON
     T->>TW: POST payload as-is
     TW-->>T: 2xx
     T-->>E: success
+
+    E->>S2: Call notify-slack (if Slack webhook env var set)
+    S2->>CF: Read card JSON
+    S2->>S2: Convert to Block Kit via teams-to-slack.py
+    S2->>SW: POST converted payload
+    SW-->>S2: 2xx
+    S2-->>E: success
 
     E->>E: Cleanup logs older than 30 days
 ```
@@ -120,10 +138,11 @@ Entry scripts do the same core setup:
 2. Clear `CLAUDECODE` to avoid nested-session failures.
 3. Create `logs/` if missing.
 4. Read `prompt.md` as one string.
-5. Invoke Claude CLI with model and budget cap.
+5. Invoke Claude CLI with the configured model (`opus` in current scripts).
 6. Append output to `logs/YYYY-MM-DD.log`.
-7. Attempt Teams notify only when webhook env var is present.
-8. Delete only old `*.log` files (>30 days).
+7. Attempt Teams notify when Teams webhook env var is present.
+8. Attempt Slack notify when Slack webhook env var is present.
+9. Delete only old `*.log` files (>30 days).
 
 ### Stage B: Date Override / Backfill Path
 
@@ -158,56 +177,61 @@ When date override is used, scripts prepend a runtime instruction block to the p
 - Find card file (default `logs/<today>-card.json`, or passed `--card-file` / `-CardFile`).
 - Validate JSON (`python3 -m json.tool` on shell, `ConvertFrom-Json` on PowerShell).
 - Resolve target URLs from `AI_BRIEFING_TEAMS_WEBHOOK` (semicolon-separated). By default only the first URL is used; pass `--all` / `-All` to post to all.
-- POST payload directly to webhook(s).
+- POST payload directly to webhooks.
 
 **Slack** notifier scripts follow the same pattern but add a conversion step:
 
 - Read the Teams card JSON file.
 - Convert to Slack Block Kit format using `scripts/teams-to-slack.py` (pure Python stdlib, no external deps).
 - Resolve target URLs from `AI_BRIEFING_SLACK_WEBHOOK` (same semicolon / `--all` pattern).
-- POST converted payload to webhook(s).
+- POST converted payload to webhooks.
 
 Neither builds cards from logs. Both are resilient to individual webhook failures.
 
 ---
 
-## 4. Teams Notification Decision Graph
+## 4. Notification Decision Graph (Teams + Slack)
 
 ```mermaid
 flowchart TD
-    A[Entry script success] --> B{AI_BRIEFING_TEAMS_WEBHOOK set?}
-    B -->|No| C[Skip Teams step]
-    B -->|Yes| D[Call notify-teams]
+    A[Entry script success] --> B{Teams webhook env set?}
+    A --> C{Slack webhook env set?}
 
-    D --> E{Card file path\nexists?}
-    E -->|No| F[Fail: Card file not found]
-    E -->|Yes| G{JSON valid?}
+    B -->|No| D[Skip Teams step]
+    B -->|Yes| E[Call notify-teams]
+    E --> F{Card file exists and JSON valid?}
+    F -->|No| G[Teams notify failed]
+    F -->|Yes| H[POST to Teams webhooks]
+    H --> I{Any HTTP 2xx?}
+    I -->|No| J[Teams notify failed]
+    I -->|Yes| K[Teams notify success]
 
-    G -->|No| H[Fail: Invalid JSON]
-    G -->|Yes| I{--all flag?}
-
-    I -->|No| J[POST to first URL only]
-    I -->|Yes| K[POST to all URLs]
-
-    J --> L{HTTP 2xx?}
-    K --> L
-    L -->|Yes| M[Teams notification sent]
-    L -->|No| N[Fail: webhook rejected]
+    C -->|No| L[Skip Slack step]
+    C -->|Yes| M[Call notify-slack]
+    M --> N{Card file exists and conversion valid?}
+    N -->|No| O[Slack notify failed]
+    N -->|Yes| P[POST to Slack webhooks]
+    P --> Q{Any HTTP 2xx?}
+    Q -->|No| R[Slack notify failed]
+    Q -->|Yes| S[Slack notify success]
 ```
 
 ---
 
 ## 5. Alignment Status
 
-The prompt and runtime pipeline are now aligned on the direct card JSON path:
+The prompt and runtime pipeline are aligned on a shared card artifact and dual-channel notify paths:
 
 | Component | Behavior |
 |---|---|
 | `prompt.md` Step 4 | AI writes `logs/YYYY-MM-DD-card.json` directly |
 | `scripts/notify-teams.sh/.ps1` | Validates and POSTs the prebuilt card JSON |
+| `scripts/notify-slack.sh/.ps1` | Converts prebuilt card JSON to Block Kit and POSTs it |
+| `scripts/teams-to-slack.py` | Conversion layer from Teams Adaptive Card schema to Slack Block Kit |
 | `scripts/build-teams-card.py` | Legacy parser, not called by any active script |
 
 Additionally, `prompt.md` Step 3 now prevents duplicate Notion pages by checking for an existing page during Step 0b and updating rather than creating when one is found.
+Current `briefing.sh` and `briefing.ps1` invoke both notifiers in all-URL mode (`--all` / `-All`) when the corresponding env vars are set.
 
 ---
 
@@ -223,27 +247,31 @@ stateDiagram-v2
     ClaudeRun --> ClaudeSucceeded: exit 0
 
     ClaudeSucceeded --> TeamsCheck
-    TeamsCheck --> CompleteNoTeams: webhook env not set
-    TeamsCheck --> NotifyAttempt: webhook env set
+    TeamsCheck --> TeamsSkipped: teams env not set
+    TeamsCheck --> TeamsNotifyAttempt: teams env set
+    TeamsNotifyAttempt --> TeamsFailed: missing card / invalid json / non-2xx
+    TeamsNotifyAttempt --> TeamsDone: teams notify success
 
-    NotifyAttempt --> NotifyFailedMissingCard: card file absent
-    NotifyAttempt --> NotifyFailedInvalidJson: invalid JSON
-    NotifyAttempt --> NotifyFailedHttp: webhook non-2xx
-    NotifyAttempt --> CompleteWithTeams: notify success
+    TeamsSkipped --> SlackCheck
+    TeamsFailed --> SlackCheck
+    TeamsDone --> SlackCheck
+
+    SlackCheck --> SlackSkipped: slack env not set
+    SlackCheck --> SlackNotifyAttempt: slack env set
+    SlackNotifyAttempt --> SlackFailed: missing card / conversion error / non-2xx
+    SlackNotifyAttempt --> SlackDone: slack notify success
 
     ClaudeFailed --> Cleanup
-    CompleteNoTeams --> Cleanup
-    NotifyFailedMissingCard --> Cleanup
-    NotifyFailedInvalidJson --> Cleanup
-    NotifyFailedHttp --> Cleanup
-    CompleteWithTeams --> Cleanup
+    SlackSkipped --> Cleanup
+    SlackFailed --> Cleanup
+    SlackDone --> Cleanup
 
     Cleanup --> [*]
 ```
 
 Notes:
 
-- Teams notification failure does not currently mark the whole run as failed at the script level.
+- Teams and Slack notification failures do not currently mark the whole run as failed at the script level.
 - Log cleanup only targets `*.log`; old `*-card.json` files are not rotated by current scripts.
 
 ---
@@ -254,8 +282,10 @@ Notes:
 |---|---|---|---|
 | `logs/YYYY-MM-DD.log` | entry scripts + Claude stdout/stderr | humans, diagnostic scripts | No (diagnostic) |
 | Notion page | Claude via Notion MCP | Notion workspace | Yes |
-| `logs/YYYY-MM-DD-card.json` | Claude (expected) | notify-teams scripts | Yes for Teams path |
+| `logs/YYYY-MM-DD-card.json` | Claude (expected) | notify-teams scripts, notify-slack scripts, teams-to-slack.py | Yes for Teams and Slack paths |
+| Converted Slack payload (temp) | notify-slack scripts | Slack webhook endpoint | Yes for Slack path |
 | Teams message | notify-teams scripts | Teams channel | Optional |
+| Slack message | notify-slack scripts | Slack channel | Optional |
 
 ---
 
@@ -263,9 +293,10 @@ Notes:
 
 1. Ensure Claude CLI path exists (`~/.local/bin/claude` or `.exe`).
 2. Ensure Notion MCP is configured and has DB access.
-3. Ensure `prompt.md` and Teams pipeline are aligned on card generation strategy.
-4. If Teams is enabled, verify `AI_BRIEFING_TEAMS_WEBHOOK` and card file creation.
-5. Use `make tail` / `make log` to inspect run outcomes.
+3. Ensure `prompt.md` Step 4 still writes `logs/YYYY-MM-DD-card.json`.
+4. If Teams is enabled, verify `AI_BRIEFING_TEAMS_WEBHOOK` and direct `notify-teams` test.
+5. If Slack is enabled, verify `AI_BRIEFING_SLACK_WEBHOOK`, Python availability, and direct `notify-slack` test.
+6. Use `make tail` / `make log` to inspect run outcomes.
 
 ---
 
