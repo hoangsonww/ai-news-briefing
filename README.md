@@ -439,6 +439,12 @@ Here is what a card looks like in Teams:
   <img src="example-cards/teams.png" alt="Teams Card Example" width="100%">
 </p>
 
+And in Slack:
+
+<p align="center">
+  <img src="example-cards/slack.png" alt="Slack Message Example" width="100%">
+</p>
+
 ## Topic Coverage
 
 | # | Topic | What It Covers |
