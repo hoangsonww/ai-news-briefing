@@ -26,7 +26,6 @@ echo ""
 "$CLAUDE" -p \
     --model haiku \
     --dangerously-skip-permissions \
-    --max-budget-usd 0.10 \
     "Test the Notion MCP connection. Do these two things:
 1. Use mcp__notion__notion-search to search for 'AI Daily Briefing'. Report how many results you find.
 2. Report whether the Notion MCP tools are available and responding.

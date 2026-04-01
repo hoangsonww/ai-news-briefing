@@ -35,7 +35,6 @@ try {
     $output = & $Claude -p `
         --model haiku `
         --dangerously-skip-permissions `
-        --max-budget-usd 0.10 `
         $prompt 2>&1
 
     $output | Write-Host
