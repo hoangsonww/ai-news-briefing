@@ -62,6 +62,7 @@
       <li><a href="#e2e">E2E</a></li>
       <li><a href="#operations">Operations</a></li>
       <li><a href="#makefile">Makefile</a></li>
+      <li><a href="#custom-brief">Custom Brief</a></li>
       <li><a href="#delivery">Delivery</a></li>
       <li><a href="#docs">Docs</a></li>
     </ul>
@@ -74,11 +75,11 @@
 </nav>
 
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Last refreshed: March 24, 2026</div>
+  <div class="hero-badge"><span class="dot"></span> Last refreshed: April 1, 2026</div>
   <h1>AI News Briefing<br><span class="gradient">Comprehensive Project Wiki</span></h1>
   <p class="hero-sub">
-    End-to-end reference for the automated daily pipeline: scheduler triggers, Claude CLI execution,
-    Notion publishing, Teams and Slack delivery, multi-webhook fan-out, troubleshooting, and maintenance workflows.
+    End-to-end reference for the automated daily pipeline and on-demand deep research: scheduler triggers, Claude CLI execution,
+    multi-agent research, Notion publishing, Teams and Slack delivery, custom topic briefs, and maintenance workflows.
   </p>
   <div class="hero-actions">
     <a href="#updates" class="btn btn-primary">
@@ -130,6 +131,22 @@
       </div>
       <h3>Multi-Webhook Fan-Out</h3>
       <p>`AI_BRIEFING_TEAMS_WEBHOOK` and `AI_BRIEFING_SLACK_WEBHOOK` accept semicolon-separated URLs. Default sends to first URL; `--all`/`-All` posts to all.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      </div>
+      <h3>Custom Brief: Deep Topic Research</h3>
+      <p>On-demand deep research on any topic via `custom-brief.sh`/`.ps1`. Spawns 5 parallel research agents, synthesizes into a cited briefing, and publishes to Notion/Teams/Slack.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon green">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <h3>Test Suite Added</h3>
+      <p>221 non-blocking tests across bash and PowerShell covering syntax, arg parsing, template substitution, card JSON validation, converter output, and notification error handling.</p>
     </div>
   </div>
 </section>
@@ -354,6 +371,135 @@ flowchart TD
   </div>
 </section>
 
+<section class="section" id="custom-brief">
+  <div class="section-header">
+    <div class="section-label">Custom Brief</div>
+    <h2 class="section-title">Deep research on any topic, on demand</h2>
+    <p class="section-desc">Pick a topic, choose your destinations, and get a comprehensive news-focused research briefing with linked citations and dates.</p>
+  </div>
+
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128269;</div>
+      <div class="arch-node-label">Topic Input</div>
+      <div class="arch-node-sub">CLI flags or REPL</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#129302;</div>
+      <div class="arch-node-label">5 Parallel Agents</div>
+      <div class="arch-node-sub">News, Tech, Biz, Trends, Policy</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128270;</div>
+      <div class="arch-node-label">Deep Dive</div>
+      <div class="arch-node-sub">Verify top 5-8 findings</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128221;</div>
+      <div class="arch-node-label">Synthesis</div>
+      <div class="arch-node-sub">TL;DR + sections + trends</div>
+    </div>
+    <div class="arch-arrow">&rarr;</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">&#128172;</div>
+      <div class="arch-node-label">Publish</div>
+      <div class="arch-node-sub">CLI + Notion/Teams/Slack</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 3rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;">Research Agent Architecture</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph "Entry Points"
+        SH["custom-brief.sh"]
+        PS["custom-brief.ps1"]
+        SK["/custom-brief skill"]
+    end
+
+    SH --> PT["prompt-custom-brief.md"]
+    PS --> PT
+    SK --> CC["Claude Code CLI"]
+    PT --> CC
+
+    subgraph "Phase 1: Parallel Discovery"
+        CC --> A1["Agent 1: Breaking News"]
+        CC --> A2["Agent 2: Technical Analysis"]
+        CC --> A3["Agent 3: Industry Impact"]
+        CC --> A4["Agent 4: Trend Trajectory"]
+        CC --> A5["Agent 5: Policy and Ethics"]
+    end
+
+    subgraph "Phase 2-3: Synthesis"
+        A1 --> DD["Deep Dive Follow-ups"]
+        A2 --> DD
+        A3 --> DD
+        A4 --> DD
+        A5 --> DD
+        DD --> SYNTH["Thematic Synthesis"]
+    end
+
+    subgraph "Output"
+        SYNTH --> STDOUT["Terminal"]
+        SYNTH -->|"--notion"| NOTION["Notion Page"]
+        SYNTH -->|"--teams/--slack"| CARD["Card JSON"]
+        CARD --> NT["notify-teams"]
+        CARD --> NS["notify-slack"]
+    end
+      </pre>
+    </div>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 2rem auto 1.5rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">custom brief usage</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Full research with all destinations</span>
+<span class="cmd">./custom-brief.sh</span> <span class="flag">--topic</span> <span class="string">"AI in healthcare"</span> <span class="flag">--notion --teams --slack</span>
+
+<span class="comment"># Terminal + Notion only</span>
+<span class="cmd">./custom-brief.sh</span> <span class="flag">-t</span> <span class="string">"quantum computing"</span> <span class="flag">-n</span>
+
+<span class="comment"># Interactive mode (prompts for topic and destinations)</span>
+<span class="cmd">./custom-brief.sh</span>
+
+<span class="comment"># PowerShell</span>
+<span class="cmd">.\custom-brief.ps1</span> <span class="flag">-Topic</span> <span class="string">"AI regulation EU"</span> <span class="flag">-Notion -Teams</span>
+
+<span class="comment"># Make target</span>
+<span class="cmd">make</span> custom-brief T=<span class="string">"open source LLMs"</span> NOTION=1 TEAMS=1</pre>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="max-width: 860px; margin: 0 auto;">
+    <table>
+      <thead>
+      <tr>
+        <th>Aspect</th>
+        <th>Daily Briefing</th>
+        <th>Custom Brief</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td>Trigger</td><td>Scheduled (8:00 AM daily)</td><td>On-demand</td></tr>
+      <tr><td>Scope</td><td>9 fixed AI topics</td><td>Any user-defined topic</td></tr>
+      <tr><td>Depth</td><td>Broad scan (search per topic)</td><td>Deep (5 parallel agents + follow-ups)</td></tr>
+      <tr><td>Deduplication</td><td>Yes (covered-stories.txt)</td><td>No (standalone)</td></tr>
+      <tr><td>Notion title</td><td><code>YYYY-MM-DD - AI Daily Briefing</code></td><td><code>YYYY-MM-DD - Custom Brief: [Topic]</code></td></tr>
+      <tr><td>CLI output</td><td>Logged to file only</td><td>Printed to terminal + logged</td></tr>
+      <tr><td>Card filename</td><td><code>logs/YYYY-MM-DD-card.json</code></td><td><code>logs/custom-TIMESTAMP-card.json</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <section class="section" id="operations">
   <div class="section-header">
     <div class="section-label">Operations</div>
@@ -445,6 +591,9 @@ flowchart TD
       <tr><td><code>make run-bg</code></td><td><span class="cat-badge exec">Execution</span></td><td>Run briefing in background</td></tr>
       <tr><td><code>make run D=YYYY-MM-DD</code></td><td><span class="cat-badge exec">Execution</span></td><td>Backfill for a target date</td></tr>
       <tr><td><code>make run-scheduled</code></td><td><span class="cat-badge exec">Execution</span></td><td>Trigger via scheduler service</td></tr>
+      <tr><td><code>make custom-brief T="topic"</code></td><td><span class="cat-badge exec">Execution</span></td><td>Deep-research a specific topic</td></tr>
+      <tr><td><code>make custom-brief T="..." NOTION=1 TEAMS=1</code></td><td><span class="cat-badge exec">Execution</span></td><td>Research + publish to Notion/Teams</td></tr>
+      <tr><td><code>make custom-brief-bg T="..."</code></td><td><span class="cat-badge exec">Execution</span></td><td>Custom brief in background</td></tr>
       <tr><td><code>make tail</code></td><td><span class="cat-badge logs">Logs</span></td><td>Tail today log</td></tr>
       <tr><td><code>make logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>List all logs</td></tr>
       <tr><td><code>make log-date D=YYYY-MM-DD</code></td><td><span class="cat-badge logs">Logs</span></td><td>Print date-specific log</td></tr>
@@ -632,43 +781,63 @@ flowchart LR
       <p>Agent instructions for search scope, formatting requirements, and Notion write operation.</p>
     </div>
     <div class="feature-card">
+      <h3><a href="CUSTOM_BRIEF.md">CUSTOM_BRIEF.md</a></h3>
+      <p>Custom topic deep research: CLI usage, agent architecture, output formats, and comparison with daily briefing.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="SETUP.md">SETUP.md</a></h3>
+      <p>Full setup guide: Claude CLI, Notion MCP, webhook configuration, scheduler install, and verification.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="NOTIFY_SLACK.md">NOTIFY_SLACK.md</a></h3>
+      <p>Slack webhook setup, Block Kit conversion, multi-webhook configuration, and troubleshooting.</p>
+    </div>
+    <div class="feature-card">
       <h3><a href="Makefile">Makefile</a></h3>
-      <p>Cross-platform operator interface for run, schedule, log, validation, and status workflows.</p>
+      <p>Cross-platform operator interface for run, schedule, custom-brief, log, validation, and status workflows.</p>
     </div>
   </div>
 
   <div class="file-tree" style="margin-top: 2rem;">
     <div><span class="dir">ai-news-briefing/</span></div>
-    <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># this wiki page</span></div>
-    <div>&nbsp;&nbsp;<span class="file">wiki/style.css</span> <span class="dim"># shared visual styling</span></div>
-    <div>&nbsp;&nbsp;<span class="file">wiki/script.js</span> <span class="dim"># nav, copy buttons, section tracking</span></div>
+    <div>&nbsp;&nbsp;<span class="file">briefing.sh / briefing.ps1</span> <span class="dim"># daily briefing entry points</span></div>
+    <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># daily briefing agent prompt</span></div>
+    <div>&nbsp;&nbsp;<span class="file" style="color:#6366f1;">custom-brief.sh / custom-brief.ps1</span> <span class="dim"># custom topic deep research CLI</span></div>
+    <div>&nbsp;&nbsp;<span class="file" style="color:#6366f1;">prompt-custom-brief.md</span> <span class="dim"># multi-agent research prompt template</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">commands/</span> <span class="dim"># Claude Code interactive skills</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">ai-news-briefing.md</span> <span class="dim"># daily briefing skill</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file" style="color:#6366f1;">custom-brief.md</span> <span class="dim"># custom topic skill</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.sh / .ps1</span> <span class="dim"># Teams webhook notifier</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-slack.sh / .ps1</span> <span class="dim"># Slack webhook notifier</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">teams-to-slack.py</span> <span class="dim"># Adaptive Card to Block Kit converter</span></div>
+    <div>&nbsp;&nbsp;<span class="dir" style="color:#6366f1;">tests/</span> <span class="dim"># 221 non-blocking tests (bash + PowerShell)</span></div>
+    <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># runtime output (gitignored)</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">covered-stories.txt</span> <span class="dim"># dedup headline tracker</span></div>
     <div>&nbsp;&nbsp;<span class="file">README.md</span> <span class="dim"># setup + usage</span></div>
     <div>&nbsp;&nbsp;<span class="file">ARCHITECTURE.md</span> <span class="dim"># deep architecture</span></div>
-    <div>&nbsp;&nbsp;<span class="file">E2E_FLOW.md</span> <span class="dim"># execution contracts and flow</span></div>
-    <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md</span> <span class="dim"># Teams integration details</span></div>
-    <div>&nbsp;&nbsp;<span class="file">scripts/notify-teams.sh / .ps1</span> <span class="dim"># Teams webhook notifier with multi-URL support</span></div>
-    <div>&nbsp;&nbsp;<span class="file">scripts/notify-slack.sh / .ps1</span> <span class="dim"># Slack webhook notifier with multi-URL support</span></div>
-    <div>&nbsp;&nbsp;<span class="file">scripts/teams-to-slack.py</span> <span class="dim"># Adaptive Card to Block Kit converter</span></div>
-    <div>&nbsp;&nbsp;<span class="file">prompt.md</span> <span class="dim"># agent instructions</span></div>
-    <div>&nbsp;&nbsp;<span class="file">briefing.sh / briefing.ps1</span> <span class="dim"># orchestration entry points</span></div>
-    <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
-    <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># runtime output (gitignored)</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">covered-stories.txt</span> <span class="dim"># dedup headline tracker (auto-managed)</span></div>
+    <div>&nbsp;&nbsp;<span class="file" style="color:#6366f1;">CUSTOM_BRIEF.md</span> <span class="dim"># custom brief documentation</span></div>
+    <div>&nbsp;&nbsp;<span class="file" style="color:#6366f1;">SETUP.md</span> <span class="dim"># full setup guide</span></div>
+    <div>&nbsp;&nbsp;<span class="file">E2E_FLOW.md</span> <span class="dim"># execution contracts</span></div>
+    <div>&nbsp;&nbsp;<span class="file">NOTIFY_TEAMS.md / NOTIFY_SLACK.md</span> <span class="dim"># integration guides</span></div>
+    <div>&nbsp;&nbsp;<span class="file">index.html</span> <span class="dim"># this wiki page</span></div>
   </div>
 </section>
 
 <footer class="footer">
   <div class="footer-inner">
-    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, WebSearch, and multi-channel webhook delivery.</p>
+    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, WebSearch, multi-agent research, and multi-channel delivery.</p>
     <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
-      Maintained as an operational knowledge base for daily automated AI briefings.
+      Automated daily briefings + on-demand deep topic research with Notion, Teams, and Slack publishing.
     </p>
     <div class="footer-links">
       <a href="README.md">README</a>
       <a href="ARCHITECTURE.md">Architecture</a>
+      <a href="CUSTOM_BRIEF.md">Custom Brief</a>
+      <a href="SETUP.md">Setup</a>
       <a href="E2E_FLOW.md">E2E Flow</a>
-      <a href="NOTIFY_TEAMS.md">Teams Setup</a>
-      <a href="README.md#slack-integration">Slack Setup</a>
+      <a href="NOTIFY_TEAMS.md">Teams</a>
+      <a href="NOTIFY_SLACK.md">Slack</a>
       <a href="prompt.md">Prompt</a>
       <a href="LICENSE">MIT License</a>
     </div>
