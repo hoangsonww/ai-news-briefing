@@ -57,13 +57,13 @@
       AI News Briefing Wiki
     </a>
     <ul class="nav-links">
-      <li><a href="#updates">Updates</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#e2e">E2E</a></li>
       <li><a href="#operations">Operations</a></li>
       <li><a href="#makefile">Makefile</a></li>
       <li><a href="#custom-brief">Custom Brief</a></li>
       <li><a href="#delivery">Delivery</a></li>
+      <li><a href="#tests">Tests</a></li>
       <li><a href="#docs">Docs</a></li>
     </ul>
     <button class="nav-hamburger" aria-label="Toggle navigation">
@@ -93,64 +93,6 @@
   </div>
 </section>
 
-<section class="section" id="updates">
-  <div class="section-header">
-    <div class="section-label">Latest Updates</div>
-    <h2 class="section-title">What changed recently</h2>
-    <p class="section-desc">Project status and behavior updates reflected across the docs and runtime flow.</p>
-  </div>
-
-  <div class="features">
-    <div class="feature-card">
-      <div class="feature-icon blue">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <h3>Card Template Enforced</h3>
-      <p>`prompt.md` Step 4 now generates `card.json` directly with a strict Adaptive Card template: accent header, per-bullet TextBlocks, emphasis sources, and positive-style action button.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon green">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      </div>
-      <h3>Duplicate Page Prevention</h3>
-      <p>Step 0b captures whether today's Notion page already exists, and Step 3 updates in place instead of creating duplicates on retries.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon orange">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <h3>Slack Delivery Added</h3>
-      <p>`notify-slack.sh`/`.ps1` now converts the same Teams card JSON to Slack Block Kit via `scripts/teams-to-slack.py` and posts to Slack webhooks.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon rose">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3>Multi-Webhook Fan-Out</h3>
-      <p>`AI_BRIEFING_TEAMS_WEBHOOK` and `AI_BRIEFING_SLACK_WEBHOOK` accept semicolon-separated URLs. Default sends to first URL; `--all`/`-All` posts to all.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon blue">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-      </div>
-      <h3>Custom Brief: Deep Topic Research</h3>
-      <p>On-demand deep research on any topic via `custom-brief.sh`/`.ps1`. Spawns 5 parallel research agents, synthesizes into a cited briefing, and publishes to Notion/Teams/Slack.</p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon green">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
-      <h3>Test Suite Added</h3>
-      <p>221 non-blocking tests across bash and PowerShell covering syntax, arg parsing, template substitution, card JSON validation, converter output, and notification error handling.</p>
-    </div>
-  </div>
-</section>
-
 <section class="section" id="architecture">
   <div class="section-header">
     <div class="section-label">Architecture</div>
@@ -158,36 +100,30 @@
     <p class="section-desc">From scheduler trigger to Notion and optional multi-channel webhook delivery (Teams + Slack).</p>
   </div>
 
-  <div class="arch-flow">
-    <div class="arch-node">
-      <div class="arch-node-icon">&#9200;</div>
-      <div class="arch-node-label">Schedulers</div>
-      <div class="arch-node-sub">launchd / Task Scheduler</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128221;</div>
-      <div class="arch-node-label">Entry Script</div>
-      <div class="arch-node-sub">briefing.sh / briefing.ps1</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#129302;</div>
-      <div class="arch-node-label">Claude CLI</div>
-      <div class="arch-node-sub">Headless execution</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128214;</div>
-      <div class="arch-node-label">Notion MCP</div>
-      <div class="arch-node-sub">Read previous + create page</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128172;</div>
-      <div class="arch-node-label">Channel Delivery</div>
-      <div class="arch-node-sub">Teams + Slack (optional)</div>
-    </div>
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    subgraph Schedulers
+        A1["macOS launchd"]
+        A2["Windows Task Scheduler"]
+        A3["Manual / make run"]
+    end
+    A1 --> B["briefing.sh / .ps1"]
+    A2 --> B
+    A3 --> B
+    B --> C["prompt.md"]
+    C --> D["Claude CLI (headless)"]
+    D --> E["WebSearch (9 topics)"]
+    D --> F["Notion MCP"]
+    F --> G["Notion Page"]
+    D --> H["card.json"]
+    B --> I{"Teams webhook?"}
+    I -->|Yes| J["notify-teams"]
+    J --> K["Teams Channel"]
+    B --> L{"Slack webhook?"}
+    L -->|Yes| M["notify-slack"]
+    M --> N["Slack Channel"]
+    </pre>
   </div>
 
   <div style="margin-top: 3rem;">
@@ -378,36 +314,33 @@ flowchart TD
     <p class="section-desc">Pick a topic, choose your destinations, and get a comprehensive news-focused research briefing with linked citations and dates.</p>
   </div>
 
-  <div class="arch-flow">
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128269;</div>
-      <div class="arch-node-label">Topic Input</div>
-      <div class="arch-node-sub">CLI flags or REPL</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#129302;</div>
-      <div class="arch-node-label">5 Parallel Agents</div>
-      <div class="arch-node-sub">News, Tech, Biz, Trends, Policy</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128270;</div>
-      <div class="arch-node-label">Deep Dive</div>
-      <div class="arch-node-sub">Verify top 5-8 findings</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128221;</div>
-      <div class="arch-node-label">Synthesis</div>
-      <div class="arch-node-sub">TL;DR + sections + trends</div>
-    </div>
-    <div class="arch-arrow">&rarr;</div>
-    <div class="arch-node">
-      <div class="arch-node-icon">&#128172;</div>
-      <div class="arch-node-label">Publish</div>
-      <div class="arch-node-sub">CLI + Notion/Teams/Slack</div>
-    </div>
+  <div class="mermaid-wrap">
+    <pre class="mermaid">
+flowchart LR
+    A["Topic Input<br/>(CLI flags or REPL)"] --> B["custom-brief.sh / .ps1"]
+    B --> C["prompt-custom-brief.md"]
+    C --> D["Claude CLI"]
+    subgraph "Phase 1: Parallel Discovery"
+        D --> A1["Agent 1: Breaking News"]
+        D --> A2["Agent 2: Technical Analysis"]
+        D --> A3["Agent 3: Industry Impact"]
+        D --> A4["Agent 4: Trends"]
+        D --> A5["Agent 5: Policy"]
+        D --> A6["Agent 6+: Topic-specific"]
+    end
+    A1 --> DD["Phase 2: Deep Dive"]
+    A2 --> DD
+    A3 --> DD
+    A4 --> DD
+    A5 --> DD
+    A6 --> DD
+    DD --> S["Phase 3: Synthesis"]
+    S --> OUT["Terminal Output"]
+    S -->|"--notion"| N["Notion Page"]
+    S -->|"--teams/--slack"| CARD["Card JSON"]
+    CARD --> T["Teams"]
+    CARD --> SL["Slack"]
+    </pre>
   </div>
 
   <div style="margin-top: 3rem;">
@@ -718,6 +651,80 @@ flowchart LR
   </div>
 </section>
 
+<section class="section" id="tests">
+  <div class="section-header">
+    <div class="section-label">Tests</div>
+    <h2 class="section-title">247 non-blocking tests</h2>
+    <p class="section-desc">Verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, and cross-platform portability. No external services called.</p>
+  </div>
+
+  <div class="mermaid-wrap" style="margin-bottom: 2rem;">
+    <pre class="mermaid">
+flowchart TD
+    subgraph "Bash (macOS / Linux / Git Bash)"
+        R["tests/run-all.sh"] --> T1["test-custom-brief.sh\n37 tests"]
+        R --> T2["test-daily-brief.sh\n56 tests"]
+        R --> T3["test-notifications.sh\n37 tests"]
+        R --> T4["test-portability.sh\n26 tests"]
+    end
+    subgraph "PowerShell (Windows)"
+        PS["tests/test-all.ps1\n91 tests"]
+    end
+    T1 --> X["Args, templates,\nprompts, skills"]
+    T2 --> Y["Steps, topics,\nchangelogs, scripts"]
+    T3 --> Z["Card JSON, converter,\nerror handling"]
+    T4 --> W["Bash 3.2, awk, date,\nANSI safety"]
+    PS --> X
+    PS --> Y
+    PS --> Z
+    </pre>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.5rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">run tests</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># All bash tests (macOS / Linux / Git Bash)</span>
+<span class="cmd">bash</span> tests/run-all.sh
+
+<span class="comment"># Individual suites</span>
+<span class="cmd">bash</span> tests/test-custom-brief.sh
+<span class="cmd">bash</span> tests/test-daily-brief.sh
+<span class="cmd">bash</span> tests/test-notifications.sh
+<span class="cmd">bash</span> tests/test-portability.sh
+
+<span class="comment"># PowerShell (Windows)</span>
+<span class="cmd">powershell</span> <span class="flag">-ExecutionPolicy Bypass -File</span> tests\test-all.ps1</pre>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="max-width: 860px; margin: 0 auto;">
+    <table>
+      <thead>
+      <tr>
+        <th>Suite</th>
+        <th>Tests</th>
+        <th>Coverage</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td><code>test-custom-brief.sh</code></td><td>37</td><td>Args, template substitution, prompt structure, skill</td></tr>
+      <tr><td><code>test-daily-brief.sh</code></td><td>56</td><td>Prompt steps, 9 topics, 8 changelog URLs, entry scripts, dedup</td></tr>
+      <tr><td><code>test-notifications.sh</code></td><td>37</td><td>Card JSON validity, Adaptive Card structure, converter, errors</td></tr>
+      <tr><td><code>test-portability.sh</code></td><td>26</td><td>Bash 3.2 compat, awk, date, <code>-f</code> not <code>-x</code>, ANSI safety</td></tr>
+      <tr><td><code>test-all.ps1</code></td><td>91</td><td>PowerShell syntax, all prompts, cards, converter, docs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align: center; margin-top: 1.5rem;">
+    <a href="TESTS.md" style="color: #6366f1; text-decoration: underline; font-size: 0.95rem;">Full test documentation: TESTS.md</a>
+  </div>
+</section>
+
 <section class="section" id="cost">
   <div class="section-header">
     <div class="section-label">Cost & Runtime</div>
@@ -791,6 +798,14 @@ flowchart LR
     <div class="feature-card">
       <h3><a href="NOTIFY_SLACK.md">NOTIFY_SLACK.md</a></h3>
       <p>Slack webhook setup, Block Kit conversion, multi-webhook configuration, and troubleshooting.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="TESTS.md">TESTS.md</a></h3>
+      <p>Test suite documentation: architecture, per-suite coverage tables, run commands, design principles, how to add tests.</p>
+    </div>
+    <div class="feature-card">
+      <h3><a href="LOGS.md">LOGS.md</a></h3>
+      <p>Log tailing and management: live tail, read, search, summarize, export, and cleanup for daily and custom briefs.</p>
     </div>
     <div class="feature-card">
       <h3><a href="Makefile">Makefile</a></h3>
