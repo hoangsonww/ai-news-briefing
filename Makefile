@@ -1,4 +1,4 @@
-.PHONY: help run run-bg tail log logs status install uninstall clean-logs check validate prompt
+.PHONY: help run run-bg custom-brief custom-brief-bg tail log logs status install uninstall clean-logs check validate prompt
 
 SHELL := /bin/bash
 DATE  := $(shell date +%Y-%m-%d)
@@ -59,6 +59,40 @@ else
 	@echo "[$(or $(D),$(DATE))] Starting briefing in background..."
 	@nohup bash "$(SCRIPT_DIR)/briefing.sh" $(D) >/dev/null 2>&1 &
 	@echo "Running (PID $$!). Tail log with: make tail"
+endif
+
+custom-brief: check ## Deep-research a topic. Usage: make custom-brief T="AI in healthcare" NOTION=1 TEAMS=1 SLACK=1
+ifeq ($(PLATFORM),windows)
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
+		$(if $(T),-Topic "$(T)") \
+		$(if $(NOTION),-Notion) \
+		$(if $(TEAMS),-Teams) \
+		$(if $(SLACK),-Slack)
+else
+	@bash "$(SCRIPT_DIR)/custom-brief.sh" \
+		$(if $(T),--topic "$(T)") \
+		$(if $(NOTION),--notion) \
+		$(if $(TEAMS),--teams) \
+		$(if $(SLACK),--slack)
+endif
+
+custom-brief-bg: check ## Deep-research in background. Usage: make custom-brief-bg T="quantum computing" NOTION=1
+ifeq ($(PLATFORM),windows)
+	@echo "Starting custom brief in background..."
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
+		$(if $(T),-Topic "$(T)") \
+		$(if $(NOTION),-Notion) \
+		$(if $(TEAMS),-Teams) \
+		$(if $(SLACK),-Slack) &
+	@echo "Running. Check logs/custom-*.log"
+else
+	@echo "Starting custom brief in background..."
+	@nohup bash "$(SCRIPT_DIR)/custom-brief.sh" \
+		$(if $(T),--topic "$(T)") \
+		$(if $(NOTION),--notion) \
+		$(if $(TEAMS),--teams) \
+		$(if $(SLACK),--slack) >/dev/null 2>&1 &
+	@echo "Running (PID $$!). Check logs/custom-*.log"
 endif
 
 run-scheduled: ## Trigger the scheduled task (via OS scheduler)
@@ -165,7 +199,8 @@ check: ## Verify Claude CLI is installed and accessible
 validate: check ## Validate all project files exist and are well-formed
 	@echo "Checking project files..."
 	@errors=0; \
-	for f in prompt.md briefing.sh briefing.ps1 com.ainews.briefing.plist install-task.ps1; do \
+	for f in prompt.md briefing.sh briefing.ps1 com.ainews.briefing.plist install-task.ps1 \
+	         prompt-custom-brief.md custom-brief.sh custom-brief.ps1 commands/custom-brief.md; do \
 		if [ -f "$(SCRIPT_DIR)/$$f" ]; then \
 			printf "  %-36s \033[32mOK\033[0m\n" "$$f"; \
 		else \

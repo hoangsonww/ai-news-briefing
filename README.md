@@ -2,37 +2,51 @@
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-CLI-f97316?logo=anthropic&logoColor=white)
 ![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
+![Multi-Agent](https://img.shields.io/badge/Multi--Agent-5+_Parallel_Agents-8b5cf6?logo=anthropic&logoColor=white)
+![Custom Brief](https://img.shields.io/badge/Custom_Brief-Deep_Research-ec4899?logo=anthropic&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
+![Adaptive Cards](https://img.shields.io/badge/Adaptive_Cards-v1.4-0078D4?logo=json&logoColor=white)
 ![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
-![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=shell&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
-![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
-![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=teams&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=windsurf&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-Compatible-FCC624?logo=linux&logoColor=white)
+![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=microsoftteams&logoColor=white)
 ![Slack](https://img.shields.io/badge/Slack-Webhook-4A154B?logo=slack&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
+![Tests](https://img.shields.io/badge/Shell_Tests-247_Passing-10b981?logo=checkmarx&logoColor=white)
+![ANSI Colors](https://img.shields.io/badge/CLI-Styled_Output-ff6b6b?logo=windowsterminal&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler). Fully automated pipeline with zero manual intervention required after setup.
+Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams and Slack -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler). Includes an on-demand **Custom Brief** mode for deep multi-agent research on any topic. Fully automated pipeline with zero manual intervention required after setup.
 
 > [!NOTE]
-> **Live Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
+> **Live AI News Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
+
+---
 
 ## Overview
 
-AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams.
+AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams and Slack.
 
-The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion (or Teams), and your daily AI briefing is already there.
+The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion (or Teams or Slack), and your daily AI briefing is already there.
+
+**Custom Brief** extends this with on-demand deep research: pick any topic, and 5 parallel research agents investigate it from different angles (breaking news, technical analysis, industry impact, trends, and policy). Results publish to Notion, Teams, and/or Slack -- or just print to your terminal.
 
 ### Why it exists
 
-Keeping up with AI news across models, tools, policy, funding, and open source is a full-time job. This project compresses that into an automated daily digest that covers 9 topic areas in a consistent format, delivered to your Notion workspace before you start your workday.
+Keeping up with AI news across models, tools, policy, funding, and open source is a full-time job. This project compresses that into an automated daily digest that covers 9 topic areas in a consistent format, delivered to your Notion workspace before you start your workday. When you need to go deeper on a specific topic, the custom brief gives you a comprehensive research report on demand.
+
+---
 
 ## Architecture
+
+We leverage the scheduling capabilities of the OS (launchd on macOS, Task Scheduler on Windows) to trigger a shell script at a specific time each day. The script reads a prompt template, invokes the Claude Code CLI in headless mode, and the agentic prompt performs web searches, compiles results, and calls the Notion MCP tool to create a new page in the database.
 
 ```mermaid
 flowchart TD
@@ -85,6 +99,8 @@ flowchart TD
 6. If the `AI_BRIEFING_SLACK_WEBHOOK` environment variable is set, the entry point script calls `notify-slack.sh` / `notify-slack.ps1`, which converts the Teams card to Slack Block Kit format and POSTs it to the configured Slack webhook.
 7. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
+---
+
 ## Prerequisites
 
 | Requirement | Details |
@@ -95,6 +111,8 @@ flowchart TD
 | **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
 | **Python 3.x** | Optional (legacy card builder only, not used in current flow) |
 | **Make** (optional) | GNU Make for using the Makefile task runner (`winget install GnuWin32.Make` on Windows, pre-installed on macOS) |
+
+---
 
 ## Installation
 
@@ -153,6 +171,8 @@ To customize the time:
 .\install-task.ps1 -Hour 7 -Minute 30
 ```
 
+---
+
 ## Configuration
 
 ### Change the schedule
@@ -192,6 +212,8 @@ Edit the `--max-budget-usd` value in `briefing.sh` (macOS) or `briefing.ps1` (Wi
 ### Change the topics
 
 Edit `prompt.md` and modify the "Topics to Search" list. You can add, remove, or rename topics. If you change the number of topics, also update the `"Topics": 9` value in the Notion properties section at the bottom of the prompt.
+
+---
 
 ## Usage
 
@@ -289,6 +311,8 @@ The `scripts/` directory contains 13 utility script pairs (`.sh` for macOS/Linux
 
 **Windows equivalents** use the same names with `.ps1` extension and PowerShell parameter syntax (e.g., `.\scripts\health-check.ps1`, `.\scripts\topic-edit.ps1 -Action add -Name "AI Hardware" -Description "GPU news"`).
 
+---
+
 ## Notion Setup
 
 ### Database schema
@@ -326,6 +350,12 @@ Each generated page contains:
 - **Divider**
 - **Full Briefing** -- 9 sections (one per topic), each with 3-8 detailed bullet points and source attribution
 - **Key Takeaways table** -- a summary table of major trends and signals
+
+<p align="center">
+  <img src="img/notion.png" alt="Notion Page Example" width="100%">
+</p>
+
+---
 
 ## Delivery Integrations (Teams + Slack)
 
@@ -422,6 +452,62 @@ For full setup and troubleshooting:
 - [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md)
 - [NOTIFY_SLACK.md](NOTIFY_SLACK.md)
 
+---
+
+## Custom Brief: Deep Topic Research
+
+In addition to the daily automated briefing, you can run a deep research briefing on **any topic** on demand. This spawns 5 parallel research agents that investigate the topic from different angles, then synthesizes findings into a comprehensive news briefing.
+
+```mermaid
+flowchart LR
+    subgraph "Input"
+        A["--topic 'AI in healthcare'"]
+        B["--notion --teams --slack"]
+    end
+    A --> C[custom-brief.sh / .ps1]
+    B --> C
+    C -->|5 parallel agents| D[Deep Research]
+    D --> E[Structured Briefing]
+    E --> F[Terminal Output]
+    E -->|optional| G[Notion]
+    E -->|optional| H[Teams]
+    E -->|optional| I[Slack]
+```
+
+<p align="center">
+  <img src="img/custom-brief.png" alt="Custom Brief Flow" width="100%">
+</p>
+
+### Quick start
+
+```bash
+# Full research with all destinations
+./custom-brief.sh --topic "AI in healthcare" --notion --teams --slack
+
+# Terminal + Notion only
+./custom-brief.sh -t "quantum computing" -n
+
+# Interactive mode (prompts for topic and destinations)
+./custom-brief.sh
+
+# PowerShell
+.\custom-brief.ps1 -Topic "AI regulation EU" -Notion -Teams
+
+# Make
+make custom-brief T="open source LLMs" NOTION=1 TEAMS=1
+```
+
+### What it produces
+
+- **TL;DR** -- 5-10 bullet points with key findings
+- **Thematic sections** -- 3-6 sections organized by theme with linked citations and dates
+- **Key Trends & Outlook** -- strategic implications table
+- **Sources** -- numbered list of every URL cited
+
+Every finding includes a clickable source link and publication date. Full details: [CUSTOM_BRIEF.md](CUSTOM_BRIEF.md)
+
+---
+
 ## How the Prompt Works
 
 The prompt (`prompt.md`) instructs Claude to execute four sequential steps within a single agentic session:
@@ -448,14 +534,16 @@ Claude writes a complete Adaptive Card JSON payload to `logs/YYYY-MM-DD-card.jso
 Here is what a card looks like in Teams:
 
 <p align="center">
-  <img src="example-cards/teams.png" alt="Teams Card Example" width="100%">
+  <img src="img/teams.png" alt="Teams Card Example" width="100%">
 </p>
 
 And in Slack:
 
 <p align="center">
-  <img src="example-cards/slack.png" alt="Slack Message Example" width="100%">
+  <img src="img/slack.png" alt="Slack Message Example" width="100%">
 </p>
+
+---
 
 ## Topic Coverage
 
@@ -470,6 +558,8 @@ And in Slack:
 | 7 | AI Startups & Funding | Funding rounds, acquisitions, notable startup launches |
 | 8 | AI Policy & Regulation | Government policy, EU AI Act, state laws, AI safety developments |
 | 9 | Dev Tools & Frameworks | Vercel, Next.js, React Native, TypeScript, AI-related developer tooling |
+
+---
 
 ## Logs
 
@@ -504,6 +594,44 @@ Get-Content "$env:USERPROFILE\ai-news-briefing\logs\$(Get-Date -Format 'yyyy-MM-
 ### Auto-cleanup
 
 Logs older than 30 days are automatically deleted at the end of each run on both platforms. The macOS-specific `launchd-stdout.log` and `launchd-stderr.log` files are not date-stamped and may need periodic manual cleanup.
+
+---
+
+## Tests
+
+We have several test suites, with 247 non-blocking tests that verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, and cross-platform portability. No external services are called.
+
+<p align="center">
+  <img src="img/tests.png" alt="Tests Overview" width="100%">
+</p>
+
+```bash
+# All bash tests (macOS / Linux / Git Bash)
+bash tests/run-all.sh
+
+# Individual suites
+bash tests/test-custom-brief.sh
+bash tests/test-daily-brief.sh
+bash tests/test-notifications.sh
+bash tests/test-portability.sh
+```
+
+```powershell
+# PowerShell (Windows)
+powershell -ExecutionPolicy Bypass -File tests\test-all.ps1
+```
+
+| Suite | Tests | Coverage |
+|---|---|---|
+| `test-custom-brief.sh` | 37 | Args, template substitution, prompt structure, skill |
+| `test-daily-brief.sh` | 56 | Prompt steps, 9 topics, 8 changelog URLs, entry scripts, dedup file |
+| `test-notifications.sh` | 37 | Card JSON validity, Adaptive Card structure, converter, error handling |
+| `test-portability.sh` | 26 | Bash 3.2 compat, awk, date, `-f` not `-x`, ANSI color safety |
+| `test-all.ps1` | 91 | PowerShell syntax, all prompts, template substitution, cards, docs |
+
+Full documentation: [TESTS.md](TESTS.md)
+
+---
 
 ## Troubleshooting
 
@@ -543,6 +671,8 @@ If the log shows the run stopped mid-way, the `--max-budget-usd` cap may have be
 
 Running the briefing multiple times in a day updates the existing Notion page rather than creating a duplicate. The agent checks for an existing page during Step 0b and updates it if found. Logs append to the same date-stamped file, so all runs for a given day are captured in one log.
 
+---
+
 ## Cost Estimate
 
 With the default configuration (`opus` model, 9 topics):
@@ -554,8 +684,11 @@ With the default configuration (`opus` model, 9 topics):
 | WebSearch tool calls (~15-25 searches) | ~$0.15-0.40 |
 | **Total per run** | **~$0.70-1.40** |
 | **Monthly (daily runs)** | **~$21-42** |
+| **Custom Brief (on-demand)** | **~$1.50-3.00** |
 
 Actual costs vary based on the volume of news, number of search queries, and briefing length. The `--max-budget-usd 2.00` cap ensures no single run exceeds $2.00.
+
+---
 
 ## Project Structure
 
@@ -583,19 +716,39 @@ ai-news-briefing/
 │   ├── teams-to-slack.py        # Convert Teams Adaptive Card JSON to Slack Block Kit
 │   ├── build-teams-card.py      # Legacy card builder (not used in current flow)
 │   └── uninstall.sh/.ps1        # Full cleanup and removal
-├── briefing.sh                  # macOS entry point (bash)
-├── briefing.ps1                 # Windows entry point (PowerShell)
-├── prompt.md                    # Agent prompt (shared across platforms)
+├── briefing.sh                  # Daily briefing entry point (bash)
+├── briefing.ps1                 # Daily briefing entry point (PowerShell)
+├── prompt.md                    # Daily briefing agent prompt
+├── custom-brief.sh              # Custom topic briefing entry point (bash)
+├── custom-brief.ps1             # Custom topic briefing entry point (PowerShell)
+├── prompt-custom-brief.md       # Custom briefing deep research prompt
+├── commands/
+│   ├── ai-news-briefing.md      # Claude Code skill: daily briefing
+│   └── custom-brief.md          # Claude Code skill: custom topic briefing
 ├── com.ainews.briefing.plist    # macOS launchd schedule definition
 ├── install-task.ps1             # Windows Task Scheduler installer
+├── tests/                       # 247 non-blocking tests
+│   ├── run-all.sh               # Bash test runner
+│   ├── test-custom-brief.sh     # Custom brief tests
+│   ├── test-daily-brief.sh      # Daily briefing tests
+│   ├── test-notifications.sh    # Notification pipeline tests
+│   ├── test-portability.sh      # Cross-platform portability tests
+│   └── test-all.ps1             # PowerShell test suite
 ├── logs/                        # Run logs (git-ignored)
 ├── backups/                     # Prompt backups (git-ignored)
 ├── .gitignore
 ├── ARCHITECTURE.md              # Detailed architecture documentation
 ├── E2E_FLOW.md                  # End-to-end pipeline walkthrough
+├── CUSTOM_BRIEF.md              # Custom topic briefing documentation
+├── TESTS.md                     # Test suite documentation
+├── LOGS.md                      # Log tailing and management guide
+├── SETUP.md                     # Full setup guide
 ├── NOTIFY_TEAMS.md              # Teams integration setup guide
+├── NOTIFY_SLACK.md              # Slack integration setup guide
 └── README.md                    # This file
 ```
+
+---
 
 ## Author
 

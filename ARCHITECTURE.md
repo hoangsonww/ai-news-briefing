@@ -2,17 +2,23 @@
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-CLI-f97316?logo=anthropic&logoColor=white)
 ![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
+![Multi-Agent](https://img.shields.io/badge/Multi--Agent-5+_Parallel_Agents-8b5cf6?logo=anthropic&logoColor=white)
+![Custom Brief](https://img.shields.io/badge/Custom_Brief-Deep_Research-ec4899?logo=anthropic&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
+![Adaptive Cards](https://img.shields.io/badge/Adaptive_Cards-v1.4-0078D4?logo=json&logoColor=white)
 ![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
-![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=make&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-5391FE?logo=shell&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-launchd-000000?logo=apple&logoColor=white)
-![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=task&logoColor=white)
-![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=teams&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-Task_Scheduler-0078D4?logo=windsurf&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-Compatible-FCC624?logo=linux&logoColor=white)
+![Teams](https://img.shields.io/badge/Microsoft_Teams-Webhook-6264A7?logo=microsoftteams&logoColor=white)
 ![Slack](https://img.shields.io/badge/Slack-Webhook-4A154B?logo=slack&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
+![Tests](https://img.shields.io/badge/Shell_Tests-247_Passing-10b981?logo=checkmarx&logoColor=white)
+![ANSI Colors](https://img.shields.io/badge/CLI-Styled_Output-ff6b6b?logo=windowsterminal&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
@@ -37,6 +43,8 @@ The system is cross-platform, supporting macOS (launchd) and Windows (Task Sched
 10. [Security Considerations](#10-security-considerations)
 11. [Teams and Slack Notification Pipelines](#11-teams-and-slack-notification-pipelines)
 12. [Future Enhancements / Extension Points](#12-future-enhancements--extension-points)
+
+> **See also:** [Section 3.11 -- Custom Topic Briefing Pipeline](#311-custom-topic-briefing-pipeline), [Section 3.12 -- Test Suite](#312-test-suite), [CUSTOM_BRIEF.md](CUSTOM_BRIEF.md), [TESTS.md](TESTS.md)
 
 > [!NOTE]
 > **Live Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
@@ -250,9 +258,14 @@ graph TD
 
 A PowerShell script that registers (or re-registers) the Windows Task Scheduler task. Accepts `-Hour` and `-Minute` parameters for schedule customization. Removes any existing task with the same name before creating a new one, making it idempotent.
 
-### 3.4 AI Prompt and Skill Definition
+### 3.4 AI Prompt and Skill Definitions
 
-The AI's behavior is governed by two instruction files: `prompt.md` (the base prompt read by the entry scripts) and `~/.claude/commands/ai-news-briefing.md` (the Claude Code skill definition). Together they form the complete instruction set for a briefing run. Both are shared across platforms with no platform-specific content.
+The AI's behavior is governed by prompt files and Claude Code skill definitions:
+
+- **Daily briefing:** `prompt.md` (headless) + `commands/ai-news-briefing.md` (interactive skill)
+- **Custom brief:** `prompt-custom-brief.md` (headless with template variables) + `commands/custom-brief.md` (interactive skill)
+
+The daily briefing prompts form the complete instruction set for a scheduled run. The custom brief prompt uses `{{TOPIC}}` and `{{PUBLISH_*}}` template variables that are injected by the CLI scripts at runtime. All prompts are shared across platforms with no platform-specific content.
 
 ```mermaid
 graph TD
@@ -305,7 +318,8 @@ The `Makefile` provides a unified command interface across macOS, Windows (Git B
 
 | Category | Targets | Purpose |
 |---|---|---|
-| Execution | `run`, `run-bg`, `run-scheduled` | Trigger the briefing pipeline |
+| Daily Briefing | `run`, `run-bg`, `run-scheduled` | Trigger the daily briefing pipeline |
+| Custom Brief | `custom-brief`, `custom-brief-bg` | Deep-research a specific topic on demand |
 | Logs | `tail`, `log`, `logs`, `log-date`, `clean-logs`, `purge-logs` | View and manage log files |
 | Scheduler | `install`, `uninstall`, `status` | Manage the platform scheduler |
 | Validation | `check`, `validate` | Verify environment and project health |
@@ -507,19 +521,176 @@ bash scripts/notify-slack.sh --all --card-file logs/2026-03-24-card.json
 Teams:
 
 <p align="center">
-  <img src="example-cards/teams.png" alt="Teams Card Example" width="100%">
+  <img src="img/teams.png" alt="Teams Card Example" width="100%">
 </p>
 
 Slack:
 
 <p align="center">
-  <img src="example-cards/slack.png" alt="Slack Message Example" width="100%">
+  <img src="img/slack.png" alt="Slack Message Example" width="100%">
 </p>
 
 Deep-dive docs:
 
 - [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md)
 - [NOTIFY_SLACK.md](NOTIFY_SLACK.md)
+
+### 3.11 Custom Topic Briefing Pipeline
+
+The custom brief is an on-demand deep research pipeline that investigates any user-defined topic using 5 parallel research agents. Unlike the daily briefing (which scans 9 fixed categories), the custom brief goes deep on a single topic from multiple angles.
+
+#### Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph "Entry Points"
+        SH["custom-brief.sh (bash)"]
+        PS["custom-brief.ps1 (PowerShell)"]
+        SK["commands/custom-brief.md (skill)"]
+    end
+
+    subgraph "Prompt Assembly"
+        SH -->|"Inject {{TOPIC}}, {{DATE}}, flags"| PT[prompt-custom-brief.md]
+        PS -->|"Inject {{TOPIC}}, {{DATE}}, flags"| PT
+        SK -->|Interactive params| CC
+        PT --> CC[Claude Code CLI]
+    end
+
+    subgraph "Phase 1: Broad Discovery (Parallel)"
+        CC --> A1["Agent 1: Breaking News"]
+        CC --> A2["Agent 2: Technical Analysis"]
+        CC --> A3["Agent 3: Industry Impact"]
+        CC --> A4["Agent 4: Trend Trajectory"]
+        CC --> A5["Agent 5: Policy & Ethics"]
+    end
+
+    subgraph "Phase 2: Deep Dive"
+        A1 --> DD[Follow-up on top 5-8 findings]
+        A2 --> DD
+        A3 --> DD
+        A4 --> DD
+        A5 --> DD
+        DD -->|Verify against primary sources| DD
+    end
+
+    subgraph "Phase 3-6: Output"
+        DD --> SYNTH[Synthesize by theme]
+        SYNTH -->|Always| STDOUT[Terminal output]
+        SYNTH -->|If --notion| NOTION[Notion page]
+        SYNTH -->|If --teams/--slack| CARD[Card JSON]
+        CARD --> NT["notify-teams.sh/.ps1"]
+        CARD --> NS["notify-slack.sh/.ps1"]
+    end
+```
+
+<p align="center">
+  <img src="img/custom-brief.png" alt="Custom Brief Architecture" width="100%">
+</p>
+
+#### Research Agent Design
+
+Each of the 5 agents receives a targeted search brief and returns findings with source URLs and publication dates. They run in parallel (launched as concurrent Agent tool calls) and cover orthogonal perspectives:
+
+| Agent | Angle | Focus Areas |
+|-------|-------|-------------|
+| 1 | Breaking News | Product launches, announcements, releases |
+| 2 | Technical Analysis | Benchmarks, evaluations, expert commentary |
+| 3 | Industry Impact | Market moves, competitive dynamics, funding |
+| 4 | Trend Trajectory | Milestones, evolution, future direction |
+| 5 | Policy & Ethics | Regulation, legislation, safety concerns |
+
+#### Files Involved
+
+| File | Purpose |
+|------|---------|
+| `custom-brief.sh` | Bash CLI with `--topic`, `--notion`, `--teams`, `--slack` params + REPL mode |
+| `custom-brief.ps1` | PowerShell CLI with equivalent `-Topic`, `-Notion`, `-Teams`, `-Slack` params |
+| `prompt-custom-brief.md` | Prompt template with `{{TOPIC}}`, `{{DATE}}`, `{{PUBLISH_*}}` placeholders |
+| `commands/custom-brief.md` | Claude Code skill for interactive sessions |
+| `logs/custom-TIMESTAMP.log` | Execution log |
+| `logs/custom-TIMESTAMP-card.json` | Adaptive Card JSON (if Teams/Slack requested) |
+
+#### Prompt Template Variable Injection
+
+The CLI scripts perform string replacement on `prompt-custom-brief.md` before passing it to Claude:
+
+```mermaid
+flowchart LR
+    T["--topic arg"] --> S["custom-brief.sh/.ps1"]
+    F["--notion/--teams/--slack"] --> S
+    S -->|"Replace {{TOPIC}}"| P["prompt-custom-brief.md"]
+    S -->|"Replace {{DATE}}"| P
+    S -->|"Replace {{PUBLISH_*}}"| P
+    P -->|"claude -p --model opus"| C[Claude Code]
+```
+
+#### Relationship to Daily Briefing
+
+The custom brief reuses the same infrastructure:
+
+| Component | Daily Briefing | Custom Brief |
+|-----------|---------------|--------------|
+| Notion database | Same (data_source_id) | Same |
+| Teams notification | `notify-teams.sh/.ps1` | Same scripts |
+| Slack notification | `notify-slack.sh/.ps1` + `teams-to-slack.py` | Same scripts |
+| Card template | Adaptive Card v1.4 | Same structure, different header |
+| Page title | `YYYY-MM-DD - AI Daily Briefing` | `YYYY-MM-DD - Custom Brief: [Topic]` |
+| Log naming | `logs/YYYY-MM-DD.log` | `logs/custom-YYYY-MM-DD-HHMMSS.log` |
+| Deduplication | Yes (covered-stories.txt) | No (standalone) |
+
+### 3.12 Test Suite
+
+247 non-blocking tests across bash and PowerShell verify the entire system without calling external services. Tests cover syntax, structure, argument handling, template substitution, card JSON validation, notification error paths, and cross-platform portability.
+
+#### Test Architecture
+
+```mermaid
+flowchart TD
+    subgraph "Bash (macOS / Linux / Git Bash)"
+        R["tests/run-all.sh"] --> T1["test-custom-brief.sh<br/>37 tests"]
+        R --> T2["test-daily-brief.sh<br/>56 tests"]
+        R --> T3["test-notifications.sh<br/>37 tests"]
+        R --> T4["test-portability.sh<br/>26 tests"]
+    end
+
+    subgraph "PowerShell (Windows)"
+        PS["tests/test-all.ps1<br/>91 tests"]
+    end
+
+    subgraph "Coverage"
+        T1 --> X1["Arg parsing, template substitution,<br/>prompt structure, skill structure"]
+        T2 --> X2["Prompt steps, 9 topics, 8 changelogs,<br/>entry scripts, dedup file"]
+        T3 --> X3["Card JSON validity, Adaptive Card structure,<br/>Teams-to-Slack converter, error handling"]
+        T4 --> X4["Bash 3.2 compat, awk/date portability,<br/>-f vs -x checks, ANSI color safety"]
+        PS --> X1
+        PS --> X2
+        PS --> X3
+    end
+```
+
+<p align="center">
+  <img src="img/tests.png" alt="Test CLI" width="100%">
+</p>
+
+#### Design Decisions
+
+- **Non-blocking.** No test calls Claude, Notion, Teams, Slack, or any external service. Tests validate contracts, not runtime behavior.
+- **No test framework.** Pure bash/PowerShell with simple `pass()`/`fail()` helpers. Zero dependencies.
+- **Cross-platform parity.** Bash tests cover macOS/Linux/Git Bash; PowerShell covers Windows. Both verify the same codebase from different angles.
+- **Portability verification.** Dedicated suite checks bash 3.2 compatibility (macOS), BSD awk, and ANSI color auto-disable.
+
+#### Files
+
+| File | Tests | Focus |
+|---|---|---|
+| `tests/run-all.sh` | -- | Runner: executes all `test-*.sh` suites |
+| `tests/test-custom-brief.sh` | 37 | Custom brief: args, template, prompt, skill |
+| `tests/test-daily-brief.sh` | 56 | Daily brief: prompt, topics, changelogs, scripts |
+| `tests/test-notifications.sh` | 37 | Notifications: card JSON, converter, error paths |
+| `tests/test-portability.sh` | 26 | Cross-platform: bash version, awk, date, colors |
+| `tests/test-all.ps1` | 91 | PowerShell: syntax, prompts, cards, converter, docs |
+
+Full documentation: [TESTS.md](TESTS.md)
 
 ---
 
@@ -910,6 +1081,10 @@ Edit `prompt.md`, Section "Topics to Search". Update the `Topics` property value
 
 Change `--model sonnet` in the entry script for your platform. Consider adjusting `--max-budget-usd` accordingly.
 
+### Custom Topic Research
+
+**Implemented.** See [Section 3.11](#311-custom-topic-briefing-pipeline) and [CUSTOM_BRIEF.md](CUSTOM_BRIEF.md). Run `make custom-brief T="topic" NOTION=1 TEAMS=1` or `./custom-brief.sh --topic "topic" --notion --teams`.
+
 ### Adding Notification Channels
 
 | Channel | Status | Implementation Approach |
@@ -942,6 +1117,8 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 |---|---|---|---|
 | Run manually | `make run` | `ai-news` | `schtasks /run /tn AiNewsBriefing` |
 | Run in background | `make run-bg` | `nohup bash briefing.sh &` | `Start-Process powershell briefing.ps1` |
+| Custom brief | `make custom-brief T="topic"` | `bash custom-brief.sh --topic "topic"` | `.\custom-brief.ps1 -Topic "topic"` |
+| Custom brief + publish | `make custom-brief T="topic" NOTION=1 TEAMS=1` | `bash custom-brief.sh -t "topic" -n --teams` | `.\custom-brief.ps1 -Topic "topic" -Notion -Teams` |
 | Tail live log | `make tail` | `tail -f logs/YYYY-MM-DD.log` | `Get-Content "logs\YYYY-MM-DD.log" -Wait` |
 | Check job status | `make status` | `launchctl list \| grep ainews` | `schtasks /query /tn AiNewsBriefing` |
 | Install scheduler | `make install` | `launchctl load ~/Library/LaunchAgents/...` | `.\install-task.ps1` |
