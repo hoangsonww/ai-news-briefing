@@ -6,17 +6,6 @@ LOG_DIR="$SCRIPT_DIR/logs"
 DATE=$(date +%Y-%m-%d)
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
 
-# Resolve Claude CLI path (supports macOS, Linux, and Windows Git Bash)
-if [ -x "${HOME}/.local/bin/claude" ]; then
-  CLAUDE="${HOME}/.local/bin/claude"
-elif [ -x "${HOME}/.local/bin/claude.exe" ]; then
-  CLAUDE="${HOME}/.local/bin/claude.exe"
-elif command -v claude >/dev/null 2>&1; then
-  CLAUDE="$(command -v claude)"
-else
-  CLAUDE=""
-fi
-
 # Ensure we can run even if Claude Code is open
 unset CLAUDECODE 2>/dev/null || true
 

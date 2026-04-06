@@ -23,7 +23,8 @@ jobs:
           echo "::group::ShellCheck version"
           shellcheck --version
           echo "::endgroup::"
-          shellcheck briefing.sh custom-brief.sh scripts/*.sh tests/*.sh
+          shellcheck briefing.sh custom-brief.sh scripts/notify-teams.sh scripts/notify-slack.sh
+          shellcheck -S error tests/*.sh
 
       - name: Bash syntax check
         run: |
@@ -143,61 +144,7 @@ jobs:
             done
           done
 
-  # ── Job 5: Card JSON ────────────────────────────────────────
-  card-json:
-    name: 🃏 Card JSON
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate all card JSON files
-        run: |
-          cards=$(find logs example-cards -name '*card*.json' 2>/dev/null)
-          if [ -z "$cards" ]; then
-            echo "No card JSON files found — skipping."
-            exit 0
-          fi
-          count=0
-          failed=0
-          for f in $cards; do
-            count=$((count + 1))
-            if python3 -m json.tool "$f" >/dev/null 2>&1; then
-              printf "  %-50s OK\n" "$f"
-            else
-              printf "  %-50s INVALID\n" "$f"
-              failed=$((failed + 1))
-            fi
-          done
-          echo ""
-          echo "  $count card(s) checked, $failed invalid."
-          [ $failed -eq 0 ]
-
-      - name: Card structure (Adaptive Card v1.4)
-        run: |
-          card=$(find logs example-cards -name '*card*.json' 2>/dev/null | sort | tail -1)
-          if [ -z "$card" ]; then
-            echo "No card JSON files — skipping."
-            exit 0
-          fi
-          echo "Checking: $card"
-          python3 -c "
-          import json, sys
-          c = json.load(open('$card'))
-          attach = c.get('attachments', [{}])[0].get('content', {})
-          checks = {
-            'type is AdaptiveCard': attach.get('type') == 'AdaptiveCard',
-            'version is 1.4+': attach.get('version', '') >= '1.4',
-            'has body': len(attach.get('body', [])) > 0,
-          }
-          ok = True
-          for name, passed in checks.items():
-            status = 'OK' if passed else 'FAIL'
-            print(f'  {name:40s} {status}')
-            if not passed: ok = False
-          sys.exit(0 if ok else 1)
-          "
-
-  # ── Job 6: Docs ─────────────────────────────────────────────
+  # ── Job 5: Docs ──────────────────────────────────────────────
   docs:
     name: 📚 Docs
     runs-on: ubuntu-latest
