@@ -1,0 +1,207 @@
+name: 🔬 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Job 1: Lint ──────────────────────────────────────────────
+  lint:
+    name: 🧹 Lint
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck (advisory)
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          echo "::group::ShellCheck version"
+          shellcheck --version
+          echo "::endgroup::"
+          shellcheck briefing.sh custom-brief.sh scripts/notify-teams.sh scripts/notify-slack.sh || true
+          shellcheck -S error scripts/*.sh tests/*.sh || true
+
+      - name: Bash syntax check (advisory)
+        continue-on-error: true
+        run: |
+          for f in briefing.sh custom-brief.sh scripts/*.sh tests/*.sh; do
+            bash -n "$f" && printf "  %-40s OK\n" "$f" || printf "  %-40s WARN\n" "$f"
+          done
+
+      - name: PowerShell syntax check (advisory)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $files = @(
+            "briefing.ps1",
+            "custom-brief.ps1",
+            "install-task.ps1"
+          ) + (Get-ChildItem scripts/*.ps1 -Name | ForEach-Object { "scripts/$_" })
+
+          foreach ($f in $files) {
+            try {
+              $null = [System.Management.Automation.PSParser]::Tokenize(
+                (Get-Content $f -Raw), [ref]$null
+              )
+              Write-Host "  $($f.PadRight(40)) OK"
+            } catch {
+              Write-Host "  $($f.PadRight(40)) WARN"
+            }
+          }
+
+      - name: Python syntax check (advisory)
+        continue-on-error: true
+        run: python3 -m py_compile scripts/teams-to-slack.py
+
+  # ── Job 2: Test (Bash) ──────────────────────────────────────
+  test-bash:
+    name: 🐧 Test (Bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Python 3 available
+        run: python3 --version
+
+      - name: Run bash test suite
+        run: bash tests/run-all.sh
+
+  # ── Job 3: Test (PowerShell) ────────────────────────────────
+  test-powershell:
+    name: 🪟 Test (PowerShell)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run PowerShell test suite
+        shell: pwsh
+        run: |
+          & tests\test-all.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  # ── Job 4: Validate ─────────────────────────────────────────
+  validate:
+    name: ✅ Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required files exist
+        run: |
+          status=0
+          for f in \
+            prompt.md briefing.sh briefing.ps1 \
+            prompt-custom-brief.md custom-brief.sh custom-brief.ps1 \
+            com.ainews.briefing.plist install-task.ps1 \
+            commands/ai-news-briefing.md commands/custom-brief.md \
+            Makefile; do
+            if [ -f "$f" ]; then
+              printf "  %-44s OK\n" "$f"
+            else
+              printf "  %-44s MISSING\n" "$f"
+              status=1
+            fi
+          done
+          exit $status
+
+      - name: Prompt structure
+        run: |
+          for section in "Step 0" "Step 1" "Step 2" "Step 3" "Step 4" "Step 5"; do
+            if grep -q "$section" prompt.md; then
+              printf "  %-20s OK\n" "$section"
+            else
+              printf "  %-20s MISSING\n" "$section"
+              exit 1
+            fi
+          done
+
+      - name: Custom brief template placeholders
+        run: |
+          for ph in '{{TOPIC}}' '{{DATE}}' '{{TIMESTAMP}}' '{{PUBLISH_NOTION}}' '{{PUBLISH_TEAMS_SLACK}}'; do
+            if grep -qF "$ph" prompt-custom-brief.md; then
+              printf "  %-30s OK\n" "$ph"
+            else
+              printf "  %-30s MISSING\n" "$ph"
+              exit 1
+            fi
+          done
+
+      - name: Scripts reference all engines
+        run: |
+          for engine in claude codex gemini copilot; do
+            for script in briefing.sh custom-brief.sh; do
+              if grep -q "$engine" "$script"; then
+                printf "  %-16s in %-20s OK\n" "$engine" "$script"
+              else
+                printf "  %-16s in %-20s MISSING\n" "$engine" "$script"
+                exit 1
+              fi
+            done
+          done
+
+  # ── Job 5: Docs ──────────────────────────────────────────────
+  docs:
+    name: 📚 Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required documentation exists and is non-empty
+        run: |
+          status=0
+          for f in \
+            README.md ARCHITECTURE.md SETUP.md \
+            CUSTOM_BRIEF.md E2E_FLOW.md TESTS.md LOGS.md \
+            NOTIFY_TEAMS.md NOTIFY_SLACK.md LICENSE; do
+            if [ -s "$f" ]; then
+              size=$(wc -c < "$f")
+              printf "  %-24s OK  (%s bytes)\n" "$f" "$size"
+            else
+              printf "  %-24s MISSING or EMPTY\n" "$f"
+              status=1
+            fi
+          done
+          exit $status
+
+  # ── Summary ─────────────────────────────────────────────────
+  summary:
+    name: 📊 Summary
+    if: always()
+    needs: [lint, test-bash, test-powershell, validate, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pipeline results
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## 🔬 CI Pipeline Summary
+
+          | Job | Status |
+          |-----|--------|
+          | 🧹 Lint | `${{ needs.lint.result }}` |
+          | 🐧 Test (Bash) | `${{ needs.test-bash.result }}` |
+          | 🪟 Test (PowerShell) | `${{ needs.test-powershell.result }}` |
+          | ✅ Validate | `${{ needs.validate.result }}` |
+          | 📚 Docs | `${{ needs.docs.result }}` |
+          EOF
+
+          # Fail if any required job failed (lint excluded — advisory only)
+          if [[ "${{ needs.test-bash.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-powershell.result }}" == "failure" ]] || \
+             [[ "${{ needs.validate.result }}" == "failure" ]] || \
+             [[ "${{ needs.docs.result }}" == "failure" ]]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "> [!CAUTION]" >> "$GITHUB_STEP_SUMMARY"
+            echo "> Some checks failed." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          else
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "> [!TIP]" >> "$GITHUB_STEP_SUMMARY"
+            echo "> All checks passed! 🎉" >> "$GITHUB_STEP_SUMMARY"
+          fi

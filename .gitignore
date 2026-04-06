@@ -4,3 +4,4 @@ backups/
 .DS_Store
 .vs/
 .claude/
+__pycache__/
