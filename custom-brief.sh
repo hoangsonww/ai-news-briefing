@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
@@ -14,8 +14,7 @@ elif [ -x "${HOME}/.local/bin/claude.exe" ]; then
 elif command -v claude >/dev/null 2>&1; then
   CLAUDE="$(command -v claude)"
 else
-  echo "ERROR: Claude CLI not found. Install it at ~/.local/bin/claude" >&2
-  exit 1
+  CLAUDE=""
 fi
 
 # Ensure we can run even if Claude Code is open
@@ -23,7 +22,7 @@ unset CLAUDECODE 2>/dev/null || true
 
 mkdir -p "$LOG_DIR"
 
-# -- Colors (auto-disable if not a terminal) ---------------
+# -- Colors (auto-disable if not a terminal) -------------------
 if [[ -t 1 ]]; then
   BOLD='\033[1m'
   DIM='\033[2m'
@@ -32,18 +31,95 @@ if [[ -t 1 ]]; then
   YELLOW='\033[33m'
   RED='\033[31m'
   MAGENTA='\033[35m'
+  WHITE='\033[97m'
   RESET='\033[0m'
 else
-  BOLD='' DIM='' CYAN='' GREEN='' YELLOW='' RED='' MAGENTA='' RESET=''
+  BOLD='' DIM='' CYAN='' GREEN='' YELLOW='' RED='' MAGENTA='' WHITE='' RESET=''
 fi
 
-# -- Defaults ----------------------------------------------
+# -- CLI Engine Registry ---------------------------------------
+SUPPORTED_CLIS="claude codex gemini copilot"
+
+resolve_binary() {
+  local cli="$1"
+  case "$cli" in
+    claude)
+      for p in "${HOME}/.local/bin/claude" "${HOME}/.local/bin/claude.exe"; do
+        if [ -x "$p" ]; then echo "$p"; return 0; fi
+      done
+      command -v claude 2>/dev/null && return 0
+      return 1
+      ;;
+    codex)
+      command -v codex 2>/dev/null && return 0
+      return 1
+      ;;
+    gemini)
+      command -v gemini 2>/dev/null && return 0
+      return 1
+      ;;
+    copilot)
+      if command -v gh >/dev/null 2>&1; then
+        if gh extension list 2>/dev/null | grep -q copilot; then
+          echo "gh"; return 0
+        fi
+      fi
+      command -v copilot 2>/dev/null && return 0
+      return 1
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+cli_display_name() {
+  case "$1" in
+    claude)  echo "Claude Code" ;;
+    codex)   echo "OpenAI Codex" ;;
+    gemini)  echo "Gemini CLI" ;;
+    copilot) echo "GitHub Copilot" ;;
+    *)       echo "$1" ;;
+  esac
+}
+
+run_engine() {
+  local cli="$1" binary="$2" prompt="$3" log="$4"
+  local model="${AI_BRIEFING_MODEL:-opus}"
+
+  case "$cli" in
+    claude)
+      "$binary" -p \
+        --model "$model" \
+        --dangerously-skip-permissions \
+        "$prompt" 2>&1 | tee -a "$log"
+      ;;
+    codex)
+      "$binary" -q --full-auto \
+        "$prompt" 2>&1 | tee -a "$log"
+      ;;
+    gemini)
+      "$binary" -p \
+        "$prompt" 2>&1 | tee -a "$log"
+      ;;
+    copilot)
+      if [ "$binary" = "gh" ]; then
+        "$binary" copilot -p \
+          "$prompt" 2>&1 | tee -a "$log"
+      else
+        "$binary" -p \
+          "$prompt" 2>&1 | tee -a "$log"
+      fi
+      ;;
+  esac
+}
+
+# -- Defaults --------------------------------------------------
 TOPIC=""
+CLI_ENGINE=""
 PUBLISH_NOTION=false
 PUBLISH_TEAMS=false
 PUBLISH_SLACK=false
 
-# -- Parse arguments ---------------------------------------
+# -- Parse arguments -------------------------------------------
 print_usage() {
   cat <<'EOF'
 Usage: custom-brief.sh [OPTIONS]
@@ -51,17 +127,22 @@ Usage: custom-brief.sh [OPTIONS]
 Deep-research a topic and produce a comprehensive news briefing.
 
 Options:
-  --topic, -t TEXT    Topic to research (required in non-interactive mode)
-  --notion, -n        Publish to Notion
-  --teams             Publish to Microsoft Teams
-  --slack             Publish to Slack
-  --help, -h          Show this help
+  --topic, -t TEXT        Topic to research (required in non-interactive mode)
+  --cli, -c ENGINE        AI engine: claude, codex, gemini, copilot
+  --notion, -n            Publish to Notion
+  --teams                 Publish to Microsoft Teams
+  --slack                 Publish to Slack
+  --help, -h              Show this help
+
+Environment:
+  AI_BRIEFING_CLI         Default engine (overridden by --cli)
+  AI_BRIEFING_MODEL       Model name (default: opus)
 
 If no arguments are given, enters interactive mode.
 
 Examples:
-  ./custom-brief.sh --topic "AI in healthcare" --notion --teams
-  ./custom-brief.sh -t "quantum computing" -n
+  ./custom-brief.sh --topic "AI in healthcare" --cli codex --notion --teams
+  ./custom-brief.sh -t "quantum computing" -c gemini -n
   ./custom-brief.sh   # interactive mode
 EOF
 }
@@ -69,36 +150,26 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --topic|-t)
-      if [[ $# -lt 2 ]]; then echo "ERROR: --topic requires a value" >&2; exit 1; fi
-      TOPIC="$2"
-      shift 2
-      ;;
+      [[ $# -lt 2 ]] && { echo "ERROR: --topic requires a value" >&2; exit 1; }
+      TOPIC="$2"; shift 2 ;;
+    --cli|-c)
+      [[ $# -lt 2 ]] && { echo "ERROR: --cli requires a value" >&2; exit 1; }
+      CLI_ENGINE="$2"; shift 2 ;;
     --notion|-n)
-      PUBLISH_NOTION=true
-      shift
-      ;;
+      PUBLISH_NOTION=true; shift ;;
     --teams)
-      PUBLISH_TEAMS=true
-      shift
-      ;;
+      PUBLISH_TEAMS=true; shift ;;
     --slack)
-      PUBLISH_SLACK=true
-      shift
-      ;;
+      PUBLISH_SLACK=true; shift ;;
     --help|-h)
-      print_usage
-      exit 0
-      ;;
+      print_usage; exit 0 ;;
     *)
-      echo "Unknown option: $1" >&2
-      print_usage
-      exit 1
-      ;;
+      echo "Unknown option: $1" >&2; print_usage; exit 1 ;;
   esac
 done
 
-# -- Interactive REPL (if no topic provided) ---------------
-if [[ -z "$TOPIC" ]]; then
+# -- Banner ----------------------------------------------------
+print_banner() {
   echo ""
   echo -e "  ${DIM} _____                                                                 _____ ${RESET}"
   echo -e "  ${DIM}( ___ )---------------------------------------------------------------( ___ )${RESET}"
@@ -111,16 +182,76 @@ if [[ -z "$TOPIC" ]]; then
   echo -e "  ${DIM} |___|                                                                 |___| ${RESET}"
   echo -e "  ${DIM}(_____)---------------------------------------------------------------(_____)${RESET}"
   echo ""
-  echo -e "  ${MAGENTA}Interactive Mode${RESET}"
+}
+
+# -- Interactive REPL (if no topic provided) -------------------
+if [[ -z "$TOPIC" ]]; then
+  print_banner
+  echo -e "  ${MAGENTA}${BOLD}Interactive Mode${RESET}"
   echo ""
-  echo -ne "  ${BOLD}Topic:${RESET} "
+
+  # Topic
+  echo -e "  ${DIM}--- Topic -------------------------------------------------${RESET}"
+  echo -ne "  ${BOLD}What would you like to research?${RESET}\n  > "
   read -r TOPIC
   if [[ -z "$TOPIC" ]]; then
     echo -e "  ${RED}Error: topic cannot be empty.${RESET}" >&2
     exit 1
   fi
   echo ""
-  echo -e "  ${DIM}Publish to:${RESET}"
+
+  # AI Engine
+  echo -e "  ${DIM}--- AI Engine ---------------------------------------------${RESET}"
+  idx=0
+  default_idx=0
+  default_cli=""
+  for cli in $SUPPORTED_CLIS; do
+    idx=$((idx + 1))
+    label="$(cli_display_name "$cli")"
+    # Pad label to fixed width
+    padded="$(printf '%-16s' "$label")"
+    if resolve_binary "$cli" >/dev/null 2>&1; then
+      avail="${GREEN}available${RESET}"
+      if [[ -z "$default_cli" ]]; then
+        default_cli="$cli"
+        default_idx=$idx
+      fi
+    else
+      avail="${RED}not installed${RESET}"
+    fi
+    echo -e "    ${WHITE}${idx})${RESET} ${padded} ${avail}"
+  done
+  echo ""
+
+  env_cli="${AI_BRIEFING_CLI:-}"
+  if [[ -n "$env_cli" ]]; then
+    # Find index of env-configured CLI
+    idx=0
+    for cli in $SUPPORTED_CLIS; do
+      idx=$((idx + 1))
+      if [[ "$cli" == "$env_cli" ]]; then default_idx=$idx; default_cli="$env_cli"; break; fi
+    done
+  fi
+
+  echo -ne "  ${BOLD}Select [1-4, default=${default_idx}]:${RESET} "
+  read -r engine_choice
+  if [[ -z "$engine_choice" ]]; then
+    CLI_ENGINE="$default_cli"
+  else
+    idx=0
+    for cli in $SUPPORTED_CLIS; do
+      idx=$((idx + 1))
+      if [[ "$idx" == "$engine_choice" ]]; then CLI_ENGINE="$cli"; break; fi
+    done
+    if [[ -z "$CLI_ENGINE" ]]; then
+      echo -e "  ${RED}Invalid selection.${RESET}" >&2
+      exit 1
+    fi
+  fi
+  echo ""
+
+  # Publish destinations
+  echo -e "  ${DIM}--- Publish -----------------------------------------------${RESET}"
   read -rp "    Notion? [y/N]: " yn
   [[ "$yn" =~ ^[Yy] ]] && PUBLISH_NOTION=true
   read -rp "    Teams?  [y/N]: " yn
@@ -130,21 +261,28 @@ if [[ -z "$TOPIC" ]]; then
   echo ""
 fi
 
-# -- Determine if card JSON is needed ----------------------
+# -- Resolve engine (non-interactive fallback) -----------------
+if [[ -z "$CLI_ENGINE" ]]; then
+  CLI_ENGINE="${AI_BRIEFING_CLI:-claude}"
+fi
+
+ENGINE_BINARY=$(resolve_binary "$CLI_ENGINE" 2>/dev/null) || {
+  echo -e "  ${RED}${BOLD}ERROR${RESET}  ${RED}Engine '$(cli_display_name "$CLI_ENGINE")' is not installed.${RESET}" >&2
+  exit 1
+}
+
+# -- Determine if card JSON is needed --------------------------
 PUBLISH_TEAMS_SLACK=false
 if [[ "$PUBLISH_TEAMS" == "true" || "$PUBLISH_SLACK" == "true" ]]; then
   PUBLISH_TEAMS_SLACK=true
 fi
 
-# -- Build the prompt --------------------------------------
+# -- Build the prompt ------------------------------------------
 LOG_FILE="$LOG_DIR/custom-$TIMESTAMP.log"
 CARD_FILE="$LOG_DIR/custom-$TIMESTAMP-card.json"
 
 PROMPT_TEMPLATE="$(cat "$SCRIPT_DIR/prompt-custom-brief.md")"
 
-# Replace placeholders using awk for safe literal substitution.
-# Bash parameter expansion treats & and \ specially in replacements,
-# so awk gsub is safer for user-supplied topic strings.
 PROMPT="$(awk \
   -v topic="$TOPIC" \
   -v date="$DATE" \
@@ -160,7 +298,7 @@ PROMPT="$(awk \
     print
   }' <<< "$PROMPT_TEMPLATE")"
 
-# -- Helpers for styled boolean display --------------------
+# -- Helpers for styled boolean display ------------------------
 flag_label() {
   if [[ "$1" == "true" ]]; then
     echo -e "${GREEN}yes${RESET}"
@@ -169,49 +307,33 @@ flag_label() {
   fi
 }
 
-# -- Print run summary ------------------------------------
-echo ""
-echo -e "  ${DIM} _____                                                                 _____ ${RESET}"
-echo -e "  ${DIM}( ___ )---------------------------------------------------------------( ___ )${RESET}"
-echo -e "  ${DIM} |   |                                                                 |   | ${RESET}"
-echo -e "  ${DIM} |   |${RESET}${BOLD}${CYAN}     _    ___   _   _                     ____       _       __  ${RESET}${DIM}|   | ${RESET}"
-echo -e "  ${DIM} |   |${RESET}${BOLD}${CYAN}    / \\  |_ _| | \\ | | _____      _____  | __ ) _ __(_) ___ / _| ${RESET}${DIM}|   | ${RESET}"
-echo -e "  ${DIM} |   |${RESET}${BOLD}${CYAN}   / _ \\  | |  |  \\| |/ _ \\ \\ /\\ / / __| |  _ \\| '__| |/ _ \\ |_  ${RESET}${DIM}|   | ${RESET}"
-echo -e "  ${DIM} |   |${RESET}${BOLD}${CYAN}  / ___ \\ | |  | |\\  |  __/\\ V  V /\\__ \\ | |_) | |  | |  __/  _| ${RESET}${DIM}|   | ${RESET}"
-echo -e "  ${DIM} |   |${RESET}${BOLD}${CYAN} /_/   \\_\\___| |_| \\_|\\___| \\_/\\_/ |___/ |____/|_|  |_|\\___|_|   ${RESET}${DIM}|   | ${RESET}"
-echo -e "  ${DIM} |___|                                                                 |___| ${RESET}"
-echo -e "  ${DIM}(_____)---------------------------------------------------------------(_____)${RESET}"
-echo ""
-echo -e "  ${MAGENTA}Deep Research${RESET}"
+# -- Print run summary -----------------------------------------
+print_banner
+echo -e "  ${MAGENTA}${BOLD}Deep Research${RESET}"
 echo ""
 echo -e "  ${BOLD}Topic${RESET}     $TOPIC"
+echo -e "  ${BOLD}Engine${RESET}    $(cli_display_name "$CLI_ENGINE") ${DIM}($ENGINE_BINARY)${RESET}"
 echo -e "  ${BOLD}Notion${RESET}    $(flag_label "$PUBLISH_NOTION")"
 echo -e "  ${BOLD}Teams${RESET}     $(flag_label "$PUBLISH_TEAMS")"
 echo -e "  ${BOLD}Slack${RESET}     $(flag_label "$PUBLISH_SLACK")"
 echo -e "  ${DIM}Log${RESET}       ${DIM}$LOG_FILE${RESET}"
 echo ""
-echo -e "  ${MAGENTA}Launching 5 parallel research agents...${RESET}"
+echo -e "  ${MAGENTA}Launching research agents via $(cli_display_name "$CLI_ENGINE")...${RESET}"
 echo -e "  ${DIM}This may take a few minutes.${RESET}"
 echo ""
 echo -e "  ${DIM}================================================${RESET}"
 echo ""
 
-# -- Log header --------------------------------------------
+# -- Log header ------------------------------------------------
 {
   echo "[$DATE $(date +%H:%M:%S)] Custom Brief -- Topic: $TOPIC"
-  echo "[$DATE $(date +%H:%M:%S)] Notion=$PUBLISH_NOTION Teams=$PUBLISH_TEAMS Slack=$PUBLISH_SLACK"
+  echo "[$DATE $(date +%H:%M:%S)] Engine=$CLI_ENGINE Notion=$PUBLISH_NOTION Teams=$PUBLISH_TEAMS Slack=$PUBLISH_SLACK"
 } >> "$LOG_FILE"
 
-# -- Run Claude --------------------------------------------
-# Tee to both stdout (user sees briefing) and log file.
-# Temporarily disable pipefail so tee doesn't mask Claude's exit code,
-# then capture Claude's exit code via PIPESTATUS[0].
+# -- Run engine ------------------------------------------------
 set +o pipefail
-"$CLAUDE" -p \
-    --model opus \
-    --dangerously-skip-permissions \
-    "$PROMPT" 2>&1 | tee -a "$LOG_FILE"
-EXIT_CODE="${PIPESTATUS[0]}"
+run_engine "$CLI_ENGINE" "$ENGINE_BINARY" "$PROMPT" "$LOG_FILE"
+EXIT_CODE="${PIPESTATUS[0]:-$?}"
 set -o pipefail
 
 echo "" >> "$LOG_FILE"
@@ -226,7 +348,7 @@ fi
 
 echo "[$DATE $(date +%H:%M:%S)] Custom brief complete." >> "$LOG_FILE"
 
-# -- Post-processing: Teams notification -------------------
+# -- Post-processing: Teams notification -----------------------
 if [[ "$PUBLISH_TEAMS" == "true" ]]; then
   TEAMS_SCRIPT="$SCRIPT_DIR/scripts/notify-teams.sh"
   if [[ -f "$TEAMS_SCRIPT" && -n "${AI_BRIEFING_TEAMS_WEBHOOK:-}" ]]; then
@@ -250,7 +372,7 @@ if [[ "$PUBLISH_TEAMS" == "true" ]]; then
   fi
 fi
 
-# -- Post-processing: Slack notification -------------------
+# -- Post-processing: Slack notification -----------------------
 if [[ "$PUBLISH_SLACK" == "true" ]]; then
   SLACK_SCRIPT="$SCRIPT_DIR/scripts/notify-slack.sh"
   if [[ -f "$SLACK_SCRIPT" && -n "${AI_BRIEFING_SLACK_WEBHOOK:-}" ]]; then

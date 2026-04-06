@@ -4,6 +4,9 @@
 ![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
 ![Multi-Agent](https://img.shields.io/badge/Multi--Agent-5+_Parallel_Agents-8b5cf6?logo=anthropic&logoColor=white)
 ![Custom Brief](https://img.shields.io/badge/Custom_Brief-Deep_Research-ec4899?logo=anthropic&logoColor=white)
+![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-CLI-10b981?logo=openaigym&logoColor=white)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-CLI-4285F4?logo=googlegemini&logoColor=white)
+![GitHub Copilot CLI](https://img.shields.io/badge/GitHub_Copilot-CLI-238636?logo=githubcopilot&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
@@ -23,7 +26,7 @@
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams and Slack -- powered by Claude Code CLI. Supports both macOS (launchd) and Windows (Task Scheduler). Includes an on-demand **Custom Brief** mode for deep multi-agent research on any topic. Fully automated pipeline with zero manual intervention required after setup.
+Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams and Slack -- powered by Claude Code, Codex, Gemini, or Copilot CLIs with automatic fallback. Supports both macOS (launchd) and Windows (Task Scheduler). Includes an on-demand **Custom Brief** mode for deep multi-agent research on any topic. Fully automated pipeline with zero manual intervention required after setup.
 
 > [!NOTE]
 > **Live AI News Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
@@ -32,7 +35,7 @@ Automated daily AI news research agent that searches the web, compiles a structu
 
 ## Overview
 
-AI News Briefing is a fully automated pipeline that runs every morning on your machine. It uses Claude Code in headless mode to act as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams and Slack.
+AI News Briefing is a fully automated pipeline that runs every morning on your machine. It supports four AI CLI engines -- Claude Code, Codex (OpenAI), Gemini (Google), and Copilot (GitHub) -- with automatic fallback if your preferred engine is unavailable. The selected engine runs in headless mode as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams and Slack.
 
 The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion (or Teams or Slack), and your daily AI briefing is already there.
 
@@ -46,7 +49,7 @@ Keeping up with AI news across models, tools, policy, funding, and open source i
 
 ## Architecture
 
-We leverage the scheduling capabilities of the OS (launchd on macOS, Task Scheduler on Windows) to trigger a shell script at a specific time each day. The script reads a prompt template, invokes the Claude Code CLI in headless mode, and the agentic prompt performs web searches, compiles results, and calls the Notion MCP tool to create a new page in the database.
+We leverage the scheduling capabilities of the OS (launchd on macOS, Task Scheduler on Windows) to trigger a shell script at a specific time each day. The script reads a prompt template, selects an AI CLI engine (via the `AI_BRIEFING_CLI` env var or automatic fallback: claude → codex → gemini → copilot), and invokes it in headless mode. The agentic prompt performs web searches, compiles results, and calls the Notion MCP tool to create a new page in the database.
 
 ```mermaid
 flowchart TD
@@ -61,7 +64,7 @@ flowchart TD
     B1 -->|Reads| C[prompt.md]
     B2 -->|Reads| C
 
-    B1 -->|Invokes| D[Claude Code CLI]
+    B1 -->|Invokes| D[AI Engine - Claude/Codex/Gemini/Copilot]
     B2 -->|Invokes| D
 
     D -->|Step 1: Search| E[WebSearch Tool]
@@ -92,8 +95,8 @@ flowchart TD
 **Data flow summary:**
 
 1. The platform scheduler fires the entry point script (`briefing.sh` on macOS, `briefing.ps1` on Windows) at the configured time each day.
-2. The script reads the prompt from `prompt.md` and passes it to the Claude Code CLI in print mode.
-3. Claude Code executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
+2. The script reads the prompt from `prompt.md` and passes it to the selected AI CLI engine in headless mode.
+3. The AI engine executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
 4. Notion receives the finished briefing as a new database page.
 5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which validates and POSTs the pre-built `logs/YYYY-MM-DD-card.json` file (written by Claude in Step 4) to the configured Teams webhook.
 6. If the `AI_BRIEFING_SLACK_WEBHOOK` environment variable is set, the entry point script calls `notify-slack.sh` / `notify-slack.ps1`, which converts the Teams card to Slack Block Kit format and POSTs it to the configured Slack webhook.
@@ -106,9 +109,9 @@ flowchart TD
 | Requirement | Details |
 |---|---|
 | **OS** | macOS or Windows 10/11 |
-| **Claude Code CLI** | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
-| **Notion MCP** | The Notion MCP server must be configured in Claude Code's MCP settings with access to your workspace |
-| **WebSearch tool** | Available by default in Claude Code (no extra setup needed) |
+| **At least one AI CLI** | Any of the following: **Claude Code** (`claude`), **Codex** (`codex`), **Gemini** (`gemini`), or **Copilot** (`copilot`). If multiple are installed, the system uses `AI_BRIEFING_CLI` or falls back automatically. |
+| **Notion MCP** | The Notion MCP server must be configured in your AI CLI's MCP settings with access to your workspace |
+| **WebSearch tool** | Available by default in most AI CLIs (no extra setup needed) |
 | **Python 3.x** | Optional (legacy card builder only, not used in current flow) |
 | **Make** (optional) | GNU Make for using the Makefile task runner (`winget install GnuWin32.Make` on Windows, pre-installed on macOS) |
 
@@ -190,14 +193,34 @@ launchctl load ~/Library/LaunchAgents/com.ainews.briefing.plist
 .\install-task.ps1 -Hour 9 -Minute 0
 ```
 
+### Change the AI engine
+
+Set the `AI_BRIEFING_CLI` environment variable to choose which engine to use:
+
+```bash
+export AI_BRIEFING_CLI=codex    # or: claude, gemini, copilot
+```
+
+If not set, the daily briefing tries engines in fallback order: `claude` → `codex` → `gemini` → `copilot`, using the first one found. For custom briefs, pass `--cli`:
+
+```bash
+./custom-brief.sh --cli gemini --topic "AI safety"
+```
+
 ### Change the model
 
-Edit the entry point script for your platform:
+Set the `AI_BRIEFING_MODEL` environment variable to override the default model for any engine:
+
+```bash
+export AI_BRIEFING_MODEL=opus
+```
+
+Or edit the entry point script for your platform:
 
 - **macOS:** `briefing.sh` -- change the `--model sonnet` flag
 - **Windows:** `briefing.ps1` -- change the `--model sonnet` argument
 
-**Model trade-offs:**
+**Model trade-offs (Claude Code):**
 
 | Model | Speed | Cost | Quality |
 |---|---|---|---|
@@ -226,9 +249,10 @@ Once installed, the briefing runs automatically every day at the scheduled time 
 **Using Make (recommended, cross-platform):**
 
 ```bash
-make run            # Run in foreground
+make run            # Run in foreground (auto-detects engine)
 make run-bg         # Run in background
 make run-scheduled  # Trigger via OS scheduler
+make run CLI=codex  # Use a specific engine
 ```
 
 **Platform-native:**
@@ -283,10 +307,11 @@ The project includes a cross-platform `Makefile` that auto-detects your OS and r
 | `make install` | Install platform scheduler |
 | `make uninstall` | Remove platform scheduler |
 | `make status` | Show scheduler status |
-| `make check` | Verify Claude CLI is installed |
+| `make check` | Verify at least one AI CLI is installed |
 | `make validate` | Validate all project files and prompt structure |
 | `make prompt` | Print the current prompt |
-| `make info` | Show config summary (model, budget, paths) |
+| `make info` | Show config summary (engines, model, paths) |
+| `CLI=<engine>` | Parameter: choose engine (`claude`, `codex`, `gemini`, `copilot`) |
 
 ### Utility Scripts Reference
 
@@ -487,14 +512,21 @@ flowchart LR
 # Terminal + Notion only
 ./custom-brief.sh -t "quantum computing" -n
 
-# Interactive mode (prompts for topic and destinations)
+# Use a specific engine
+./custom-brief.sh --cli codex --topic "AI safety" --notion
+
+# Interactive mode (prompts for topic, engine, and destinations)
 ./custom-brief.sh
 
 # PowerShell
 .\custom-brief.ps1 -Topic "AI regulation EU" -Notion -Teams
 
+# PowerShell with engine override
+.\custom-brief.ps1 -Cli gemini -Topic "AI regulation EU" -Notion
+
 # Make
 make custom-brief T="open source LLMs" NOTION=1 TEAMS=1
+make custom-brief T="AI safety" CLI=codex NOTION=1
 ```
 
 ### What it produces
@@ -670,6 +702,20 @@ If the log shows the run stopped mid-way, the `--max-budget-usd` cap may have be
 ### Multiple runs in the same day
 
 Running the briefing multiple times in a day updates the existing Notion page rather than creating a duplicate. The agent checks for an existing page during Step 0b and updates it if found. Logs append to the same date-stamped file, so all runs for a given day are captured in one log.
+
+### Out of quota / CLI unavailable
+
+If the configured engine is unavailable (not installed, quota exceeded, or authentication expired), the system handles it differently depending on the mode:
+
+- **Daily briefing (automatic fallback):** When `AI_BRIEFING_CLI` is not set, the entry script tries each engine in order: `claude` → `codex` → `gemini` → `copilot`. If an engine is not found on `PATH`, it is skipped. If all engines fail, the run is logged as a failure.
+- **Daily briefing (explicit engine):** When `AI_BRIEFING_CLI` is set to a specific engine, only that engine is tried. If it fails, no fallback occurs and the run is logged as a failure.
+- **Custom brief:** In interactive mode, the REPL shows which engines are available (✓/✗) so you can pick one that works. In non-interactive mode, pass `--cli <engine>` to choose explicitly.
+
+To see which engines are installed on your machine:
+
+```bash
+make info
+```
 
 ---
 

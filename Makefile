@@ -43,44 +43,47 @@ help: ## Show this help
 	@echo ""
 
 ## —— Run ——————————————————————————————————————————————
-run: check ## Run the briefing now (foreground). Backfill: make run D=2026-03-15
+run: check ## Run the briefing now (foreground). Options: D=2026-03-15 CLI=codex
 ifeq ($(PLATFORM),windows)
-	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D))
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D)) $(if $(CLI),-Cli $(CLI))
 else
-	@bash "$(SCRIPT_DIR)/briefing.sh" $(D)
+	@bash "$(SCRIPT_DIR)/briefing.sh" $(if $(D),--date $(D)) $(if $(CLI),--cli $(CLI))
 endif
 
-run-bg: check ## Run the briefing in background. Backfill: make run-bg D=2026-03-15
+run-bg: check ## Run the briefing in background. Options: D=2026-03-15 CLI=codex
 ifeq ($(PLATFORM),windows)
 	@echo "[$(or $(D),$(DATE))] Starting briefing in background..."
-	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D)) &
+	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/briefing.ps1" $(if $(D),-BriefingDate $(D)) $(if $(CLI),-Cli $(CLI)) &
 	@echo "Running. Tail log with: make tail"
 else
 	@echo "[$(or $(D),$(DATE))] Starting briefing in background..."
-	@nohup bash "$(SCRIPT_DIR)/briefing.sh" $(D) >/dev/null 2>&1 &
+	@nohup bash "$(SCRIPT_DIR)/briefing.sh" $(if $(D),--date $(D)) $(if $(CLI),--cli $(CLI)) >/dev/null 2>&1 &
 	@echo "Running (PID $$!). Tail log with: make tail"
 endif
 
-custom-brief: check ## Deep-research a topic. Usage: make custom-brief T="AI in healthcare" NOTION=1 TEAMS=1 SLACK=1
+custom-brief: check ## Deep-research a topic. Usage: make custom-brief T="topic" CLI=codex NOTION=1 TEAMS=1 SLACK=1
 ifeq ($(PLATFORM),windows)
 	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
 		$(if $(T),-Topic "$(T)") \
+		$(if $(CLI),-Cli $(CLI)) \
 		$(if $(NOTION),-Notion) \
 		$(if $(TEAMS),-Teams) \
 		$(if $(SLACK),-Slack)
 else
 	@bash "$(SCRIPT_DIR)/custom-brief.sh" \
 		$(if $(T),--topic "$(T)") \
+		$(if $(CLI),--cli $(CLI)) \
 		$(if $(NOTION),--notion) \
 		$(if $(TEAMS),--teams) \
 		$(if $(SLACK),--slack)
 endif
 
-custom-brief-bg: check ## Deep-research in background. Usage: make custom-brief-bg T="quantum computing" NOTION=1
+custom-brief-bg: check ## Deep-research in background. Usage: make custom-brief-bg T="topic" CLI=gemini NOTION=1
 ifeq ($(PLATFORM),windows)
 	@echo "Starting custom brief in background..."
 	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
 		$(if $(T),-Topic "$(T)") \
+		$(if $(CLI),-Cli $(CLI)) \
 		$(if $(NOTION),-Notion) \
 		$(if $(TEAMS),-Teams) \
 		$(if $(SLACK),-Slack) &
@@ -89,6 +92,7 @@ else
 	@echo "Starting custom brief in background..."
 	@nohup bash "$(SCRIPT_DIR)/custom-brief.sh" \
 		$(if $(T),--topic "$(T)") \
+		$(if $(CLI),--cli $(CLI)) \
 		$(if $(NOTION),--notion) \
 		$(if $(TEAMS),--teams) \
 		$(if $(SLACK),--slack) >/dev/null 2>&1 &
@@ -188,13 +192,23 @@ else
 endif
 
 ## —— Validate —————————————————————————————————————————
-check: ## Verify Claude CLI is installed and accessible
-	@if [ ! -f "$(CLAUDE)" ]; then \
-		echo "ERROR: Claude CLI not found at $(CLAUDE)"; \
-		echo "Install it or update the path in the entry script."; \
+check: ## Verify at least one supported AI CLI is installed
+	@found=0; \
+	for cli in claude codex gemini copilot gh; do \
+		if command -v $$cli >/dev/null 2>&1; then \
+			printf "  %-12s \033[32mOK\033[0m (%s)\n" "$$cli" "$$(command -v $$cli)"; \
+			found=1; \
+		fi; \
+	done; \
+	if [ -f "$(CLAUDE)" ]; then \
+		printf "  %-12s \033[32mOK\033[0m (%s)\n" "claude" "$(CLAUDE)"; \
+		found=1; \
+	fi; \
+	if [ $$found -eq 0 ]; then \
+		echo "ERROR: No supported AI CLI found (claude, codex, gemini, copilot)."; \
+		echo "Install at least one. See README.md for details."; \
 		exit 1; \
 	fi
-	@echo "Claude CLI: OK ($(CLAUDE))"
 
 validate: check ## Validate all project files exist and are well-formed
 	@echo "Checking project files..."
@@ -235,12 +249,20 @@ info: ## Show project configuration summary
 	@echo "  ═════════════════════════════════"
 	@echo ""
 	@echo "  Platform:    $(PLATFORM)"
-	@echo "  Claude CLI:  $(CLAUDE)"
 	@echo "  Script dir:  $(SCRIPT_DIR)"
 	@echo "  Log dir:     $(LOG_DIR)"
 	@echo "  Today's log: $(LOG_FILE)"
 	@echo ""
-	@echo "  Model:       $$(grep -o '\-\-model [a-z]*' "$(SCRIPT_DIR)/briefing.sh" | head -1 | awk '{print $$2}')"
-	@echo "  Budget cap:  $$(grep -o '\-\-max-budget-usd [0-9.]*' "$(SCRIPT_DIR)/briefing.sh" | head -1 | awk '{print $$2}')"
+	@echo "  CLI pref:    $${AI_BRIEFING_CLI:-auto (claude > codex > gemini > copilot)}"
+	@echo "  Model:       $${AI_BRIEFING_MODEL:-opus}"
 	@echo "  Topics:      $$(grep -c '^\d\.' "$(SCRIPT_DIR)/prompt.md" 2>/dev/null || echo 9)"
+	@echo ""
+	@echo "  Engines installed:"
+	@for cli in claude codex gemini copilot; do \
+		if command -v $$cli >/dev/null 2>&1; then \
+			printf "    %-12s \033[32m✓\033[0m\n" "$$cli"; \
+		else \
+			printf "    %-12s \033[2m✗\033[0m\n" "$$cli"; \
+		fi; \
+	done
 	@echo ""
