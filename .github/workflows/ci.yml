@@ -1,0 +1,222 @@
+name: 🔬 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Job 1: Lint ──────────────────────────────────────────────
+  lint:
+    name: 🧹 Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          echo "::group::ShellCheck version"
+          shellcheck --version
+          echo "::endgroup::"
+          shellcheck briefing.sh custom-brief.sh scripts/*.sh tests/*.sh
+
+      - name: Bash syntax check
+        run: |
+          for f in briefing.sh custom-brief.sh scripts/*.sh tests/*.sh; do
+            bash -n "$f" && printf "  %-40s OK\n" "$f" || exit 1
+          done
+
+      - name: PowerShell syntax check
+        shell: pwsh
+        run: |
+          $files = @(
+            "briefing.ps1",
+            "custom-brief.ps1",
+            "install-task.ps1"
+          ) + (Get-ChildItem scripts/*.ps1 -Name | ForEach-Object { "scripts/$_" })
+
+          $failed = $false
+          foreach ($f in $files) {
+            try {
+              $null = [System.Management.Automation.PSParser]::Tokenize(
+                (Get-Content $f -Raw), [ref]$null
+              )
+              Write-Host "  $($f.PadRight(40)) OK"
+            } catch {
+              Write-Host "  $($f.PadRight(40)) FAIL" -ForegroundColor Red
+              $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Python syntax check
+        run: python3 -m py_compile scripts/teams-to-slack.py
+
+  # ── Job 2: Test (Bash) ──────────────────────────────────────
+  test-bash:
+    name: 🐧 Test (Bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Python 3 available
+        run: python3 --version
+
+      - name: Run bash test suite
+        run: bash tests/run-all.sh
+
+  # ── Job 3: Test (PowerShell) ────────────────────────────────
+  test-powershell:
+    name: 🪟 Test (PowerShell)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run PowerShell test suite
+        shell: pwsh
+        run: |
+          & tests\test-all.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  # ── Job 4: Validate ─────────────────────────────────────────
+  validate:
+    name: ✅ Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required files exist
+        run: |
+          status=0
+          for f in \
+            prompt.md briefing.sh briefing.ps1 \
+            prompt-custom-brief.md custom-brief.sh custom-brief.ps1 \
+            com.ainews.briefing.plist install-task.ps1 \
+            commands/ai-news-briefing.md commands/custom-brief.md \
+            Makefile; do
+            if [ -f "$f" ]; then
+              printf "  %-44s OK\n" "$f"
+            else
+              printf "  %-44s MISSING\n" "$f"
+              status=1
+            fi
+          done
+          exit $status
+
+      - name: Prompt structure
+        run: |
+          for section in "Step 0" "Step 1" "Step 2" "Step 3" "Step 4" "Step 5"; do
+            if grep -q "$section" prompt.md; then
+              printf "  %-20s OK\n" "$section"
+            else
+              printf "  %-20s MISSING\n" "$section"
+              exit 1
+            fi
+          done
+
+      - name: Custom brief template placeholders
+        run: |
+          for ph in '{{TOPIC}}' '{{DATE}}' '{{TIMESTAMP}}' '{{PUBLISH_NOTION}}' '{{PUBLISH_TEAMS_SLACK}}'; do
+            if grep -qF "$ph" prompt-custom-brief.md; then
+              printf "  %-30s OK\n" "$ph"
+            else
+              printf "  %-30s MISSING\n" "$ph"
+              exit 1
+            fi
+          done
+
+      - name: Scripts reference all engines
+        run: |
+          for engine in claude codex gemini copilot; do
+            for script in briefing.sh custom-brief.sh; do
+              if grep -q "$engine" "$script"; then
+                printf "  %-16s in %-20s OK\n" "$engine" "$script"
+              else
+                printf "  %-16s in %-20s MISSING\n" "$engine" "$script"
+                exit 1
+              fi
+            done
+          done
+
+  # ── Job 5: Card JSON ────────────────────────────────────────
+  card-json:
+    name: 🃏 Card JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate all card JSON files
+        run: |
+          cards=$(find logs example-cards -name '*card*.json' 2>/dev/null)
+          if [ -z "$cards" ]; then
+            echo "No card JSON files found — skipping."
+            exit 0
+          fi
+          count=0
+          failed=0
+          for f in $cards; do
+            count=$((count + 1))
+            if python3 -m json.tool "$f" >/dev/null 2>&1; then
+              printf "  %-50s OK\n" "$f"
+            else
+              printf "  %-50s INVALID\n" "$f"
+              failed=$((failed + 1))
+            fi
+          done
+          echo ""
+          echo "  $count card(s) checked, $failed invalid."
+          [ $failed -eq 0 ]
+
+      - name: Card structure (Adaptive Card v1.4)
+        run: |
+          card=$(find logs example-cards -name '*card*.json' 2>/dev/null | sort | tail -1)
+          if [ -z "$card" ]; then
+            echo "No card JSON files — skipping."
+            exit 0
+          fi
+          echo "Checking: $card"
+          python3 -c "
+          import json, sys
+          c = json.load(open('$card'))
+          attach = c.get('attachments', [{}])[0].get('content', {})
+          checks = {
+            'type is AdaptiveCard': attach.get('type') == 'AdaptiveCard',
+            'version is 1.4+': attach.get('version', '') >= '1.4',
+            'has body': len(attach.get('body', [])) > 0,
+          }
+          ok = True
+          for name, passed in checks.items():
+            status = 'OK' if passed else 'FAIL'
+            print(f'  {name:40s} {status}')
+            if not passed: ok = False
+          sys.exit(0 if ok else 1)
+          "
+
+  # ── Job 6: Docs ─────────────────────────────────────────────
+  docs:
+    name: 📚 Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Required documentation exists and is non-empty
+        run: |
+          status=0
+          for f in \
+            README.md ARCHITECTURE.md SETUP.md \
+            CUSTOM_BRIEF.md E2E_FLOW.md TESTS.md LOGS.md \
+            NOTIFY_TEAMS.md NOTIFY_SLACK.md LICENSE; do
+            if [ -s "$f" ]; then
+              size=$(wc -c < "$f")
+              printf "  %-24s OK  (%s bytes)\n" "$f" "$size"
+            else
+              printf "  %-24s MISSING or EMPTY\n" "$f"
+              status=1
+            fi
+          done
+          exit $status
