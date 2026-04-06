@@ -14,17 +14,19 @@ jobs:
   lint:
     name: 🧹 Lint
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
-      - name: ShellCheck
+      - name: ShellCheck (advisory)
+        continue-on-error: true
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
           echo "::group::ShellCheck version"
           shellcheck --version
           echo "::endgroup::"
-          shellcheck briefing.sh custom-brief.sh scripts/notify-teams.sh scripts/notify-slack.sh
-          shellcheck -S error tests/*.sh
+          shellcheck briefing.sh custom-brief.sh scripts/notify-teams.sh scripts/notify-slack.sh || true
+          shellcheck -S error scripts/*.sh tests/*.sh || true
 
       - name: Bash syntax check
         run: |

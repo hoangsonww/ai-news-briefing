@@ -51,6 +51,7 @@ done
 
 DATE="${DATE_ARG:-$(date +%Y-%m-%d)}"
 TODAY=$(date +%Y-%m-%d)
+TIME=$(date +%H:%M:%S)
 LOG_FILE="$LOG_DIR/$DATE.log"
 
 # Prevent nested Claude Code sessions
