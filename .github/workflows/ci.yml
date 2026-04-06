@@ -179,45 +179,29 @@ jobs:
     steps:
       - name: Pipeline results
         run: |
-          echo ""
-          echo "┌──────────────────────────────────────┐"
-          echo "│         🔬 CI Pipeline Summary       │"
-          echo "├──────────────────────┬───────────────┤"
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## 🔬 CI Pipeline Summary
 
-          declare -A results
-          results[🧹_Lint]="${{ needs.lint.result }}"
-          results[🐧_Test_Bash]="${{ needs.test-bash.result }}"
-          results[🪟_Test_PS]="${{ needs.test-powershell.result }}"
-          results[✅_Validate]="${{ needs.validate.result }}"
-          results[📚_Docs]="${{ needs.docs.result }}"
-
-          all_ok=true
-          for job in "🧹_Lint" "🐧_Test_Bash" "🪟_Test_PS" "✅_Validate" "📚_Docs"; do
-            result="${results[$job]}"
-            label="${job//_/ }"
-            case "$result" in
-              success)  icon="✅" ;;
-              failure)  icon="❌"; all_ok=false ;;
-              cancelled) icon="⏹️"; all_ok=false ;;
-              skipped)  icon="⏭️" ;;
-              *)        icon="⚠️" ;;
-            esac
-            printf "│ %-20s │ %s %-10s │\n" "$label" "$icon" "$result"
-          done
-
-          echo "├──────────────────────┴───────────────┤"
-          if $all_ok; then
-            echo "│     🎉 All checks passed!            │"
-          else
-            echo "│     💥 Some checks failed!           │"
-          fi
-          echo "└──────────────────────────────────────┘"
-          echo ""
+          | Job | Status |
+          |-----|--------|
+          | 🧹 Lint | `${{ needs.lint.result }}` |
+          | 🐧 Test (Bash) | `${{ needs.test-bash.result }}` |
+          | 🪟 Test (PowerShell) | `${{ needs.test-powershell.result }}` |
+          | ✅ Validate | `${{ needs.validate.result }}` |
+          | 📚 Docs | `${{ needs.docs.result }}` |
+          EOF
 
           # Fail if any required job failed (lint excluded — advisory only)
           if [[ "${{ needs.test-bash.result }}" == "failure" ]] || \
              [[ "${{ needs.test-powershell.result }}" == "failure" ]] || \
              [[ "${{ needs.validate.result }}" == "failure" ]] || \
              [[ "${{ needs.docs.result }}" == "failure" ]]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "> [!CAUTION]" >> "$GITHUB_STEP_SUMMARY"
+            echo "> Some checks failed." >> "$GITHUB_STEP_SUMMARY"
             exit 1
+          else
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "> [!TIP]" >> "$GITHUB_STEP_SUMMARY"
+            echo "> All checks passed! 🎉" >> "$GITHUB_STEP_SUMMARY"
           fi
