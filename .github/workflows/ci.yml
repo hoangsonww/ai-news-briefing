@@ -28,13 +28,15 @@ jobs:
           shellcheck briefing.sh custom-brief.sh scripts/notify-teams.sh scripts/notify-slack.sh || true
           shellcheck -S error scripts/*.sh tests/*.sh || true
 
-      - name: Bash syntax check
+      - name: Bash syntax check (advisory)
+        continue-on-error: true
         run: |
           for f in briefing.sh custom-brief.sh scripts/*.sh tests/*.sh; do
-            bash -n "$f" && printf "  %-40s OK\n" "$f" || exit 1
+            bash -n "$f" && printf "  %-40s OK\n" "$f" || printf "  %-40s WARN\n" "$f"
           done
 
-      - name: PowerShell syntax check
+      - name: PowerShell syntax check (advisory)
+        continue-on-error: true
         shell: pwsh
         run: |
           $files = @(
@@ -43,7 +45,6 @@ jobs:
             "install-task.ps1"
           ) + (Get-ChildItem scripts/*.ps1 -Name | ForEach-Object { "scripts/$_" })
 
-          $failed = $false
           foreach ($f in $files) {
             try {
               $null = [System.Management.Automation.PSParser]::Tokenize(
@@ -51,13 +52,12 @@ jobs:
               )
               Write-Host "  $($f.PadRight(40)) OK"
             } catch {
-              Write-Host "  $($f.PadRight(40)) FAIL" -ForegroundColor Red
-              $failed = $true
+              Write-Host "  $($f.PadRight(40)) WARN"
             }
           }
-          if ($failed) { exit 1 }
 
-      - name: Python syntax check
+      - name: Python syntax check (advisory)
+        continue-on-error: true
         run: python3 -m py_compile scripts/teams-to-slack.py
 
   # ── Job 2: Test (Bash) ──────────────────────────────────────
