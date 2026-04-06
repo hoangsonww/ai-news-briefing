@@ -75,16 +75,16 @@
 </nav>
 
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Last refreshed: April 1, 2026</div>
+  <div class="hero-badge"><span class="dot"></span> Last refreshed: April 6, 2026</div>
   <h1>AI News Briefing<br><span class="gradient">Comprehensive Project Wiki</span></h1>
   <p class="hero-sub">
-    End-to-end reference for the automated daily pipeline and on-demand deep research: scheduler triggers, Claude CLI execution,
+    End-to-end reference for the automated daily pipeline and on-demand deep research: scheduler triggers, multi-engine CLI execution (Claude, Codex, Gemini, Copilot),
     multi-agent research, Notion publishing, Teams and Slack delivery, custom topic briefs, and maintenance workflows.
   </p>
   <div class="hero-actions">
-    <a href="#updates" class="btn btn-primary">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      View Latest Changes
+    <a href="#architecture" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      View Architecture
     </a>
     <a href="README.md" class="btn btn-secondary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -112,7 +112,7 @@ flowchart LR
     A2 --> B
     A3 --> B
     B --> C["prompt.md"]
-    C --> D["Claude CLI (headless)"]
+    C --> D["AI Engine (Claude/Codex/Gemini/Copilot)"]
     D --> E["WebSearch (9 topics)"]
     D --> F["Notion MCP"]
     F --> G["Notion Page"]
@@ -145,7 +145,7 @@ flowchart TD
     B1 --> C["prompt.md"]
     B2 --> C
 
-    C --> D["Claude CLI"]
+    C --> D["AI Engine"]
     D --> E["WebSearch"]
     D --> F["Notion MCP"]
     F --> G["Notion briefing page"]
@@ -180,7 +180,7 @@ flowchart TD
 sequenceDiagram
     participant S as Scheduler/Manual
     participant E as Entry Script
-    participant C as Claude CLI
+    participant C as AI Engine
     participant W as WebSearch
     participant N as Notion MCP
     participant T as notify-teams
@@ -191,7 +191,7 @@ sequenceDiagram
     S->>E: Start briefing script
     E->>E: Setup date, logs, env
     E->>E: Refresh webhook env (Windows)
-    E->>C: claude -p --model opus
+    E->>C: invoke selected engine (fallback chain)
 
     C->>C: Step 0a read logs/covered-stories.txt
     C->>N: Step 0b fetch most recent briefing
@@ -249,7 +249,7 @@ sequenceDiagram
         <tr><td>Trigger</td><td>08:00 schedule or manual command</td><td>Script execution starts</td><td><code>com.ainews.briefing.plist</code>, <code>install-task.ps1</code>, <code>Makefile</code></td></tr>
         <tr><td>Bootstrap</td><td>Date + environment</td><td>Prompt text + runtime context</td><td><code>briefing.sh</code>, <code>briefing.ps1</code></td></tr>
         <tr><td>Dedup</td><td><code>logs/covered-stories.txt</code> + latest Notion page</td><td>Exclusion list for this run</td><td>Step 0a (file) + Step 0b (Notion MCP)</td></tr>
-        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + covered-stories update</td><td><code>claude -p --model opus</code>, WebSearch, Notion MCP</td></tr>
+        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + covered-stories update</td><td>AI engine (Claude/Codex/Gemini/Copilot), WebSearch, Notion MCP</td></tr>
         <tr><td>Teams Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_TEAMS_WEBHOOK</code></td><td>Adaptive Card post(s)</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
         <tr><td>Slack Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_SLACK_WEBHOOK</code></td><td>Block Kit post(s)</td><td><code>notify-slack.sh</code>, <code>notify-slack.ps1</code>, <code>teams-to-slack.py</code></td></tr>
         <tr><td>Multi-URL Routing</td><td>Semicolon-separated webhook URLs</td><td>First URL by default, all URLs with <code>--all</code>/<code>-All</code></td><td>Teams + Slack notify scripts</td></tr>
@@ -319,7 +319,7 @@ flowchart TD
 flowchart LR
     A["Topic Input<br/>(CLI flags or REPL)"] --> B["custom-brief.sh / .ps1"]
     B --> C["prompt-custom-brief.md"]
-    C --> D["Claude CLI"]
+    C --> D["AI Engine"]
     subgraph "Phase 1: Parallel Discovery"
         D --> A1["Agent 1: Breaking News"]
         D --> A2["Agent 2: Technical Analysis"]
@@ -356,7 +356,7 @@ flowchart TD
 
     SH --> PT["prompt-custom-brief.md"]
     PS --> PT
-    SK --> CC["Claude Code CLI"]
+    SK --> CC["AI Engine"]
     PT --> CC
 
     subgraph "Phase 1: Parallel Discovery"
@@ -793,7 +793,7 @@ flowchart TD
     </div>
     <div class="feature-card">
       <h3><a href="SETUP.md">SETUP.md</a></h3>
-      <p>Full setup guide: Claude CLI, Notion MCP, webhook configuration, scheduler install, and verification.</p>
+      <p>Full setup guide: AI CLI engines, Notion MCP, webhook configuration, scheduler install, and verification.</p>
     </div>
     <div class="feature-card">
       <h3><a href="NOTIFY_SLACK.md">NOTIFY_SLACK.md</a></h3>
@@ -841,7 +841,7 @@ flowchart TD
 
 <footer class="footer">
   <div class="footer-inner">
-    <p>AI News Briefing - Powered by Claude Code CLI, Notion MCP, WebSearch, multi-agent research, and multi-channel delivery.</p>
+    <p>AI News Briefing - Powered by Claude Code, Codex, Gemini, and Copilot CLIs with Notion MCP, WebSearch, multi-agent research, and multi-channel delivery.</p>
     <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
       Automated daily briefings + on-demand deep topic research with Notion, Teams, and Slack publishing.
     </p>
