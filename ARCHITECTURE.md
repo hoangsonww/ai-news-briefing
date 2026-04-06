@@ -4,6 +4,9 @@
 ![Anthropic](https://img.shields.io/badge/Anthropic-Claude_Opus_4.6-6366f1?logo=anthropic&logoColor=white)
 ![Multi-Agent](https://img.shields.io/badge/Multi--Agent-5+_Parallel_Agents-8b5cf6?logo=anthropic&logoColor=white)
 ![Custom Brief](https://img.shields.io/badge/Custom_Brief-Deep_Research-ec4899?logo=anthropic&logoColor=white)
+![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-CLI-10b981?logo=openaigym&logoColor=white)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-CLI-4285F4?logo=googlegemini&logoColor=white)
+![GitHub Copilot CLI](https://img.shields.io/badge/GitHub_Copilot-CLI-238636?logo=githubcopilot&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
@@ -23,7 +26,7 @@
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses Claude Code to search the web, compile a structured briefing, and publish it to Notion.
+This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses one of four supported AI CLI engines (Claude Code, Codex, Gemini, Copilot) to search the web, compile a structured briefing, and publish it to Notion.
 
 The system is cross-platform, supporting macOS (launchd) and Windows (Task Scheduler).
 
@@ -53,7 +56,7 @@ The system is cross-platform, supporting macOS (launchd) and Windows (Task Sched
 
 ## 1. System Architecture Overview
 
-The system is composed of four primary layers: a platform-native scheduler, a scripted entry point, the Claude Code AI engine, and the Notion API as the output destination. The core logic (prompt, search, compilation, Notion write, card generation) is identical across platforms -- only the scheduling and scripting layers differ.
+The system is composed of five primary layers: a platform-native scheduler, a scripted entry point, a CLI engine selection layer, the AI engine itself, and the Notion API as the output destination. The engine selection layer implements a registry pattern -- it checks for installed engines (Claude Code, Codex, Gemini, Copilot) and selects one based on the `AI_BRIEFING_CLI` environment variable or an automatic fallback chain (`claude` → `codex` → `gemini` → `copilot`). The core logic (prompt, search, compilation, Notion write, card generation) is identical across platforms and engines -- only the scheduling, scripting, and engine selection layers differ.
 
 ```mermaid
 graph TD
@@ -62,11 +65,15 @@ graph TD
         A2[Windows Task Scheduler] -->|8:00 AM daily| B2[briefing.ps1]
     end
 
+    subgraph "Engine Selection"
+        B1 -->|AI_BRIEFING_CLI or fallback| ES[Engine Registry]
+        B2 -->|AI_BRIEFING_CLI or fallback| ES
+        ES -->|Selects| D[AI Engine - Claude/Codex/Gemini/Copilot]
+    end
+
     subgraph "Shared Pipeline"
         B1 -->|Reads| P[prompt.md]
         B2 -->|Reads| P
-        B1 -->|Invokes| D[Claude Code CLI - Sonnet Model]
-        B2 -->|Invokes| D
         D -->|WebSearch tool| E[Web Sources]
         D -->|Notion MCP tool| F[Notion API]
         F --> G[Notion Page - AI Daily Briefing]
@@ -92,7 +99,8 @@ graph TD
 
 **Key design principles:**
 
-- **Headless execution.** The entire pipeline runs without user interaction via `claude -p` (print mode).
+- **Headless execution.** The entire pipeline runs without user interaction via the selected engine's headless/print mode.
+- **Multi-engine support.** Four AI CLI engines are supported (Claude Code, Codex, Gemini, Copilot) with automatic fallback. The `AI_BRIEFING_CLI` env var overrides the fallback chain, and `AI_BRIEFING_MODEL` overrides the default model.
 - **Cross-platform.** Platform-specific code is isolated to the entry point scripts and scheduler configs. The prompt, search strategy, and output format are shared.
 - **Single responsibility.** Each file has one job: scheduling, orchestration, prompt definition, or installation.
 - **Cost containment.** A hard budget cap of $2.00 per run prevents runaway API costs.
@@ -937,11 +945,27 @@ graph TD
 | WebSearch failure (all topics) | Claude cannot gather any news | Empty briefing or failure | Failed run logged |
 | Notion API error | MCP tool returns error | Claude reports in stdout | No page created |
 | Claude binary not found | Script exits on error | Logged as failure | No briefing |
+| Engine not found (fallback mode) | Engine binary missing from PATH | Try next engine in chain | Transparent to user |
+| All engines exhausted | No installed engine found | Logged as failure | No briefing |
 | Log directory permission error | Directory creation fails | Script exits immediately | No briefing, no log |
 
 ### Budget Safety
 
 The `--max-budget-usd 2.00` flag is the primary cost control mechanism. Claude Code tracks cumulative API costs during the run and terminates if the budget is exceeded. Based on observed runs, a typical briefing consumes well under this cap.
+
+### Engine Fallback Chain
+
+When `AI_BRIEFING_CLI` is not set, the entry scripts implement a fallback chain to find a working AI CLI engine:
+
+1. Check if `claude` is on PATH → use Claude Code
+2. Check if `codex` is on PATH → use Codex (OpenAI)
+3. Check if `gemini` is on PATH → use Gemini (Google)
+4. Check if `copilot` is on PATH → use Copilot (GitHub)
+5. If none found → exit with error and log failure
+
+When `AI_BRIEFING_CLI` is explicitly set, only that engine is tried. This is useful for CI environments or when you want deterministic engine selection.
+
+Each engine is invoked with equivalent flags for headless mode, model selection, and budget caps. The `AI_BRIEFING_MODEL` env var overrides the default model regardless of which engine is selected.
 
 ---
 
@@ -1079,7 +1103,11 @@ Edit `prompt.md`, Section "Topics to Search". Update the `Topics` property value
 
 ### Changing the AI Model
 
-Change `--model sonnet` in the entry script for your platform. Consider adjusting `--max-budget-usd` accordingly.
+Set the `AI_BRIEFING_MODEL` environment variable, or change `--model sonnet` in the entry script for your platform. Consider adjusting `--max-budget-usd` accordingly. The model override applies to whichever engine is selected.
+
+### Multi-Engine Support
+
+**Implemented.** Four AI CLI engines are supported: Claude Code, Codex (OpenAI), Gemini (Google), and Copilot (GitHub). The system uses an engine registry pattern with automatic fallback. Set `AI_BRIEFING_CLI` to force a specific engine, or let the fallback chain select the first available. See [Section 8](#8-error-handling) for fallback chain details.
 
 ### Custom Topic Research
 
@@ -1101,7 +1129,7 @@ The system could be extended to Linux by:
 
 1. Reusing `briefing.sh` as-is (bash is available on Linux).
 2. Creating a systemd timer + service unit (analogous to the launchd plist) or a cron entry.
-3. No changes to `prompt.md` or the Claude Code invocation.
+3. No changes to `prompt.md` or the AI engine invocation.
 
 ### Adding a Web Dashboard
 

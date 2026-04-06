@@ -79,7 +79,7 @@ assert_contains "$skill" "covered-stories.txt" "skill: references dedup file"
 # -- Entry script structure (briefing.sh) ------------------
 section "Entry script (briefing.sh)"
 entry=$(cat "$SCRIPT_DIR/briefing.sh")
-assert_contains "$entry" "set -e" "briefing.sh: uses strict mode"
+assert_contains "$entry" "fallback" "briefing.sh: uses fallback chain (explicit error handling)"
 assert_contains "$entry" "prompt.md" "briefing.sh: reads prompt.md"
 assert_contains "$entry" "claude" "briefing.sh: invokes Claude CLI"
 assert_contains "$entry" "notify-teams" "briefing.sh: calls Teams notifier"

@@ -8,23 +8,30 @@ Complete setup instructions for the AI News Briefing system, covering both the d
 
 | Requirement | Used by | Details |
 |---|---|---|
-| **Claude Code CLI** | Both | Installed at `~/.local/bin/claude` with a valid Anthropic API key or Max subscription |
-| **Notion MCP** | Both (optional) | The Notion MCP server configured in Claude Code's MCP settings |
-| **WebSearch tool** | Both | Built into Claude Code (no extra setup) |
+| **At least one AI CLI** | Both | Any of: **Claude Code** (`claude`), **Codex** (`codex`), **Gemini** (`gemini`), or **Copilot** (`copilot`). Multiple can be installed for fallback. |
+| **Notion MCP** | Both (optional) | The Notion MCP server configured in your AI CLI's MCP settings |
+| **WebSearch tool** | Both | Built into most AI CLIs (no extra setup) |
 | **Python 3.x** | Slack delivery | Required for `teams-to-slack.py` conversion |
 | **GNU Make** | Optional | For `make run`, `make custom-brief`, etc. (`winget install GnuWin32.Make` on Windows) |
 
 ---
 
-## 1. Install Claude Code CLI
+## 1. Install an AI CLI Engine
 
-Follow the official install guide at [code.claude.com](https://code.claude.com). Verify:
+You need at least one of the following CLI engines. Install one or more for fallback support:
+
+| Engine | Install | Verify |
+|---|---|---|
+| **Claude Code** | [code.claude.com](https://code.claude.com) | `claude --version` |
+| **Codex** | `npm install -g @openai/codex` | `codex --version` |
+| **Gemini** | `npm install -g @anthropic-ai/gemini-cli` or see [Google AI docs](https://ai.google.dev) | `gemini --version` |
+| **Copilot** | `npm install -g @githubnext/github-copilot-cli` or via GitHub CLI extension | `copilot --version` |
+
+The daily briefing auto-detects installed engines and falls back in order: `claude` → `codex` → `gemini` → `copilot`. Set `AI_BRIEFING_CLI` to force a specific engine:
 
 ```bash
-claude --version
+export AI_BRIEFING_CLI=codex
 ```
-
-The CLI should be at `~/.local/bin/claude` (macOS/Linux) or `%USERPROFILE%\.local\bin\claude.exe` (Windows).
 
 ---
 
@@ -162,6 +169,13 @@ bash scripts/health-check.sh
 .\scripts\health-check.ps1
 ```
 
+### Check installed engines
+
+```bash
+make info    # Shows all installed engines with ✓/✗ indicators
+make check   # Verifies at least one AI CLI is available
+```
+
 ### Test Notion connectivity
 
 ```bash
@@ -187,7 +201,7 @@ make custom-brief T="test topic"
 ```mermaid
 flowchart TD
     subgraph "Setup Steps"
-        S1[1. Install Claude Code CLI] --> S2[2. Clone repo]
+        S1[1. Install an AI CLI Engine] --> S2[2. Clone repo]
         S2 --> S3[3. Configure Notion MCP]
         S3 --> S4[4. Set webhook env vars]
         S4 --> S5[5. Install scheduler]

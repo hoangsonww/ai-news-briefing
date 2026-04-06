@@ -8,7 +8,7 @@ This feature complements the daily AI news briefing by letting you go deep on a 
 
 ## How It Works
 
-The custom brief runs a multi-phase research pipeline powered by Claude Code in headless mode. It spawns 5 parallel research agents, each covering a distinct angle, then synthesizes their findings into a structured briefing.
+The custom brief runs a multi-phase research pipeline powered by your selected AI CLI engine in headless mode. It spawns 5 parallel research agents, each covering a distinct angle, then synthesizes their findings into a structured briefing.
 
 ```mermaid
 flowchart TD
@@ -19,7 +19,7 @@ flowchart TD
 
     subgraph "Research Pipeline"
         CLI -->|Injects topic + flags| P[prompt-custom-brief.md]
-        P -->|"claude -p --model opus"| C[Claude Code CLI]
+        P -->|"claude/codex/gemini/copilot -p"| C[AI Engine]
 
         C -->|Phase 1: Parallel| A1[Agent 1: Breaking News]
         C -->|Phase 1: Parallel| A2[Agent 2: Technical Analysis]
@@ -74,6 +74,10 @@ flowchart TD
 
 # Short flags
 ./custom-brief.sh -t "AI regulation EU" -n
+
+# Use a specific engine
+./custom-brief.sh --cli codex --topic "AI safety" --notion
+./custom-brief.sh --cli gemini -t "quantum computing" -n
 ```
 
 **PowerShell:**
@@ -81,6 +85,7 @@ flowchart TD
 ```powershell
 .\custom-brief.ps1 -Topic "AI in healthcare" -Notion -Teams -Slack
 .\custom-brief.ps1 -Topic "quantum computing" -Notion
+.\custom-brief.ps1 -Cli gemini -Topic "AI safety" -Notion
 ```
 
 **Make:**
@@ -88,12 +93,13 @@ flowchart TD
 ```bash
 make custom-brief T="AI in healthcare" NOTION=1 TEAMS=1
 make custom-brief T="quantum computing" NOTION=1
+make custom-brief T="AI safety" CLI=codex NOTION=1
 make custom-brief-bg T="open source LLMs" NOTION=1  # background
 ```
 
 ### Interactive REPL
 
-Run without arguments to enter interactive mode:
+Run without arguments to enter interactive mode. The REPL shows which AI engines are available (✓/✗) and lets you pick one:
 
 ```bash
 ./custom-brief.sh
@@ -102,6 +108,11 @@ Run without arguments to enter interactive mode:
 ```
   Custom Brief -- Interactive Mode
   ================================
+
+  Available engines:
+    ✓ claude    ✓ codex    ✗ gemini    ✓ copilot
+
+  Engine [claude]: codex
 
   Topic: AI in drug discovery
 
@@ -129,6 +140,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | Flag | Description |
 |------|-------------|
 | `--topic`, `-t` | Topic to research (required in non-interactive mode) |
+| `--cli` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `--notion`, `-n` | Publish briefing to Notion |
 | `--teams` | Send Adaptive Card to Teams |
 | `--slack` | Send Block Kit message to Slack |
@@ -139,6 +151,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | Parameter | Description |
 |-----------|-------------|
 | `-Topic` | Topic to research (required in non-interactive mode) |
+| `-Cli` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `-Notion` | Publish briefing to Notion |
 | `-Teams` | Send Adaptive Card to Teams |
 | `-Slack` | Send Block Kit message to Slack |
@@ -148,6 +161,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | Variable | Description |
 |----------|-------------|
 | `T` | Topic (required) |
+| `CLI` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `NOTION` | Set to `1` to publish to Notion |
 | `TEAMS` | Set to `1` to send to Teams |
 | `SLACK` | Set to `1` to send to Slack |
@@ -240,7 +254,7 @@ flowchart LR
 
 Same as the daily briefing:
 
-- Claude Code CLI installed at `~/.local/bin/claude`
+- At least one AI CLI engine installed: Claude Code (`claude`), Codex (`codex`), Gemini (`gemini`), or Copilot (`copilot`)
 - Notion MCP configured (for `--notion`)
 - `AI_BRIEFING_TEAMS_WEBHOOK` env var set (for `--teams`)
 - `AI_BRIEFING_SLACK_WEBHOOK` env var set (for `--slack`)
