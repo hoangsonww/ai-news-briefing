@@ -116,6 +116,7 @@ run_engine() {
 TOPIC=""
 CLI_ENGINE=""
 PUBLISH_NOTION=false
+PUBLISH_OBSIDIAN=false
 PUBLISH_TEAMS=false
 PUBLISH_SLACK=false
 
@@ -130,6 +131,7 @@ Options:
   --topic, -t TEXT        Topic to research (required in non-interactive mode)
   --cli, -c ENGINE        AI engine: claude, codex, gemini, copilot
   --notion, -n            Publish to Notion
+  --obsidian, -o          Publish to Obsidian vault (requires AI_BRIEFING_OBSIDIAN_VAULT)
   --teams                 Publish to Microsoft Teams
   --slack                 Publish to Slack
   --help, -h              Show this help
@@ -141,8 +143,8 @@ Environment:
 If no arguments are given, enters interactive mode.
 
 Examples:
-  ./custom-brief.sh --topic "AI in healthcare" --cli codex --notion --teams
-  ./custom-brief.sh -t "quantum computing" -c gemini -n
+  ./custom-brief.sh --topic "AI in healthcare" --cli codex --notion --obsidian --teams
+  ./custom-brief.sh -t "quantum computing" -c gemini -n -o
   ./custom-brief.sh   # interactive mode
 EOF
 }
@@ -157,6 +159,8 @@ while [[ $# -gt 0 ]]; do
       CLI_ENGINE="$2"; shift 2 ;;
     --notion|-n)
       PUBLISH_NOTION=true; shift ;;
+    --obsidian|-o)
+      PUBLISH_OBSIDIAN=true; shift ;;
     --teams)
       PUBLISH_TEAMS=true; shift ;;
     --slack)
@@ -199,7 +203,6 @@ if [[ -z "$TOPIC" ]]; then
     exit 1
   fi
   echo ""
-
   # AI Engine
   echo -e "  ${DIM}--- AI Engine ---------------------------------------------${RESET}"
   idx=0
@@ -252,9 +255,11 @@ if [[ -z "$TOPIC" ]]; then
 
   # Publish destinations
   echo -e "  ${DIM}--- Publish -----------------------------------------------${RESET}"
-  read -rp "    Notion? [y/N]: " yn
+  read -rp "    Notion?   [y/N]: " yn
   [[ "$yn" =~ ^[Yy] ]] && PUBLISH_NOTION=true
-  read -rp "    Teams?  [y/N]: " yn
+  read -rp "    Obsidian? [y/N]: " yn
+  [[ "$yn" =~ ^[Yy] ]] && PUBLISH_OBSIDIAN=true
+  read -rp "    Teams?    [y/N]: " yn
   [[ "$yn" =~ ^[Yy] ]] && PUBLISH_TEAMS=true
   read -rp "    Slack?  [y/N]: " yn
   [[ "$yn" =~ ^[Yy] ]] && PUBLISH_SLACK=true
@@ -288,12 +293,14 @@ PROMPT="$(awk \
   -v date="$DATE" \
   -v ts="$TIMESTAMP" \
   -v notion="$PUBLISH_NOTION" \
+  -v obsidian="$PUBLISH_OBSIDIAN" \
   -v tslack="$PUBLISH_TEAMS_SLACK" \
   '{
     gsub(/\{\{TOPIC\}\}/, topic)
     gsub(/\{\{DATE\}\}/, date)
     gsub(/\{\{TIMESTAMP\}\}/, ts)
     gsub(/\{\{PUBLISH_NOTION\}\}/, notion)
+    gsub(/\{\{PUBLISH_OBSIDIAN\}\}/, obsidian)
     gsub(/\{\{PUBLISH_TEAMS_SLACK\}\}/, tslack)
     print
   }' <<< "$PROMPT_TEMPLATE")"
@@ -314,6 +321,7 @@ echo ""
 echo -e "  ${BOLD}Topic${RESET}     $TOPIC"
 echo -e "  ${BOLD}Engine${RESET}    $(cli_display_name "$CLI_ENGINE") ${DIM}($ENGINE_BINARY)${RESET}"
 echo -e "  ${BOLD}Notion${RESET}    $(flag_label "$PUBLISH_NOTION")"
+echo -e "  ${BOLD}Obsidian${RESET}  $(flag_label "$PUBLISH_OBSIDIAN")"
 echo -e "  ${BOLD}Teams${RESET}     $(flag_label "$PUBLISH_TEAMS")"
 echo -e "  ${BOLD}Slack${RESET}     $(flag_label "$PUBLISH_SLACK")"
 echo -e "  ${DIM}Log${RESET}       ${DIM}$LOG_FILE${RESET}"
@@ -327,7 +335,7 @@ echo ""
 # -- Log header ------------------------------------------------
 {
   echo "[$DATE $(date +%H:%M:%S)] Custom Brief -- Topic: $TOPIC"
-  echo "[$DATE $(date +%H:%M:%S)] Engine=$CLI_ENGINE Notion=$PUBLISH_NOTION Teams=$PUBLISH_TEAMS Slack=$PUBLISH_SLACK"
+  echo "[$DATE $(date +%H:%M:%S)] Engine=$CLI_ENGINE Notion=$PUBLISH_NOTION Obsidian=$PUBLISH_OBSIDIAN Teams=$PUBLISH_TEAMS Slack=$PUBLISH_SLACK"
 } >> "$LOG_FILE"
 
 # -- Run engine ------------------------------------------------
@@ -392,6 +400,30 @@ if [[ "$PUBLISH_SLACK" == "true" ]]; then
     fi
   else
     echo -e "  ${YELLOW}Slack${RESET}     skipped ${DIM}(webhook not set)${RESET}" >&2
+  fi
+fi
+
+# -- Post-processing: Obsidian publishing ------------------
+if [[ "$PUBLISH_OBSIDIAN" == "true" ]]; then
+  OBSIDIAN_SCRIPT="$SCRIPT_DIR/scripts/publish-obsidian.sh"
+  OBSIDIAN_FILE="$LOG_DIR/custom-$TIMESTAMP-obsidian.md"
+  if [[ -f "$OBSIDIAN_SCRIPT" && -n "${AI_BRIEFING_OBSIDIAN_VAULT:-}" ]]; then
+    if [[ -f "$OBSIDIAN_FILE" ]]; then
+      echo -e "  ${DIM}Publishing to Obsidian...${RESET}"
+      echo "[$DATE $(date +%H:%M:%S)] Publishing to Obsidian vault..." >> "$LOG_FILE"
+      if bash "$OBSIDIAN_SCRIPT" --file "$OBSIDIAN_FILE"; then
+        echo "[$DATE $(date +%H:%M:%S)] Obsidian publish complete." >> "$LOG_FILE"
+        echo -e "  ${GREEN}Obsidian${RESET}  published"
+      else
+        echo "[$DATE $(date +%H:%M:%S)] Obsidian publish failed." >> "$LOG_FILE"
+        echo -e "  ${RED}Obsidian${RESET}  failed" >&2
+      fi
+    else
+      echo -e "  ${YELLOW}Obsidian${RESET}  skipped ${DIM}(no markdown file)${RESET}" >&2
+      echo "[$DATE $(date +%H:%M:%S)] Obsidian skipped -- markdown file not found." >> "$LOG_FILE"
+    fi
+  else
+    echo -e "  ${YELLOW}Obsidian${RESET}  skipped ${DIM}(vault not set)${RESET}" >&2
   fi
 fi
 

@@ -232,6 +232,22 @@ if $SUCCESS; then
       write_log "Slack notification failed."
     fi
   fi
+
+  # Publish to Obsidian vault if configured
+  OBSIDIAN_SCRIPT="$SCRIPT_DIR/scripts/publish-obsidian.sh"
+  OBSIDIAN_FILE="$LOG_DIR/$DATE-obsidian.md"
+  if [[ -f "$OBSIDIAN_SCRIPT" && -n "${AI_BRIEFING_OBSIDIAN_VAULT:-}" ]]; then
+    if [[ -f "$OBSIDIAN_FILE" ]]; then
+      echo "[$DATE $(date +%H:%M:%S)] Publishing to Obsidian vault..." >> "$LOG_FILE"
+      if bash "$OBSIDIAN_SCRIPT" --file "$OBSIDIAN_FILE"; then
+        echo "[$DATE $(date +%H:%M:%S)] Obsidian publish complete." >> "$LOG_FILE"
+      else
+        echo "[$DATE $(date +%H:%M:%S)] Obsidian publish failed." >> "$LOG_FILE"
+      fi
+    else
+      echo "[$DATE $(date +%H:%M:%S)] Obsidian skipped -- markdown file not found." >> "$LOG_FILE"
+    fi
+  fi
 else
   write_log "Briefing FAILED -- all engines exhausted or selected engine failed."
 fi

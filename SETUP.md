@@ -10,6 +10,7 @@ Complete setup instructions for the AI News Briefing system, covering both the d
 |---|---|---|
 | **At least one AI CLI** | Both | Any of: **Claude Code** (`claude`), **Codex** (`codex`), **Gemini** (`gemini`), or **Copilot** (`copilot`). Multiple can be installed for fallback. |
 | **Notion MCP** | Both (optional) | The Notion MCP server configured in your AI CLI's MCP settings |
+| **Obsidian** | Both (optional) | [obsidian.md](https://obsidian.md) — local vault path set via `AI_BRIEFING_OBSIDIAN_VAULT` |
 | **WebSearch tool** | Both | Built into most AI CLIs (no extra setup) |
 | **Python 3.x** | Slack delivery | Required for `teams-to-slack.py` conversion |
 | **GNU Make** | Optional | For `make run`, `make custom-brief`, etc. (`winget install GnuWin32.Make` on Windows) |
@@ -127,6 +128,36 @@ Separate multiple URLs with semicolons:
 export AI_BRIEFING_TEAMS_WEBHOOK="https://webhook-1;https://webhook-2"
 ```
 
+### Obsidian Vault
+
+[Obsidian](https://obsidian.md) is a local-first markdown editor with a powerful graph view. Briefings published to Obsidian use `[[wikilinks]]` to create topic connections visible in the graph.
+
+1. Install Obsidian and create or open a vault.
+
+2. Set the vault path:
+
+**macOS/Linux:**
+```bash
+export AI_BRIEFING_OBSIDIAN_VAULT="/path/to/your/vault"
+```
+
+**Windows (persistent):**
+```powershell
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_OBSIDIAN_VAULT", "C:\path\to\your\vault", "User")
+```
+
+3. The system creates two subdirectories in your vault:
+   - `AI-News-Briefings/` — daily and custom briefing pages
+   - `Topics/` — stub pages for each topic (graph nodes)
+
+4. Test connectivity:
+
+```bash
+bash scripts/test-obsidian.sh
+```
+
+5. Obsidian's graph view will show briefings connected to topic nodes. Open the graph view (`Ctrl/Cmd + G`) to visualize topic relationships across all your briefings.
+
 ---
 
 ## 5. Schedule the Daily Briefing
@@ -182,6 +213,12 @@ make check   # Verifies at least one AI CLI is available
 bash scripts/test-notion.sh
 ```
 
+### Test Obsidian connectivity
+
+```bash
+bash scripts/test-obsidian.sh
+```
+
 ### Manual test run
 
 ```bash
@@ -218,7 +255,10 @@ flowchart TD
 |---|---|
 | Run daily briefing | `make run` or `bash briefing.sh` |
 | Run custom brief | `make custom-brief T="topic" NOTION=1` or `bash custom-brief.sh --topic "topic" --notion` |
+| Run custom brief with Obsidian | `make custom-brief T="topic" OBSIDIAN=1` or `bash custom-brief.sh --topic "topic" --obsidian` |
 | Check status | `make status` |
 | View today's log | `make tail` |
+| Test Notion connectivity | `bash scripts/test-notion.sh` |
+| Test Obsidian connectivity | `bash scripts/test-obsidian.sh` |
 | Test Teams delivery | `bash scripts/notify-teams.sh --all --card-file logs/YYYY-MM-DD-card.json` |
 | Test Slack delivery | `bash scripts/notify-slack.sh --all --card-file logs/YYYY-MM-DD-card.json` |

@@ -61,12 +61,13 @@ else
 	@echo "Running (PID $$!). Tail log with: make tail"
 endif
 
-custom-brief: check ## Deep-research a topic. Usage: make custom-brief T="topic" CLI=codex NOTION=1 TEAMS=1 SLACK=1
+custom-brief: check ## Deep-research a topic. Usage: make custom-brief T="topic" CLI=codex NOTION=1 OBSIDIAN=1 TEAMS=1 SLACK=1
 ifeq ($(PLATFORM),windows)
 	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
 		$(if $(T),-Topic "$(T)") \
 		$(if $(CLI),-Cli $(CLI)) \
 		$(if $(NOTION),-Notion) \
+		$(if $(OBSIDIAN),-Obsidian) \
 		$(if $(TEAMS),-Teams) \
 		$(if $(SLACK),-Slack)
 else
@@ -74,17 +75,19 @@ else
 		$(if $(T),--topic "$(T)") \
 		$(if $(CLI),--cli $(CLI)) \
 		$(if $(NOTION),--notion) \
+		$(if $(OBSIDIAN),--obsidian) \
 		$(if $(TEAMS),--teams) \
 		$(if $(SLACK),--slack)
 endif
 
-custom-brief-bg: check ## Deep-research in background. Usage: make custom-brief-bg T="topic" CLI=gemini NOTION=1
+custom-brief-bg: check ## Deep-research in background. Usage: make custom-brief-bg T="topic" CLI=gemini NOTION=1 OBSIDIAN=1
 ifeq ($(PLATFORM),windows)
 	@echo "Starting custom brief in background..."
 	@powershell -ExecutionPolicy Bypass -File "$(SCRIPT_DIR)/custom-brief.ps1" \
 		$(if $(T),-Topic "$(T)") \
 		$(if $(CLI),-Cli $(CLI)) \
 		$(if $(NOTION),-Notion) \
+		$(if $(OBSIDIAN),-Obsidian) \
 		$(if $(TEAMS),-Teams) \
 		$(if $(SLACK),-Slack) &
 	@echo "Running. Check logs/custom-*.log"
@@ -94,6 +97,7 @@ else
 		$(if $(T),--topic "$(T)") \
 		$(if $(CLI),--cli $(CLI)) \
 		$(if $(NOTION),--notion) \
+		$(if $(OBSIDIAN),--obsidian) \
 		$(if $(TEAMS),--teams) \
 		$(if $(SLACK),--slack) >/dev/null 2>&1 &
 	@echo "Running (PID $$!). Check logs/custom-*.log"
@@ -214,7 +218,9 @@ validate: check ## Validate all project files exist and are well-formed
 	@echo "Checking project files..."
 	@errors=0; \
 	for f in prompt.md briefing.sh briefing.ps1 com.ainews.briefing.plist install-task.ps1 \
-	         prompt-custom-brief.md custom-brief.sh custom-brief.ps1 commands/custom-brief.md; do \
+	         prompt-custom-brief.md custom-brief.sh custom-brief.ps1 commands/custom-brief.md \
+	         scripts/publish-obsidian.sh scripts/publish-obsidian.ps1 \
+	         scripts/test-obsidian.sh scripts/test-obsidian.ps1; do \
 		if [ -f "$(SCRIPT_DIR)/$$f" ]; then \
 			printf "  %-36s \033[32mOK\033[0m\n" "$$f"; \
 		else \
@@ -229,7 +235,7 @@ validate: check ## Validate all project files exist and are well-formed
 	fi
 	@echo ""
 	@echo "Checking prompt.md structure..."
-	@for section in "Step 0" "Step 1" "Step 2" "Step 3"; do \
+	@for section in "Step 0" "Step 1" "Step 2" "Step 3" "Step 4" "Step 5" "Step 6"; do \
 		if grep -q "$$section" "$(SCRIPT_DIR)/prompt.md"; then \
 			printf "  %-36s \033[32mOK\033[0m\n" "$$section"; \
 		else \

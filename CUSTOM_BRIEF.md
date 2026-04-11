@@ -1,6 +1,6 @@
 # Custom Brief: Deep Topic Research
 
-Deep-research any topic and produce a comprehensive news-focused briefing with linked citations and publication dates. Publishes to Notion, Microsoft Teams, and/or Slack -- or just prints to the terminal.
+Deep-research any topic and produce a comprehensive news-focused briefing with linked citations and publication dates. Publishes to Notion, Obsidian, Microsoft Teams, and/or Slack -- or just prints to the terminal.
 
 This feature complements the daily AI news briefing by letting you go deep on a specific subject whenever you need it, rather than covering 9 broad categories on a daily schedule.
 
@@ -39,6 +39,8 @@ flowchart TD
     subgraph "Output"
         S -->|Always| STDOUT[Terminal Output]
         S -->|If --notion| N[Notion Page]
+        S -->|If --obsidian| OB[Obsidian Vault]
+        OB -->|publish-obsidian.sh| OBV["AI-News-Briefings/ + Topics/"]
         S -->|If --teams or --slack| CARD[Card JSON]
         CARD -->|notify-teams.sh/.ps1| TW[Teams Webhook]
         CARD -->|notify-slack.sh/.ps1| SW[Slack Webhook]
@@ -64,37 +66,40 @@ flowchart TD
 
 ```bash
 # All destinations
-./custom-brief.sh --topic "AI in healthcare" --notion --teams --slack
+./custom-brief.sh --topic "AI in healthcare" --notion --obsidian --teams --slack
 
-# Notion only
-./custom-brief.sh --topic "quantum computing breakthroughs" --notion
+# Notion + Obsidian
+./custom-brief.sh --topic "quantum computing breakthroughs" --notion --obsidian
+
+# Obsidian only (graph visualization)
+./custom-brief.sh --topic "open source LLMs 2026" --obsidian
 
 # Terminal only (no publishing)
 ./custom-brief.sh --topic "open source LLMs 2026"
 
 # Short flags
-./custom-brief.sh -t "AI regulation EU" -n
+./custom-brief.sh -t "AI regulation EU" -n -o
 
 # Use a specific engine
-./custom-brief.sh --cli codex --topic "AI safety" --notion
+./custom-brief.sh --cli codex --topic "AI safety" --notion --obsidian
 ./custom-brief.sh --cli gemini -t "quantum computing" -n
 ```
 
 **PowerShell:**
 
 ```powershell
-.\custom-brief.ps1 -Topic "AI in healthcare" -Notion -Teams -Slack
-.\custom-brief.ps1 -Topic "quantum computing" -Notion
-.\custom-brief.ps1 -Cli gemini -Topic "AI safety" -Notion
+.\custom-brief.ps1 -Topic "AI in healthcare" -Notion -Obsidian -Teams -Slack
+.\custom-brief.ps1 -Topic "quantum computing" -Notion -Obsidian
+.\custom-brief.ps1 -Cli gemini -Topic "AI safety" -Notion -Obsidian
 ```
 
 **Make:**
 
 ```bash
-make custom-brief T="AI in healthcare" NOTION=1 TEAMS=1
-make custom-brief T="quantum computing" NOTION=1
-make custom-brief T="AI safety" CLI=codex NOTION=1
-make custom-brief-bg T="open source LLMs" NOTION=1  # background
+make custom-brief T="AI in healthcare" NOTION=1 OBSIDIAN=1 TEAMS=1
+make custom-brief T="quantum computing" NOTION=1 OBSIDIAN=1
+make custom-brief T="AI safety" CLI=codex NOTION=1 OBSIDIAN=1
+make custom-brief-bg T="open source LLMs" NOTION=1 OBSIDIAN=1  # background
 ```
 
 ### Interactive REPL
@@ -116,9 +121,10 @@ Run without arguments to enter interactive mode. The REPL shows which AI engines
 
   Topic: AI in drug discovery
 
-  Publish to Notion? [y/N]: y
-  Publish to Teams?  [y/N]: y
-  Publish to Slack?  [y/N]: n
+  Publish to Notion?   [y/N]: y
+  Publish to Obsidian? [y/N]: y
+  Publish to Teams?    [y/N]: y
+  Publish to Slack?    [y/N]: n
 ```
 
 ### Claude Code Skill
@@ -142,6 +148,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | `--topic`, `-t` | Topic to research (required in non-interactive mode) |
 | `--cli` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `--notion`, `-n` | Publish briefing to Notion |
+| `--obsidian`, `-o` | Publish briefing to Obsidian vault (requires `AI_BRIEFING_OBSIDIAN_VAULT`) |
 | `--teams` | Send Adaptive Card to Teams |
 | `--slack` | Send Block Kit message to Slack |
 | `--help`, `-h` | Show usage help |
@@ -153,6 +160,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | `-Topic` | Topic to research (required in non-interactive mode) |
 | `-Cli` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `-Notion` | Publish briefing to Notion |
+| `-Obsidian` | Publish briefing to Obsidian vault (requires `AI_BRIEFING_OBSIDIAN_VAULT`) |
 | `-Teams` | Send Adaptive Card to Teams |
 | `-Slack` | Send Block Kit message to Slack |
 
@@ -163,6 +171,7 @@ Claude will ask for the topic and destinations, then run the research pipeline i
 | `T` | Topic (required) |
 | `CLI` | AI engine to use: `claude`, `codex`, `gemini`, `copilot` (default: auto-detect) |
 | `NOTION` | Set to `1` to publish to Notion |
+| `OBSIDIAN` | Set to `1` to publish to Obsidian vault |
 | `TEAMS` | Set to `1` to send to Teams |
 | `SLACK` | Set to `1` to send to Slack |
 
@@ -189,6 +198,16 @@ Created in the same database as daily briefings with the title format:
 YYYY-MM-DD - Custom Brief: [Topic]
 ```
 
+### Obsidian Page (optional)
+
+Written to your Obsidian vault at `AI-News-Briefings/YYYY-MM-DD - Custom Brief - [Topic].md`. Includes:
+
+- **YAML frontmatter** with date, type, topic, tags
+- **`[[wikilinks]]`** to topic pages for graph visualization
+- **Related topics line** linking to all referenced topics
+
+Topic stub pages are auto-created in `Topics/` on first reference. Open Obsidian's graph view (`Ctrl/Cmd + G`) to see how briefings connect through shared topics.
+
 ### Teams Adaptive Card (optional)
 
 Written to `logs/custom-YYYY-MM-DD-HHMMSS-card.json`, then POSTed by `notify-teams.sh/.ps1`. Same card structure as the daily briefing, with the header showing the custom topic.
@@ -207,9 +226,15 @@ ai-news-briefing/
   custom-brief.ps1             # PowerShell CLI entry point
   prompt-custom-brief.md       # Research prompt template
   commands/custom-brief.md     # Claude Code interactive skill
+  scripts/
+    publish-obsidian.sh        # Copies markdown to Obsidian vault + creates topic stubs
+    publish-obsidian.ps1       # Windows equivalent
+    test-obsidian.sh           # Tests Obsidian vault connectivity
+    test-obsidian.ps1          # Windows equivalent
   logs/
-    custom-YYYY-MM-DD-HHMMSS.log       # Execution log
-    custom-YYYY-MM-DD-HHMMSS-card.json # Adaptive Card (if generated)
+    custom-YYYY-MM-DD-HHMMSS.log            # Execution log
+    custom-YYYY-MM-DD-HHMMSS-card.json      # Adaptive Card (if generated)
+    custom-YYYY-MM-DD-HHMMSS-obsidian.md    # Obsidian markdown (if generated)
 ```
 
 ---

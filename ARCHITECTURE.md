@@ -9,6 +9,7 @@
 ![GitHub Copilot CLI](https://img.shields.io/badge/GitHub_Copilot-CLI-238636?logo=githubcopilot&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
+![Obsidian](https://img.shields.io/badge/Obsidian-Graph_View-7C3AED?logo=obsidian&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
 ![Adaptive Cards](https://img.shields.io/badge/Adaptive_Cards-v1.4-0078D4?logo=json&logoColor=white)
 ![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
@@ -20,13 +21,13 @@
 ![Slack](https://img.shields.io/badge/Slack-Webhook-4A154B?logo=slack&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
-![Tests](https://img.shields.io/badge/Shell_Tests-247_Passing-10b981?logo=checkmarx&logoColor=white)
+![Tests](https://img.shields.io/badge/Shell_Tests-201_Passing-10b981?logo=checkmarx&logoColor=white)
 ![ANSI Colors](https://img.shields.io/badge/CLI-Styled_Output-ff6b6b?logo=windowsterminal&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses one of four supported AI CLI engines (Claude Code, Codex, Gemini, Copilot) to search the web, compile a structured briefing, and publish it to Notion.
+This document describes the architecture, data flow, and design decisions behind the AI News Briefing system -- an automated daily AI news aggregation pipeline that uses one of four supported AI CLI engines (Claude Code, Codex, Gemini, Copilot) to search the web, compile a structured briefing, and publish it to Notion and/or Obsidian.
 
 The system is cross-platform, supporting macOS (launchd) and Windows (Task Scheduler).
 
@@ -78,6 +79,7 @@ graph TD
         D -->|Notion MCP tool| F[Notion API]
         F --> G[Notion Page - AI Daily Briefing]
         D -->|Writes| CJ["logs/YYYY-MM-DD-card.json"]
+        D -->|Writes| OJ["logs/YYYY-MM-DD-obsidian.md"]
     end
 
     subgraph "Post-Processing"
@@ -91,6 +93,11 @@ graph TD
         S1 -->|Converts & POSTs| CJ
         S2 -->|Converts & POSTs| CJ
         CJ -->|Block Kit JSON| SW[Slack Webhook]
+        B1 -->|On success| OB1[publish-obsidian.sh]
+        B2 -->|On success| OB2[publish-obsidian.ps1]
+        OB1 -->|Copy + topic stubs| OJ
+        OB2 -->|Copy + topic stubs| OJ
+        OJ -->|Graph-ready markdown| OBV["Obsidian Vault"]
     end
 
     B1 -->|Writes logs| H[logs/ Directory]
@@ -586,8 +593,11 @@ flowchart TD
         SYNTH -->|Always| STDOUT[Terminal output]
         SYNTH -->|If --notion| NOTION[Notion page]
         SYNTH -->|If --teams/--slack| CARD[Card JSON]
+        SYNTH -->|If --obsidian| OBS["Obsidian markdown<br/>with [[wikilinks]]"]
         CARD --> NT["notify-teams.sh/.ps1"]
         CARD --> NS["notify-slack.sh/.ps1"]
+        OBS --> OP["publish-obsidian.sh/.ps1"]
+        OP --> VAULT["Obsidian Vault<br/>+ Topic Stubs"]
     end
 ```
 
@@ -611,12 +621,13 @@ Each of the 5 agents receives a targeted search brief and returns findings with 
 
 | File | Purpose |
 |------|---------|
-| `custom-brief.sh` | Bash CLI with `--topic`, `--notion`, `--teams`, `--slack` params + REPL mode |
-| `custom-brief.ps1` | PowerShell CLI with equivalent `-Topic`, `-Notion`, `-Teams`, `-Slack` params |
+| `custom-brief.sh` | Bash CLI with `--topic`, `--notion`, `--teams`, `--slack`, `--obsidian` params + REPL mode |
+| `custom-brief.ps1` | PowerShell CLI with equivalent `-Topic`, `-Notion`, `-Teams`, `-Slack`, `-Obsidian` params |
 | `prompt-custom-brief.md` | Prompt template with `{{TOPIC}}`, `{{DATE}}`, `{{PUBLISH_*}}` placeholders |
 | `commands/custom-brief.md` | Claude Code skill for interactive sessions |
 | `logs/custom-TIMESTAMP.log` | Execution log |
 | `logs/custom-TIMESTAMP-card.json` | Adaptive Card JSON (if Teams/Slack requested) |
+| `logs/custom-TIMESTAMP-obsidian.md` | Obsidian markdown with wikilinks (if Obsidian requested) |
 
 #### Prompt Template Variable Injection
 
@@ -625,7 +636,7 @@ The CLI scripts perform string replacement on `prompt-custom-brief.md` before pa
 ```mermaid
 flowchart LR
     T["--topic arg"] --> S["custom-brief.sh/.ps1"]
-    F["--notion/--teams/--slack"] --> S
+    F["--notion/--teams/--slack/--obsidian"] --> S
     S -->|"Replace {{TOPIC}}"| P["prompt-custom-brief.md"]
     S -->|"Replace {{DATE}}"| P
     S -->|"Replace {{PUBLISH_*}}"| P
@@ -641,24 +652,116 @@ The custom brief reuses the same infrastructure:
 | Notion database | Same (data_source_id) | Same |
 | Teams notification | `notify-teams.sh/.ps1` | Same scripts |
 | Slack notification | `notify-slack.sh/.ps1` + `teams-to-slack.py` | Same scripts |
+| Obsidian publishing | `publish-obsidian.sh/.ps1` | Same scripts |
 | Card template | Adaptive Card v1.4 | Same structure, different header |
 | Page title | `YYYY-MM-DD - AI Daily Briefing` | `YYYY-MM-DD - Custom Brief: [Topic]` |
+| Obsidian file | `logs/YYYY-MM-DD-obsidian.md` | `logs/custom-TIMESTAMP-obsidian.md` |
 | Log naming | `logs/YYYY-MM-DD.log` | `logs/custom-YYYY-MM-DD-HHMMSS.log` |
 | Deduplication | Yes (covered-stories.txt) | No (standalone) |
 
-### 3.12 Test Suite
+### 3.12 Obsidian Publishing Pipeline
 
-247 non-blocking tests across bash and PowerShell verify the entire system without calling external services. Tests cover syntax, structure, argument handling, template substitution, card JSON validation, notification error paths, and cross-platform portability.
+Obsidian is a local-first knowledge base that stores notes as plain markdown files in a "vault" directory. Unlike Notion (which requires an API), Obsidian integration works by writing `.md` files directly to the file system. Obsidian's graph view automatically visualizes connections between notes via `[[wikilinks]]`.
+
+#### Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph "Claude Code Output"
+        CB["Claude writes<br/>logs/*-obsidian.md"]
+    end
+
+    subgraph "Post-Processing"
+        CB --> PB["publish-obsidian.sh/.ps1"]
+        PB -->|"Copy to vault"| VB["AI-News-Briefings/"]
+        PB -->|"Extract [[wikilinks]]"| TS["Create topic stubs"]
+        TS --> VT["Topics/"]
+    end
+
+    subgraph "Obsidian Vault"
+        VB --> B1["2026-04-11 - AI Daily Briefing.md"]
+        VB --> B2["2026-04-11 - Custom Brief - Claude Code.md"]
+        VT --> T1["Claude Code.md"]
+        VT --> T2["OpenAI.md"]
+        VT --> T3["AI Coding IDEs.md"]
+    end
+
+    subgraph "Graph View"
+        B1 -.->|"[[Claude Code]]"| T1
+        B1 -.->|"[[OpenAI]]"| T2
+        B2 -.->|"[[Claude Code]]"| T1
+        B2 -.->|"[[AI Coding IDEs]]"| T3
+    end
+```
+
+#### Wikilink Strategy
+
+The Obsidian markdown uses `[[wikilinks]]` extensively to create graph connections:
+
+| Element | Wikilink Placement | Graph Effect |
+|---------|-------------------|--------------|
+| Section headings | `## [[Claude Code]] / [[Anthropic]]` | Briefing → topic edges |
+| Related topics line | `Related topics: [[AI Coding]], [[LLMs]], ...` | Cross-topic edges |
+| Inline mentions | `...announced by [[OpenAI]] today...` | Entity edges |
+| Topic stub pages | `Topics/Claude Code.md` with backlinks | Hub nodes in graph |
+
+#### Topic Stub Pages
+
+The publish script extracts all `[[wikilinks]]` from the briefing markdown and creates stub pages in `Topics/` for any that don't already exist. Each stub has YAML frontmatter:
+
+```yaml
+---
+type: topic
+created: 2026-04-11
+---
+
+# Claude Code
+
+> Auto-generated topic page. Briefings mentioning this topic will appear as backlinks.
+```
+
+This creates a growing knowledge graph where topics accumulate backlinks from each briefing that mentions them.
+
+#### Files Involved
+
+| File | Purpose |
+|------|---------|
+| `scripts/publish-obsidian.sh` | Bash: copies markdown to vault, creates topic stubs |
+| `scripts/publish-obsidian.ps1` | PowerShell: equivalent Windows implementation |
+| `scripts/test-obsidian.sh` | Bash: vault connectivity test (directory, permissions, config) |
+| `scripts/test-obsidian.ps1` | PowerShell: equivalent Windows implementation |
+
+#### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AI_BRIEFING_OBSIDIAN_VAULT` | Yes | Absolute path to the Obsidian vault root directory |
+
+#### Error Handling
+
+| Condition | Behavior |
+|-----------|----------|
+| Vault env var not set | Skip publishing silently (opt-in feature) |
+| Vault directory missing | Error message, skip publishing, log warning |
+| Vault not writable | Error message, skip publishing, log warning |
+| Obsidian markdown not generated | Warning message, skip publishing |
+| Topic stub already exists | Skip creation, count as existing |
+| Publish script missing | Warning message, skip publishing |
+
+### 3.13 Test Suite
+
+201 non-blocking tests across bash and PowerShell verify the entire system without calling external services. Tests cover syntax, structure, argument handling, template substitution, card JSON validation, notification error paths, Obsidian publishing, and cross-platform portability.
 
 #### Test Architecture
 
 ```mermaid
 flowchart TD
     subgraph "Bash (macOS / Linux / Git Bash)"
-        R["tests/run-all.sh"] --> T1["test-custom-brief.sh<br/>37 tests"]
-        R --> T2["test-daily-brief.sh<br/>56 tests"]
-        R --> T3["test-notifications.sh<br/>37 tests"]
+        R["tests/run-all.sh"] --> T1["test-custom-brief.sh<br/>48 tests"]
+        R --> T2["test-daily-brief.sh<br/>80 tests"]
+        R --> T3["test-notifications.sh<br/>17 tests"]
         R --> T4["test-portability.sh<br/>26 tests"]
+        R --> T5["test-obsidian.sh<br/>30 tests"]
     end
 
     subgraph "PowerShell (Windows)"
@@ -670,6 +773,8 @@ flowchart TD
         T2 --> X2["Prompt steps, 9 topics, 8 changelogs,<br/>entry scripts, dedup file"]
         T3 --> X3["Card JSON validity, Adaptive Card structure,<br/>Teams-to-Slack converter, error handling"]
         T4 --> X4["Bash 3.2 compat, awk/date portability,<br/>-f vs -x checks, ANSI color safety"]
+
+        T5 --> X5["Publish script structure, wikilink extraction,<br/>error handling, vault simulation"]
         PS --> X1
         PS --> X2
         PS --> X3
@@ -692,9 +797,10 @@ flowchart TD
 | File | Tests | Focus |
 |---|---|---|
 | `tests/run-all.sh` | -- | Runner: executes all `test-*.sh` suites |
-| `tests/test-custom-brief.sh` | 37 | Custom brief: args, template, prompt, skill |
-| `tests/test-daily-brief.sh` | 56 | Daily brief: prompt, topics, changelogs, scripts |
-| `tests/test-notifications.sh` | 37 | Notifications: card JSON, converter, error paths |
+| `tests/test-custom-brief.sh` | 48 | Custom brief: args, template, prompt, skill, Obsidian |
+| `tests/test-daily-brief.sh` | 80 | Daily brief: prompt, topics, changelogs, scripts, Obsidian |
+| `tests/test-notifications.sh` | 17 | Notifications: card JSON, converter, error paths |
+| `tests/test-obsidian.sh` | 30 | Obsidian: publish script, wikilinks, vault simulation |
 | `tests/test-portability.sh` | 26 | Cross-platform: bash version, awk, date, colors |
 | `tests/test-all.ps1` | 91 | PowerShell: syntax, prompts, cards, converter, docs |
 
@@ -985,6 +1091,8 @@ graph TD
     SC --> SC4["topic-edit.sh/.ps1"]
     SC --> SC5["notify-teams.sh/.ps1"]
     SC --> SC8["notify-slack.sh/.ps1"]
+    SC --> SC10["publish-obsidian.sh/.ps1"]
+    SC --> SC11["test-obsidian.sh/.ps1"]
     SC --> SC9["teams-to-slack.py"]
     SC --> SC6["build-teams-card.py (legacy)"]
     SC --> SC7["+ 8 more pairs"]
@@ -1001,6 +1109,7 @@ graph TD
 
     G --> G1["YYYY-MM-DD.log"]
     G --> G4["YYYY-MM-DD-card.json"]
+    G --> G5["YYYY-MM-DD-obsidian.md"]
     G --> G2["launchd-stdout.log (macOS)"]
     G --> G3["launchd-stderr.log (macOS)"]
 
@@ -1034,12 +1143,17 @@ graph TD
 | `scripts/notify-teams.ps1` | Windows | Teams notification entry point (PowerShell) | Yes |
 | `scripts/notify-slack.sh` | macOS/Linux | Slack notification entry point (Bash) | Yes |
 | `scripts/notify-slack.ps1` | Windows | Slack notification entry point (PowerShell) | Yes |
+| `scripts/publish-obsidian.sh` | macOS/Linux | Obsidian vault publisher (Bash) — copies markdown, creates topic stubs | Yes |
+| `scripts/publish-obsidian.ps1` | Windows | Obsidian vault publisher (PowerShell) | Yes |
+| `scripts/test-obsidian.sh` | macOS/Linux | Obsidian vault connectivity test (Bash) | Yes |
+| `scripts/test-obsidian.ps1` | Windows | Obsidian vault connectivity test (PowerShell) | Yes |
 | `scripts/teams-to-slack.py` | Shared | Converts Teams Adaptive Card JSON to Slack Block Kit JSON | Yes |
 | `scripts/build-teams-card.py` | Shared | **Legacy.** Old log-parsing card builder. No longer referenced. | Yes |
 | `scripts/*.sh` | macOS/Linux | Utility scripts (12 tools) | Yes |
 | `scripts/*.ps1` | Windows | Utility scripts (12 tools) | Yes |
 | `logs/*.log` | Shared | Daily run logs | No (gitignored) |
 | `logs/*-card.json` | Shared | Adaptive Card JSON written by Claude Code (Step 4). POSTed to Teams as-is. | No (gitignored) |
+| `logs/*-obsidian.md` | Shared | Obsidian-formatted markdown with `[[wikilinks]]` written by Claude Code (Step 5). Published to vault by `publish-obsidian.sh/.ps1`. | No (gitignored) |
 | `backups/` | Shared | Timestamped prompt.md backups | No (gitignored) |
 | `~/.local/bin/ai-news` | macOS | Manual trigger CLI script | No (outside repo) |
 
@@ -1048,7 +1162,8 @@ graph TD
 1. **Created**: At the start of each run, the entry script creates (or appends to) `logs/YYYY-MM-DD.log`.
 2. **Appended**: Claude Code's full stdout and stderr are appended. Multiple runs on the same day share one log file.
 3. **Card JSON**: Claude Code writes `logs/YYYY-MM-DD-card.json` as Step 4 of the briefing skill. This file is the exact Adaptive Card payload sent to Teams and is also the source for the Slack Block Kit conversion.
-4. **Rotated**: At the end of each run, logs older than 30 days are deleted.
+4. **Obsidian markdown**: Claude Code writes `logs/YYYY-MM-DD-obsidian.md` as Step 5 of the briefing skill. This file contains the full briefing formatted with YAML frontmatter and `[[wikilinks]]` for Obsidian's graph view. The publish script copies it to the vault.
+5. **Rotated**: At the end of each run, logs older than 30 days are deleted.
 5. **launchd logs** (macOS only): `launchd-stdout.log` and `launchd-stderr.log` capture output from launchd itself. These are not rotated automatically.
 
 ---
@@ -1085,13 +1200,13 @@ The Notion MCP tool authenticates via credentials managed by Claude Code's MCP c
 
 ### Environment Variables
 
-No secrets are stored in any tracked file. Claude Code's API key and Notion integration token are managed externally by the Claude Code and MCP runtime. The macOS plist explicitly sets `PATH` and `HOME` for deterministic execution; the Windows task inherits the user's environment.
+No secrets are stored in any tracked file. Claude Code's API key and Notion integration token are managed externally by the Claude Code and MCP runtime. The `AI_BRIEFING_OBSIDIAN_VAULT` variable contains only a local file path and poses no credential risk. The macOS plist explicitly sets `PATH` and `HOME` for deterministic execution; the Windows task inherits the user's environment.
 
 ---
 
-## 11. Teams and Slack Notification Pipelines
+## 11. Teams, Slack, and Obsidian Pipelines
 
-See [Section 3.9](#39-teams-notification-pipeline) and [Section 3.10](#310-slack-notification-pipeline) for full architectural details. See also [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md), [NOTIFY_SLACK.md](NOTIFY_SLACK.md), and `E2E_FLOW.md` for end-to-end walkthroughs and failure modes.
+See [Section 3.9](#39-teams-notification-pipeline), [Section 3.10](#310-slack-notification-pipeline), and [Section 3.12](#312-obsidian-publishing-pipeline) for full architectural details. See also [NOTIFY_TEAMS.md](NOTIFY_TEAMS.md), [NOTIFY_SLACK.md](NOTIFY_SLACK.md), and `E2E_FLOW.md` for end-to-end walkthroughs and failure modes.
 
 ---
 
@@ -1119,6 +1234,7 @@ Set the `AI_BRIEFING_MODEL` environment variable, or change `--model sonnet` in 
 |---|---|---|
 | Microsoft Teams | **Implemented** | Claude Code writes Adaptive Card JSON (Step 4), `notify-teams.sh/.ps1` validates and POSTs to Power Automate webhook. See [Section 3.9](#39-teams-notification-pipeline). |
 | Slack | **Implemented** | `notify-slack.sh/.ps1` converts the Teams card JSON to Slack Block Kit using `teams-to-slack.py` and POSTs to Slack webhook. See [Section 3.10](#310-slack-notification-pipeline). |
+| Obsidian | **Implemented** | Claude Code writes graph-ready markdown (Step 5) with `[[wikilinks]]` and YAML frontmatter. `publish-obsidian.sh/.ps1` copies to vault and creates topic stub pages. See [Section 3.12](#312-obsidian-publishing-pipeline). |
 | macOS notification | Planned | `osascript -e 'display notification ...'` in `briefing.sh` |
 | Windows toast | Planned | `New-BurntToastNotification` or `[Windows.UI.Notifications]` in `briefing.ps1` |
 | Email | Planned | `mail`/`sendmail` (macOS) or `Send-MailMessage` (Windows) in the entry script |
@@ -1146,7 +1262,7 @@ The log files follow a predictable naming convention (`YYYY-MM-DD.log`) and cont
 | Run manually | `make run` | `ai-news` | `schtasks /run /tn AiNewsBriefing` |
 | Run in background | `make run-bg` | `nohup bash briefing.sh &` | `Start-Process powershell briefing.ps1` |
 | Custom brief | `make custom-brief T="topic"` | `bash custom-brief.sh --topic "topic"` | `.\custom-brief.ps1 -Topic "topic"` |
-| Custom brief + publish | `make custom-brief T="topic" NOTION=1 TEAMS=1` | `bash custom-brief.sh -t "topic" -n --teams` | `.\custom-brief.ps1 -Topic "topic" -Notion -Teams` |
+| Custom brief + publish | `make custom-brief T="topic" NOTION=1 TEAMS=1 OBSIDIAN=1` | `bash custom-brief.sh -t "topic" -n --teams -o` | `.\custom-brief.ps1 -Topic "topic" -Notion -Teams -Obsidian` |
 | Tail live log | `make tail` | `tail -f logs/YYYY-MM-DD.log` | `Get-Content "logs\YYYY-MM-DD.log" -Wait` |
 | Check job status | `make status` | `launchctl list \| grep ainews` | `schtasks /query /tn AiNewsBriefing` |
 | Install scheduler | `make install` | `launchctl load ~/Library/LaunchAgents/...` | `.\install-task.ps1` |

@@ -9,6 +9,7 @@
 ![GitHub Copilot CLI](https://img.shields.io/badge/GitHub_Copilot-CLI-238636?logo=githubcopilot&logoColor=white)
 ![WebSearch Tool](https://img.shields.io/badge/WebSearch_Tool-Integrated-10b981?logo=claude&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-MCP-000000?logo=notion&logoColor=white)
+![Obsidian](https://img.shields.io/badge/Obsidian-Graph_View-7C3AED?logo=obsidian&logoColor=white)
 ![MCP](https://img.shields.io/badge/Model_Context_Protocol-1.0-10b981?logo=modelcontextprotocol&logoColor=white)
 ![Adaptive Cards](https://img.shields.io/badge/Adaptive_Cards-v1.4-0078D4?logo=json&logoColor=white)
 ![Bash](https://img.shields.io/badge/Bash-Script-4EAA25?logo=gnubash&logoColor=white)
@@ -20,13 +21,13 @@
 ![Slack](https://img.shields.io/badge/Slack-Webhook-4A154B?logo=slack&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
 ![Make](https://img.shields.io/badge/Make-Cross_Platform-000000?logo=gnu&logoColor=white)
-![Tests](https://img.shields.io/badge/Shell_Tests-247_Passing-10b981?logo=checkmarx&logoColor=white)
+![Tests](https://img.shields.io/badge/Shell_Tests-201_Passing-10b981?logo=checkmarx&logoColor=white)
 ![ANSI Colors](https://img.shields.io/badge/CLI-Styled_Output-ff6b6b?logo=windowsterminal&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-Version_Control-F05032?logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?logo=github&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-000000?logo=mit&logoColor=white)
 
-Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion, and delivers a styled summary to Microsoft Teams and Slack -- powered by Claude Code, Codex, Gemini, or Copilot CLIs with automatic fallback. Supports both macOS (launchd) and Windows (Task Scheduler). Includes an on-demand **Custom Brief** mode for deep multi-agent research on any topic. Fully automated pipeline with zero manual intervention required after setup.
+Automated daily AI news research agent that searches the web, compiles a structured briefing, publishes it to Notion and/or Obsidian, and delivers a styled summary to Microsoft Teams and Slack -- powered by Claude Code, Codex, Gemini, or Copilot CLIs with automatic fallback. Supports both macOS (launchd) and Windows (Task Scheduler). Includes an on-demand **Custom Brief** mode for deep multi-agent research on any topic. Obsidian integration enables **graph visualization** of topic relationships across briefings. Fully automated pipeline with zero manual intervention required after setup.
 
 > [!NOTE]
 > **Live AI News Notion page:** [https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f](https://hoangsonw.notion.site/9c34d052d9354beda82a3423e2d2f404?v=d43c53fe405c4896bfd95ad0cc22246f)
@@ -35,11 +36,11 @@ Automated daily AI news research agent that searches the web, compiles a structu
 
 ## Overview
 
-AI News Briefing is a fully automated pipeline that runs every morning on your machine. It supports four AI CLI engines -- Claude Code, Codex (OpenAI), Gemini (Google), and Copilot (GitHub) -- with automatic fallback if your preferred engine is unavailable. The selected engine runs in headless mode as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, and optionally posting a styled Adaptive Card summary to Microsoft Teams and Slack.
+AI News Briefing is a fully automated pipeline that runs every morning on your machine. It supports four AI CLI engines -- Claude Code, Codex (OpenAI), Gemini (Google), and Copilot (GitHub) -- with automatic fallback if your preferred engine is unavailable. The selected engine runs in headless mode as a news research agent: searching the web across 9 AI-related topics, compiling the results into a two-tier briefing (TL;DR + full report), writing the finished page directly to a Notion database, optionally publishing to an Obsidian vault with graph-ready wikilinks, and optionally posting a styled Adaptive Card summary to Microsoft Teams and Slack.
 
-The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion (or Teams or Slack), and your daily AI briefing is already there.
+The entire process -- from triggering to publishing -- requires zero human intervention. You wake up, open Notion or Obsidian (or Teams or Slack), and your daily AI briefing is already there.
 
-**Custom Brief** extends this with on-demand deep research: pick any topic, and 5 parallel research agents investigate it from different angles (breaking news, technical analysis, industry impact, trends, and policy). Results publish to Notion, Teams, and/or Slack -- or just print to your terminal.
+**Custom Brief** extends this with on-demand deep research: pick any topic, and 5 parallel research agents investigate it from different angles (breaking news, technical analysis, industry impact, trends, and policy). Results publish to Notion, Obsidian, Teams, and/or Slack -- or just print to your terminal.
 
 ### Why it exists
 
@@ -74,6 +75,7 @@ flowchart TD
     H -->|Creates page| I[Notion Database]
 
     D -->|Step 4: Write card| J2[logs/YYYY-MM-DD-card.json]
+    D -->|Step 5: Write obsidian md| J3[logs/YYYY-MM-DD-obsidian.md]
 
     B1 -->|If Teams webhook set| T[notify-teams.sh]
     B2 -->|If Teams webhook set| T2[notify-teams.ps1]
@@ -87,6 +89,11 @@ flowchart TD
     S2 -->|Convert + POST| SV
     SV --> SW[Slack Channel]
 
+    B1 -->|If Obsidian vault set| OB1[publish-obsidian.sh]
+    B2 -->|If Obsidian vault set| OB2[publish-obsidian.ps1]
+    OB1 -->|Copy + create topics| OBV[Obsidian Vault]
+    OB2 -->|Copy + create topics| OBV
+
     B1 -->|Logs output| J[logs/YYYY-MM-DD.log]
     B2 -->|Logs output| J
     J -->|Auto-cleanup| K[Delete logs older than 30 days]
@@ -98,9 +105,11 @@ flowchart TD
 2. The script reads the prompt from `prompt.md` and passes it to the selected AI CLI engine in headless mode.
 3. The AI engine executes the prompt as an agentic task -- performing web searches, compiling results, and calling the Notion MCP tool.
 4. Notion receives the finished briefing as a new database page.
-5. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which validates and POSTs the pre-built `logs/YYYY-MM-DD-card.json` file (written by Claude in Step 4) to the configured Teams webhook.
-6. If the `AI_BRIEFING_SLACK_WEBHOOK` environment variable is set, the entry point script calls `notify-slack.sh` / `notify-slack.ps1`, which converts the Teams card to Slack Block Kit format and POSTs it to the configured Slack webhook.
-7. Logs are written to a date-stamped file and automatically pruned after 30 days.
+5. Claude also writes an Obsidian-formatted markdown file with `[[wikilinks]]` for graph visualization.
+6. If the `AI_BRIEFING_TEAMS_WEBHOOK` environment variable is set, the entry point script calls `notify-teams.sh` / `notify-teams.ps1`, which validates and POSTs the pre-built `logs/YYYY-MM-DD-card.json` file (written by Claude in Step 4) to the configured Teams webhook.
+7. If the `AI_BRIEFING_SLACK_WEBHOOK` environment variable is set, the entry point script calls `notify-slack.sh` / `notify-slack.ps1`, which converts the Teams card to Slack Block Kit format and POSTs it to the configured Slack webhook.
+8. If the `AI_BRIEFING_OBSIDIAN_VAULT` environment variable is set, the entry point script calls `publish-obsidian.sh` / `publish-obsidian.ps1`, which copies the briefing to the vault and creates topic stub pages for graph nodes.
+9. Logs are written to a date-stamped file and automatically pruned after 30 days.
 
 ---
 
@@ -424,6 +433,9 @@ export AI_BRIEFING_TEAMS_WEBHOOK="https://first-teams-webhook"
 
 # Slack
 export AI_BRIEFING_SLACK_WEBHOOK="https://hooks.slack.com/services/T.../B.../..."
+
+# Obsidian vault
+export AI_BRIEFING_OBSIDIAN_VAULT="/path/to/your/obsidian/vault"
 ```
 
 **Windows (PowerShell)**
@@ -431,6 +443,7 @@ export AI_BRIEFING_SLACK_WEBHOOK="https://hooks.slack.com/services/T.../B.../...
 ```powershell
 [Environment]::SetEnvironmentVariable("AI_BRIEFING_TEAMS_WEBHOOK", "https://first-teams-webhook", "User")
 [Environment]::SetEnvironmentVariable("AI_BRIEFING_SLACK_WEBHOOK", "https://hooks.slack.com/services/T.../B.../...", "User")
+[Environment]::SetEnvironmentVariable("AI_BRIEFING_OBSIDIAN_VAULT", "C:\path\to\your\obsidian\vault", "User")
 ```
 
 ### Multiple Webhooks and `--all` / `-All`
@@ -487,7 +500,7 @@ In addition to the daily automated briefing, you can run a deep research briefin
 flowchart LR
     subgraph "Input"
         A["--topic 'AI in healthcare'"]
-        B["--notion --teams --slack"]
+        B["--notion --obsidian --teams --slack"]
     end
     A --> C[custom-brief.sh / .ps1]
     B --> C
@@ -495,6 +508,7 @@ flowchart LR
     D --> E[Structured Briefing]
     E --> F[Terminal Output]
     E -->|optional| G[Notion]
+    E -->|optional| G2[Obsidian Vault + Graph]
     E -->|optional| H[Teams]
     E -->|optional| I[Slack]
 ```
@@ -507,10 +521,13 @@ flowchart LR
 
 ```bash
 # Full research with all destinations
-./custom-brief.sh --topic "AI in healthcare" --notion --teams --slack
+./custom-brief.sh --topic "AI in healthcare" --notion --obsidian --teams --slack
 
-# Terminal + Notion only
-./custom-brief.sh -t "quantum computing" -n
+# Terminal + Notion + Obsidian
+./custom-brief.sh -t "quantum computing" -n -o
+
+# Obsidian only (for graph visualization)
+./custom-brief.sh -t "AI coding tools" -o
 
 # Use a specific engine
 ./custom-brief.sh --cli codex --topic "AI safety" --notion
@@ -519,13 +536,13 @@ flowchart LR
 ./custom-brief.sh
 
 # PowerShell
-.\custom-brief.ps1 -Topic "AI regulation EU" -Notion -Teams
+.\custom-brief.ps1 -Topic "AI regulation EU" -Notion -Obsidian -Teams
 
 # PowerShell with engine override
 .\custom-brief.ps1 -Cli gemini -Topic "AI regulation EU" -Notion
 
 # Make
-make custom-brief T="open source LLMs" NOTION=1 TEAMS=1
+make custom-brief T="open source LLMs" NOTION=1 OBSIDIAN=1 TEAMS=1
 make custom-brief T="AI safety" CLI=codex NOTION=1
 ```
 
@@ -631,7 +648,7 @@ Logs older than 30 days are automatically deleted at the end of each run on both
 
 ## Tests
 
-We have several test suites, with 247 non-blocking tests that verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, and cross-platform portability. No external services are called.
+We have several test suites, with 201 non-blocking tests that verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, Obsidian publishing, and cross-platform portability. No external services are called.
 
 <p align="center">
   <img src="img/tests.png" alt="Tests Overview" width="100%">
@@ -773,7 +790,7 @@ ai-news-briefing/
 │   └── custom-brief.md          # Claude Code skill: custom topic briefing
 ├── com.ainews.briefing.plist    # macOS launchd schedule definition
 ├── install-task.ps1             # Windows Task Scheduler installer
-├── tests/                       # 247 non-blocking tests
+├── tests/                       # 201 non-blocking tests
 │   ├── run-all.sh               # Bash test runner
 │   ├── test-custom-brief.sh     # Custom brief tests
 │   ├── test-daily-brief.sh      # Daily briefing tests

@@ -136,6 +136,7 @@ $result = $cbPrompt.
     Replace('{{DATE}}', $testDate).
     Replace('{{TIMESTAMP}}', $testTs).
     Replace('{{PUBLISH_NOTION}}', 'true').
+    Replace('{{PUBLISH_OBSIDIAN}}', 'false').
     Replace('{{PUBLISH_TEAMS_SLACK}}', 'false')
 
 Assert-Contains $result 'AI in R&D' "substitution: handles & in topic"
@@ -171,7 +172,7 @@ Write-Host ""
 Write-Host "=== Card JSON validation ===" -ForegroundColor Cyan
 
 $cardDir = Join-Path $ScriptDir "logs"
-$cards = Get-ChildItem -Path $cardDir -Filter "*-card.json" -ErrorAction SilentlyContinue
+$cards = @(Get-ChildItem -Path $cardDir -Filter "*-card.json" -ErrorAction SilentlyContinue)
 
 if ($cards.Count -gt 0) {
     Test-Pass "found $($cards.Count) card JSON files"

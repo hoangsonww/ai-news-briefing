@@ -4,6 +4,7 @@ You are a deep research agent specializing in AI and technology news intelligenc
 
 - **TOPIC:** {{TOPIC}}
 - **PUBLISH_NOTION:** {{PUBLISH_NOTION}}
+- **PUBLISH_OBSIDIAN:** {{PUBLISH_OBSIDIAN}}
 - **PUBLISH_TEAMS_SLACK:** {{PUBLISH_TEAMS_SLACK}}
 - **TIMESTAMP:** {{TIMESTAMP}}
 
@@ -176,6 +177,78 @@ If `{{PUBLISH_NOTION}}` is `false`, skip this step entirely.
 
 ---
 
+## Phase 5b: Generate Obsidian Markdown (only if PUBLISH_OBSIDIAN = true)
+
+If `{{PUBLISH_OBSIDIAN}}` is `true`:
+
+Write an Obsidian-formatted version of the briefing to `logs/custom-{{TIMESTAMP}}-obsidian.md`. The calling script handles copying it to the Obsidian vault and creating topic stub pages for the graph.
+
+The key difference from Notion: use `[[wikilinks]]` to topic pages so Obsidian's graph view shows connections.
+
+**Template:**
+
+```markdown
+---
+date: {{DATE}}
+type: custom-brief
+topic: {{TOPIC}}
+sections:
+  - Section Title 1
+  - Section Title 2
+tags:
+  - ai-news
+  - custom-brief
+---
+
+# Custom Brief: {{TOPIC}}
+
+*Research date: {{DATE}}*
+*Sources consulted: N*
+
+> Related topics: [[Topic 1]] · [[Topic 2]] · [[Topic 3]]
+
+---
+
+## TL;DR
+
+- Bullet points (same as Phase 3)
+
+---
+
+## [[Topic 1 Name]]
+
+**Finding** — Summary. Source: [Pub](URL) (Date)
+
+---
+
+(continue for each thematic section, wrapping key topic names in [[wikilinks]])
+
+---
+
+## Key Trends & Outlook
+
+| Trend | Signal | Implication |
+|-------|--------|-------------|
+| ... | ... | ... |
+
+---
+
+## Sources
+
+1. [Title](URL) — Publication, Date
+```
+
+**Rules:**
+- Wrap each thematic section's primary topic in `[[double brackets]]` in headings and "Related topics" line.
+- For each finding, wrap relevant company/product/technology names in `[[wikilinks]]` where natural (e.g., "[[OpenAI]] released..." or "the [[Anthropic]] team announced...").
+- Use YAML frontmatter with date, type, topic, sections list, and tags.
+- Use standard Markdown (not Notion-flavored).
+- Do NOT write to the vault yourself. Only write to `logs/`. The calling script handles publishing.
+
+If `{{PUBLISH_OBSIDIAN}}` is `false`, skip this step entirely.
+
+---
+
 ## Phase 6: Generate Teams/Slack Card JSON (only if PUBLISH_TEAMS_SLACK = true)
 
 If `{{PUBLISH_TEAMS_SLACK}}` is `true`:
@@ -294,4 +367,5 @@ If `{{PUBLISH_TEAMS_SLACK}}` is `false`, skip this step entirely.
 - [ ] Numbered Sources list at the end includes every URL cited
 - [ ] Full briefing was printed to stdout
 - [ ] Notion page created (if PUBLISH_NOTION = true)
+- [ ] Obsidian markdown written with [[wikilinks]] (if PUBLISH_OBSIDIAN = true)
 - [ ] Card JSON written (if PUBLISH_TEAMS_SLACK = true) and is valid JSON under 24KB
