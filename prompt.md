@@ -233,7 +233,80 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 - Use short display names (publication name only, not full article titles).
 - If there are too many sources to fit, prioritize primary/original sources over aggregators.
 
-## Step 5: Update Covered Stories List
+## Step 5: Generate Obsidian Markdown
+
+Write an Obsidian-formatted version of the briefing to `logs/YYYY-MM-DD-obsidian.md`. This file will be published to the user's Obsidian vault by the calling script. The key difference from Notion: use `[[wikilinks]]` to topic pages so Obsidian's graph view shows topic connections across briefings.
+
+Use the `Write` tool to save the file. The calling script (`publish-obsidian.sh` / `publish-obsidian.ps1`) handles copying it to the vault.
+
+**Template:**
+
+```markdown
+---
+date: YYYY-MM-DD
+type: daily-briefing
+topics:
+  - Claude Code / Anthropic
+  - OpenAI / Codex / ChatGPT
+  - AI Coding IDEs
+  - Agentic AI Ecosystem
+  - AI Industry
+  - Open Source AI
+  - AI Startups & Funding
+  - AI Policy & Regulation
+  - Dev Tools & Frameworks
+tags:
+  - ai-news
+  - daily-briefing
+---
+
+# AI Daily Briefing — YYYY-MM-DD
+
+> Related topics: [[Claude Code]] · [[Anthropic]] · [[OpenAI]] · [[AI Coding IDEs]] · [[Agentic AI]] · [[AI Industry]] · [[Open Source AI]] · [[AI Startups]] · [[AI Policy]] · [[Dev Tools]]
+
+---
+
+## TL;DR
+
+- Bullet points from the briefing (same content as Notion)
+
+---
+
+## [[Claude Code]] / [[Anthropic]]
+
+- Story bullets with **bold** emphasis and source links
+
+---
+
+## [[OpenAI]] / Codex / ChatGPT
+
+- Story bullets...
+
+(continue for each section, wrapping topic names in [[wikilinks]])
+
+---
+
+## Key Takeaways
+
+| Theme | Signal |
+|-------|--------|
+| theme | signal |
+
+---
+
+## Sources
+
+1. [Title](URL) — Publication, Date
+```
+
+**Obsidian Formatting Rules:**
+- Wrap each major topic name in `[[double brackets]]` in section headings and in the "Related topics" line. This creates links that Obsidian's graph view uses to show connections.
+- Use standard Markdown (not Notion-flavored). Use `|` tables, `---` dividers, `> ` blockquotes.
+- Include YAML frontmatter with date, type, topics list, and tags.
+- Only include sections that have news content (skip "No major updates today" sections).
+- The content should match the Notion briefing but reformatted with wikilinks.
+
+## Step 6: Update Covered Stories List
 
 After generating the briefing and card, append today's story headlines to `logs/covered-stories.txt`. This file is used for deduplication in future runs.
 

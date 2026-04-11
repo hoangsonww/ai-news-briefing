@@ -1,6 +1,6 @@
 # Test Suite
 
-247 non-blocking tests across bash and PowerShell covering the daily briefing, custom brief, notification pipeline, and cross-platform portability. No external services are called -- no Claude API, no webhooks, no Notion.
+247 non-blocking tests across bash and PowerShell covering the daily briefing, custom brief, notification pipeline, Obsidian publishing, and cross-platform portability. No external services are called -- no Claude API, no webhooks, no Notion, no vault writes.
 
 ---
 
@@ -13,6 +13,7 @@ flowchart TD
         R --> T2["test-daily-brief.sh"]
         R --> T3["test-notifications.sh"]
         R --> T4["test-portability.sh"]
+        R --> T5["test-obsidian.sh"]
     end
 
     subgraph "PowerShell Test Suite"
@@ -39,6 +40,11 @@ flowchart TD
         T4 --> P2["awk/date portability"]
         T4 --> P3["-f not -x checks"]
         T4 --> P4["ANSI color safety"]
+
+        T5 --> O1["Publish script structure"]
+        T5 --> O2["Wikilink extraction"]
+        T5 --> O3["Error handling"]
+        T5 --> O4["Vault simulation"]
 
         PS --> C1
         PS --> C2
@@ -82,7 +88,7 @@ There is no Make target for tests (tests are not part of the daily pipeline). Ru
 
 ## Test Suites
 
-### test-custom-brief.sh (37 tests)
+### test-custom-brief.sh (48 tests)
 
 Tests for the custom topic deep research feature.
 
@@ -95,6 +101,7 @@ flowchart LR
         D --> E["Prompt template"]
         E --> F["Template substitution"]
         F --> G["Interactive skill"]
+        G --> H["Obsidian integration"]
     end
 ```
 
@@ -102,13 +109,14 @@ flowchart LR
 |---|---|---|
 | File existence | 4 | `custom-brief.sh`, `prompt-custom-brief.md`, `commands/custom-brief.md` exist |
 | Bash syntax | 1 | `bash -n` passes |
-| Help flag | 6 | `--help` and `-h` print usage with all flags documented |
+| Help flag | 7 | `--help` and `-h` print usage with all flags documented (including `--obsidian`) |
 | Arg validation | 2 | Missing `--topic` value errors, unknown options error |
-| Prompt template | 12 | All `{{}}` placeholders, Phase 1-3, Agent 1-5, card template, citation requirement |
-| Template substitution | 5 | awk gsub replaces all placeholders, handles special chars, no leftover `{{}}` |
+| Prompt template | 13 | All `{{}}` placeholders (including `{{PUBLISH_OBSIDIAN}}`), Phase 1-3, Agent 1-5, card template, citation requirement |
+| Template substitution | 6 | awk gsub replaces all placeholders (including Obsidian), handles special chars, no leftover `{{}}` |
 | Interactive skill | 7 | Frontmatter, steps, agents, Notion MCP, data_source_id, quality checklist |
+| Obsidian integration | 8 | `PUBLISH_OBSIDIAN` in script, flag handling, publish script call, template wikilinks, skill reference |
 
-### test-daily-brief.sh (56 tests)
+### test-daily-brief.sh (80 tests)
 
 Tests for the existing daily automated briefing pipeline.
 
@@ -122,6 +130,7 @@ flowchart LR
         E --> F["Skill structure"]
         F --> G["Entry scripts"]
         G --> H["Dedup file"]
+        H --> I["Obsidian integration"]
     end
 ```
 
@@ -129,15 +138,22 @@ flowchart LR
 |---|---|---|
 | File existence | 5 | All pipeline files: `briefing.sh`, `briefing.ps1`, `prompt.md`, `install-task.ps1`, skill |
 | Bash syntax | 1 | `bash -n` on `briefing.sh` |
-| Prompt structure | 11 | Steps 0-5, data_source_id, dedup file, Notion MCP tools, card template |
+| Prompt structure | 12 | Steps 0-6, data_source_id, dedup file, Notion MCP tools, card template |
 | Topic coverage | 9 | All 9 topic areas present in prompt |
 | Changelog URLs | 8 | All 8 provider changelog URLs present |
 | Skill structure | 6 | Frontmatter, steps, Notion create, dedup reference |
 | Entry scripts (bash) | 7 | Strict mode, prompt.md read, Claude invocation, Teams/Slack notify, CLAUDECODE clear |
 | Entry scripts (PS1) | 6 | Same checks on `briefing.ps1` |
 | Dedup file | 3 | `covered-stories.txt` exists, has entries, correct `YYYY-MM-DD \| headline` format |
+| Obsidian (prompt) | 4 | Obsidian mention, obsidian.md output, `[[wikilinks]]`, YAML frontmatter |
+| Obsidian (briefing.sh) | 3 | Publisher call, vault env check, obsidian.md reference |
+| Obsidian (briefing.ps1) | 3 | Publisher call, vault env check, obsidian.md reference |
+| Obsidian scripts | 6 | publish-obsidian.sh/.ps1, test-obsidian.sh/.ps1 existence and executability |
+| Obsidian syntax | 2 | `bash -n` on publish and test scripts |
+| Obsidian structure | 6 | Strict mode, subdirectories, wikilinks, topic type, vault env var |
+| Obsidian skill | 1 | Obsidian mentioned in daily skill file |
 
-### test-notifications.sh (37 tests)
+### test-notifications.sh (17 tests)
 
 Tests for the Teams and Slack notification pipeline.
 
@@ -163,6 +179,32 @@ flowchart LR
 | Converter | 6 | Processes latest card, output is valid JSON, Slack header/divider/sections/button |
 | notify-teams.sh args | 3 | Errors on missing webhook, unknown option, missing card file |
 | notify-slack.sh args | 3 | Same error handling checks |
+
+### test-obsidian.sh (30 tests)
+
+Tests for the Obsidian publishing pipeline with vault simulation.
+
+```mermaid
+flowchart LR
+    subgraph "test-obsidian.sh"
+        A["File existence"] --> B["Bash syntax"]
+        B --> C["Publish structure"]
+        C --> D["Wikilink logic"]
+        D --> E["Error handling"]
+        E --> F["Test script structure"]
+        F --> G["Vault simulation"]
+    end
+```
+
+| Category | Tests | What it verifies |
+|---|---|---|
+| File existence | 6 | `publish-obsidian.sh/.ps1`, `test-obsidian.sh/.ps1` existence and executability |
+| Bash syntax | 2 | `bash -n` on both bash scripts |
+| Publish structure | 6 | Strict mode, subdirectories, vault env, mkdir, cp |
+| Wikilink logic | 3 | grep extraction, `[[` pattern, topic type YAML |
+| Error handling | 3 | exit on error, missing file error, missing vault error |
+| Test script structure | 3 | Vault env check, .obsidian config check, writability check |
+| Vault simulation | 7 | Creates temp vault, publishes markdown, verifies directories, topic stubs, frontmatter, idempotent re-run |
 
 ### test-portability.sh (26 tests)
 
@@ -249,7 +291,7 @@ The `run-all.sh` runner displays an ASCII art banner and an aggregate result:
    |   |    / \  |_ _| | \ | | _____      _____  | __ ) _ __(_) ___ / _| |   |
    ...
   =====================================================
-    ALL 4 SUITES PASSED
+    ALL 5 SUITES PASSED
   =====================================================
 ```
 
@@ -257,7 +299,7 @@ The `run-all.sh` runner displays an ASCII art banner and an aggregate result:
 
 ## Design Principles
 
-- **Non-blocking.** No test calls Claude, Notion, Teams, Slack, or any external service. Tests validate structure, syntax, and contracts -- not runtime behavior.
+- **Non-blocking.** No test calls Claude, Notion, Teams, Slack, or any external service. Obsidian tests use temp directories -- no real vault needed. Tests validate structure, syntax, and contracts -- not runtime behavior.
 - **Tailored to pass.** Tests verify existing working code. They check what IS there, not hypothetical requirements.
 - **Cross-platform.** Bash tests run on macOS, Linux, and Windows Git Bash. PowerShell tests run on Windows. Both cover the same code from different angles.
 - **No test framework.** Pure bash and PowerShell with simple `pass()`/`fail()` helpers. No dependencies to install.
@@ -270,9 +312,10 @@ The `run-all.sh` runner displays an ASCII art banner and an aggregate result:
 ```
 tests/
   run-all.sh               # Bash test runner (runs all test-*.sh suites)
-  test-custom-brief.sh     # Custom brief: args, template, prompt, skill
-  test-daily-brief.sh      # Daily brief: prompt, topics, changelogs, scripts
+  test-custom-brief.sh     # Custom brief: args, template, prompt, skill, Obsidian
+  test-daily-brief.sh      # Daily brief: prompt, topics, changelogs, scripts, Obsidian
   test-notifications.sh    # Notifications: cards, converter, error paths
+  test-obsidian.sh         # Obsidian: publish script, wikilinks, vault simulation
   test-portability.sh      # Cross-platform: bash compat, awk, date, colors
   test-all.ps1             # PowerShell suite (all categories in one file)
 ```

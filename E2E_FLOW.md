@@ -10,6 +10,8 @@ It is based on the current implementation in:
 - `scripts/notify-teams.ps1`
 - `scripts/notify-slack.sh`
 - `scripts/notify-slack.ps1`
+- `scripts/publish-obsidian.sh`
+- `scripts/publish-obsidian.ps1`
 - `scripts/teams-to-slack.py`
 - `scripts/build-teams-card.py` (legacy reference)
 - `Makefile`
@@ -46,6 +48,7 @@ flowchart TD
 
     D --> H[logs/YYYY-MM-DD.log\nstdout + stderr appended]
     D --> I[Expected Teams artifact\nlogs/YYYY-MM-DD-card.json]
+    D --> I2[Expected Obsidian artifact\nlogs/YYYY-MM-DD-obsidian.md]
 
     B1 --> J{AI_BRIEFING_TEAMS_WEBHOOK set?}
     B2 --> J
@@ -64,6 +67,15 @@ flowchart TD
     U -->|No| V[Slack notify fails\nrun still completed]
     U -->|Yes| W[Convert + POST to Slack webhooks]
     W --> X[Slack channel message]
+
+    B1 --> OC{AI_BRIEFING_OBSIDIAN_VAULT set?}
+    B2 --> OC
+    OC -->|No| OD[Skip Obsidian publish]
+    OC -->|Yes| OE[publish-obsidian.sh / publish-obsidian.ps1]
+    OE --> OF{obsidian.md exists?}
+    OF -->|No| OG[Obsidian publish skipped\nrun still completed]
+    OF -->|Yes| OH[Copy to vault + create topic stubs]
+    OH --> OI[Obsidian vault updated\nGraph view shows connections]
 
     B1 --> Q[Delete *.log older than 30 days]
     B2 --> Q
@@ -86,6 +98,8 @@ sequenceDiagram
     participant TW as Teams Webhook(s)
     participant S2 as notify-slack
     participant SW as Slack Webhook(s)
+    participant OB as publish-obsidian
+    participant OV as Obsidian Vault
 
     S->>E: Start briefing.sh or briefing.ps1
     E->>E: Resolve dirs and date
@@ -116,6 +130,12 @@ sequenceDiagram
     SW-->>S2: 2xx
     S2-->>E: success
 
+    E->>OB: Call publish-obsidian (if vault env var set)
+    OB->>OB: Read obsidian.md, extract [[wikilinks]]
+    OB->>OV: Copy briefing + create topic stubs
+    OV-->>OB: success
+    OB-->>E: success
+
     E->>E: Cleanup logs older than 30 days
 ```
 
@@ -142,7 +162,8 @@ Entry scripts do the same core setup:
 6. Append output to `logs/YYYY-MM-DD.log`.
 7. Attempt Teams notify when Teams webhook env var is present.
 8. Attempt Slack notify when Slack webhook env var is present.
-9. Delete only old `*.log` files (>30 days).
+9. Attempt Obsidian publish when vault env var is present.
+10. Delete only old `*.log` files (>30 days).
 
 ### Stage B: Date Override / Backfill Path
 
@@ -168,9 +189,10 @@ When date override is used, scripts prepend a runtime instruction block to the p
 4. Step 2: compile TL;DR + full briefing sections with dates.
 5. Step 3: if `PAGE_EXISTS = true`, update the existing Notion page. Otherwise, create a new page. This prevents duplicate pages on re-runs.
 6. Step 4: write Adaptive Card JSON to `logs/YYYY-MM-DD-card.json`.
-7. Step 5: append today's headlines to `logs/covered-stories.txt`.
+7. Step 5: write Obsidian-formatted markdown with `[[wikilinks]]` to `logs/YYYY-MM-DD-obsidian.md`.
+8. Step 6: append today's headlines to `logs/covered-stories.txt`.
 
-### Stage D: Teams & Slack Delivery
+### Stage D: Teams, Slack & Obsidian Delivery
 
 **Teams** notifier scripts are intentionally thin:
 
@@ -188,14 +210,23 @@ When date override is used, scripts prepend a runtime instruction block to the p
 
 Neither builds cards from logs. Both are resilient to individual webhook failures.
 
+**Obsidian** publisher scripts are local-only (no network calls):
+
+- Find Obsidian markdown file (default `logs/<today>-obsidian.md`, or passed as argument).
+- Validate vault directory exists and is writable.
+- Copy markdown to `AI-News-Briefings/` subdirectory in the vault, stripping the `-obsidian` suffix.
+- Extract all `[[wikilinks]]` from the markdown and create topic stub pages in `Topics/` for any new topics.
+- Topic stubs include YAML frontmatter (`type: topic`, `created: date`) and serve as graph hub nodes.
+
 ---
 
-## 4. Notification Decision Graph (Teams + Slack)
+## 4. Notification & Publishing Decision Graph (Teams + Slack + Obsidian)
 
 ```mermaid
 flowchart TD
     A[Entry script success] --> B{Teams webhook env set?}
     A --> C{Slack webhook env set?}
+    A --> OA{Obsidian vault env set?}
 
     B -->|No| D[Skip Teams step]
     B -->|Yes| E[Call notify-teams]
@@ -214,6 +245,13 @@ flowchart TD
     P --> Q{Any HTTP 2xx?}
     Q -->|No| R[Slack notify failed]
     Q -->|Yes| S[Slack notify success]
+
+    OA -->|No| OB[Skip Obsidian step]
+    OA -->|Yes| OC[Call publish-obsidian]
+    OC --> OD{obsidian.md exists\nand vault writable?}
+    OD -->|No| OE[Obsidian publish failed]
+    OD -->|Yes| OF[Copy to vault\n+ create topic stubs]
+    OF --> OG[Obsidian publish success]
 ```
 
 ---
@@ -227,6 +265,7 @@ The prompt and runtime pipeline are aligned on a shared card artifact and dual-c
 | `prompt.md` Step 4 | AI writes `logs/YYYY-MM-DD-card.json` directly |
 | `scripts/notify-teams.sh/.ps1` | Validates and POSTs the prebuilt card JSON |
 | `scripts/notify-slack.sh/.ps1` | Converts prebuilt card JSON to Block Kit and POSTs it |
+| `scripts/publish-obsidian.sh/.ps1` | Copies Obsidian markdown to vault, creates topic stub pages |
 | `scripts/teams-to-slack.py` | Conversion layer from Teams Adaptive Card schema to Slack Block Kit |
 | `scripts/build-teams-card.py` | Legacy parser, not called by any active script |
 
@@ -266,13 +305,26 @@ stateDiagram-v2
     SlackFailed --> Cleanup
     SlackDone --> Cleanup
 
+    SlackSkipped --> ObsidianCheck
+    SlackFailed --> ObsidianCheck
+    SlackDone --> ObsidianCheck
+
+    ObsidianCheck --> ObsidianSkipped: vault env not set
+    ObsidianCheck --> ObsidianPublishAttempt: vault env set
+    ObsidianPublishAttempt --> ObsidianFailed: missing md / vault error
+    ObsidianPublishAttempt --> ObsidianDone: obsidian publish success
+
+    ObsidianSkipped --> Cleanup
+    ObsidianFailed --> Cleanup
+    ObsidianDone --> Cleanup
+
     Cleanup --> [*]
 ```
 
 Notes:
 
-- Teams and Slack notification failures do not currently mark the whole run as failed at the script level.
-- Log cleanup only targets `*.log`; old `*-card.json` files are not rotated by current scripts.
+- Teams, Slack, and Obsidian failures do not currently mark the whole run as failed at the script level.
+- Log cleanup only targets `*.log`; old `*-card.json` and `*-obsidian.md` files are not rotated by current scripts.
 
 ---
 
@@ -283,6 +335,7 @@ Notes:
 | `logs/YYYY-MM-DD.log` | entry scripts + Claude stdout/stderr | humans, diagnostic scripts | No (diagnostic) |
 | Notion page | Claude via Notion MCP | Notion workspace | Yes |
 | `logs/YYYY-MM-DD-card.json` | Claude (expected) | notify-teams scripts, notify-slack scripts, teams-to-slack.py | Yes for Teams and Slack paths |
+| `logs/YYYY-MM-DD-obsidian.md` | Claude (expected) | publish-obsidian scripts | Yes for Obsidian path |
 | Converted Slack payload (temp) | notify-slack scripts | Slack webhook endpoint | Yes for Slack path |
 | Teams message | notify-teams scripts | Teams channel | Optional |
 | Slack message | notify-slack scripts | Slack channel | Optional |
@@ -294,9 +347,11 @@ Notes:
 1. Ensure Claude CLI path exists (`~/.local/bin/claude` or `.exe`).
 2. Ensure Notion MCP is configured and has DB access.
 3. Ensure `prompt.md` Step 4 still writes `logs/YYYY-MM-DD-card.json`.
-4. If Teams is enabled, verify `AI_BRIEFING_TEAMS_WEBHOOK` and direct `notify-teams` test.
-5. If Slack is enabled, verify `AI_BRIEFING_SLACK_WEBHOOK`, Python availability, and direct `notify-slack` test.
-6. Use `make tail` / `make log` to inspect run outcomes.
+4. Ensure `prompt.md` Step 5 still writes `logs/YYYY-MM-DD-obsidian.md`.
+5. If Teams is enabled, verify `AI_BRIEFING_TEAMS_WEBHOOK` and direct `notify-teams` test.
+6. If Slack is enabled, verify `AI_BRIEFING_SLACK_WEBHOOK`, Python availability, and direct `notify-slack` test.
+7. If Obsidian is enabled, verify `AI_BRIEFING_OBSIDIAN_VAULT` points to a valid vault and run `bash scripts/test-obsidian.sh`.
+8. Use `make tail` / `make log` to inspect run outcomes.
 
 ---
 
@@ -305,4 +360,5 @@ Notes:
 - **Duplicate Notion page prevention:** Step 0b now captures `PAGE_EXISTS` and the page ID. Step 3 updates the existing page when one is found, and only creates a new page otherwise. The agent no longer re-queries Notion in Step 3.
 - **Multiple webhook support:** Both `AI_BRIEFING_TEAMS_WEBHOOK` and `AI_BRIEFING_SLACK_WEBHOOK` accept semicolon-separated URLs. By default only the first URL is used. Pass `--all` (bash) or `-All` (PowerShell) to post to all configured URLs.
 - **Slack integration:** `notify-slack.sh/.ps1` converts the Teams card JSON to Slack Block Kit format using `teams-to-slack.py` and POSTs it to Slack webhooks. No separate card generation needed — reuses the Teams card.
-- **Prompt/runtime alignment:** `prompt.md` Step 4 now writes `logs/YYYY-MM-DD-card.json` directly. The legacy `build-teams-card.py` parser is no longer part of the active pipeline.
+- **Obsidian integration:** `publish-obsidian.sh/.ps1` copies graph-ready markdown (with `[[wikilinks]]` and YAML frontmatter) to an Obsidian vault. Topic stub pages are auto-created for graph connectivity. Set `AI_BRIEFING_OBSIDIAN_VAULT` to enable.
+- **Prompt/runtime alignment:** `prompt.md` Step 4 now writes `logs/YYYY-MM-DD-card.json` directly. Step 5 writes `logs/YYYY-MM-DD-obsidian.md`. The legacy `build-teams-card.py` parser is no longer part of the active pipeline.

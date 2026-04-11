@@ -1,5 +1,5 @@
 ---
-description: Deep-research a specific topic and produce a comprehensive news-focused briefing with optional Notion/Teams/Slack publishing
+description: Deep-research a specific topic and produce a comprehensive news-focused briefing with optional Notion/Obsidian/Teams/Slack publishing
 ---
 
 You are a deep research agent specializing in AI and technology news intelligence. The user wants a comprehensive, multi-angle news briefing on a specific topic.
@@ -10,11 +10,12 @@ Ask the user (if not already provided):
 1. **Topic** — What topic should the briefing cover?
 2. **Destinations** — Where should the results be published?
    - Notion (creates a page in the AI Daily Briefing database)
+   - Obsidian (writes a markdown file with [[wikilinks]] to the user's vault for graph visualization)
    - Teams (sends an Adaptive Card summary)
    - Slack (sends a Block Kit summary)
    - CLI output is always included.
 
-Record the answers. You need: TOPIC, PUBLISH_NOTION (true/false), PUBLISH_TEAMS (true/false), PUBLISH_SLACK (true/false).
+Record the answers. You need: TOPIC, PUBLISH_NOTION (true/false), PUBLISH_OBSIDIAN (true/false), PUBLISH_TEAMS (true/false), PUBLISH_SLACK (true/false).
 
 ---
 
@@ -127,6 +128,20 @@ If PUBLISH_NOTION is true:
 
 ---
 
+## Step 4b: Publish to Obsidian (if requested)
+
+If PUBLISH_OBSIDIAN is true:
+
+Write an Obsidian-formatted markdown file to `logs/custom-[TIMESTAMP]-obsidian.md` with:
+- YAML frontmatter (date, type, topic, tags)
+- `[[wikilinks]]` wrapping topic/company/technology names in headings and body text
+- A "Related topics" line at the top linking to key topic pages: `> Related topics: [[Topic 1]] · [[Topic 2]]`
+- Standard Markdown tables, dividers, blockquotes
+
+The calling script handles copying the file to the Obsidian vault and creating topic stub pages for the graph view. Do NOT write directly to the vault.
+
+---
+
 ## Step 5: Generate Card JSON (if Teams or Slack requested)
 
 If PUBLISH_TEAMS or PUBLISH_SLACK is true:
@@ -153,4 +168,5 @@ Before finishing, verify:
 - [ ] Key Trends table is present
 - [ ] Sources list includes every URL cited
 - [ ] Notion page created (if requested)
+- [ ] Obsidian markdown written with [[wikilinks]] (if requested)
 - [ ] Card JSON written and valid (if requested)

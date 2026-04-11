@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI News Briefing - Project Wiki</title>
-  <meta name="description" content="Comprehensive wiki for AI News Briefing: architecture, E2E flow, operations, multi-channel delivery (Teams + Slack), and maintenance runbook.">
+  <meta name="description" content="Comprehensive wiki for AI News Briefing: architecture, E2E flow, operations, multi-channel delivery (Teams + Slack), Obsidian vault publishing with graph view, and maintenance runbook.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -63,6 +63,7 @@
       <li><a href="#makefile">Makefile</a></li>
       <li><a href="#custom-brief">Custom Brief</a></li>
       <li><a href="#delivery">Delivery</a></li>
+      <li><a href="#obsidian">Obsidian</a></li>
       <li><a href="#tests">Tests</a></li>
       <li><a href="#docs">Docs</a></li>
     </ul>
@@ -75,16 +76,16 @@
 </nav>
 
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Last refreshed: April 6, 2026</div>
+  <div class="hero-badge"><span class="dot"></span> Last refreshed: April 11, 2026</div>
   <h1>AI News Briefing<br><span class="gradient">Comprehensive Project Wiki</span></h1>
   <p class="hero-sub">
     End-to-end reference for the automated daily pipeline and on-demand deep research: scheduler triggers, multi-engine CLI execution (Claude, Codex, Gemini, Copilot),
-    multi-agent research, Notion publishing, Teams and Slack delivery, custom topic briefs, and maintenance workflows.
+    multi-agent research, Notion publishing, Obsidian vault integration with graph visualization, Teams and Slack delivery, custom topic briefs, and maintenance workflows.
   </p>
   <div class="hero-actions">
-    <a href="#architecture" class="btn btn-primary">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      View Architecture
+    <a href="#obsidian" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      View Obsidian Integration
     </a>
     <a href="README.md" class="btn btn-secondary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -97,7 +98,7 @@
   <div class="section-header">
     <div class="section-label">Architecture</div>
     <h2 class="section-title">Current system topology</h2>
-    <p class="section-desc">From scheduler trigger to Notion and optional multi-channel webhook delivery (Teams + Slack).</p>
+    <p class="section-desc">From scheduler trigger to Notion, Obsidian vault, and optional multi-channel webhook delivery (Teams + Slack).</p>
   </div>
 
   <div class="mermaid-wrap">
@@ -117,12 +118,16 @@ flowchart LR
     D --> F["Notion MCP"]
     F --> G["Notion Page"]
     D --> H["card.json"]
+    D --> OBS["obsidian.md"]
     B --> I{"Teams webhook?"}
     I -->|Yes| J["notify-teams"]
     J --> K["Teams Channel"]
     B --> L{"Slack webhook?"}
     L -->|Yes| M["notify-slack"]
     M --> N["Slack Channel"]
+    B --> OC{"Obsidian vault?"}
+    OC -->|Yes| OP["publish-obsidian"]
+    OP --> OV["Obsidian Vault +\nGraph View"]
     </pre>
   </div>
 
@@ -153,6 +158,7 @@ flowchart TD
     D --> CS["logs/covered-stories.txt"]
     D --> H["logs/YYYY-MM-DD.log"]
     D --> I["logs/YYYY-MM-DD-card.json"]
+    D --> OI["logs/YYYY-MM-DD-obsidian.md"]
 
     B1 --> JT{"AI_BRIEFING_TEAMS_WEBHOOK set?"}
     B2 --> JT
@@ -169,6 +175,14 @@ flowchart TD
     LS --> MS{"card JSON exists and conversion succeeds?"}
     MS -->|"Yes"| NS["Convert to Block Kit and POST to Slack webhooks"]
     MS -->|"No"| OS["Slack notify failed"]
+
+    B1 --> JO{"AI_BRIEFING_OBSIDIAN_VAULT set?"}
+    B2 --> JO
+    JO -->|"No"| KO["Skip Obsidian"]
+    JO -->|"Yes"| LO["publish-obsidian script"]
+    LO --> MO{"obsidian.md exists and vault writable?"}
+    MO -->|"Yes"| NO["Copy to vault + create topic stubs"]
+    MO -->|"No"| OO["Obsidian publish skipped"]
       </pre>
     </div>
   </div>
@@ -187,6 +201,8 @@ sequenceDiagram
     participant TW as Teams Webhook(s)
     participant SL as notify-slack
     participant SW as Slack Webhook(s)
+    participant OB as publish-obsidian
+    participant OV as Obsidian Vault
 
     S->>E: Start briefing script
     E->>E: Setup date, logs, env
@@ -223,6 +239,13 @@ sequenceDiagram
       SL->>SW: POST Block Kit payload
       SW-->>SL: 2xx
     end
+
+    opt Obsidian vault configured
+      E->>OB: call publish-obsidian
+      OB->>OB: extract [[wikilinks]]
+      OB->>OV: copy briefing + create topic stubs
+      OV-->>OB: success
+    end
       </pre>
     </div>
   </div>
@@ -249,9 +272,10 @@ sequenceDiagram
         <tr><td>Trigger</td><td>08:00 schedule or manual command</td><td>Script execution starts</td><td><code>com.ainews.briefing.plist</code>, <code>install-task.ps1</code>, <code>Makefile</code></td></tr>
         <tr><td>Bootstrap</td><td>Date + environment</td><td>Prompt text + runtime context</td><td><code>briefing.sh</code>, <code>briefing.ps1</code></td></tr>
         <tr><td>Dedup</td><td><code>logs/covered-stories.txt</code> + latest Notion page</td><td>Exclusion list for this run</td><td>Step 0a (file) + Step 0b (Notion MCP)</td></tr>
-        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + covered-stories update</td><td>AI engine (Claude/Codex/Gemini/Copilot), WebSearch, Notion MCP</td></tr>
+        <tr><td>AI Run</td><td><code>prompt.md</code></td><td>Notion briefing + card.json + obsidian.md + covered-stories update</td><td>AI engine (Claude/Codex/Gemini/Copilot), WebSearch, Notion MCP</td></tr>
         <tr><td>Teams Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_TEAMS_WEBHOOK</code></td><td>Adaptive Card post(s)</td><td><code>notify-teams.sh</code>, <code>notify-teams.ps1</code></td></tr>
         <tr><td>Slack Notify</td><td><code>logs/YYYY-MM-DD-card.json</code> + <code>AI_BRIEFING_SLACK_WEBHOOK</code></td><td>Block Kit post(s)</td><td><code>notify-slack.sh</code>, <code>notify-slack.ps1</code>, <code>teams-to-slack.py</code></td></tr>
+        <tr><td>Obsidian Publish</td><td><code>logs/YYYY-MM-DD-obsidian.md</code> + <code>AI_BRIEFING_OBSIDIAN_VAULT</code></td><td>Vault briefing page + topic stub pages</td><td><code>publish-obsidian.sh</code>, <code>publish-obsidian.ps1</code></td></tr>
         <tr><td>Multi-URL Routing</td><td>Semicolon-separated webhook URLs</td><td>First URL by default, all URLs with <code>--all</code>/<code>-All</code></td><td>Teams + Slack notify scripts</td></tr>
         <tr><td>Cleanup</td><td>Historic log files</td><td>Old <code>*.log</code> removed</td><td>Entry script cleanup step</td></tr>
       </tbody>
@@ -261,7 +285,7 @@ sequenceDiagram
   <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
     <h3 style="color: #10b981; font-size: 1rem; margin-bottom: 0.5rem;">Prompt/Runtime Aligned</h3>
     <p style="color: var(--text); font-size: 0.92rem; margin: 0;">
-      <strong>Resolved:</strong> `prompt.md` Step 4 generates `logs/YYYY-MM-DD-card.json` directly. Teams notifier posts this file as-is, and Slack notifier converts the same file to Block Kit before POST.
+      <strong>Resolved:</strong> `prompt.md` Step 4 generates `logs/YYYY-MM-DD-card.json` directly. Step 5 generates `logs/YYYY-MM-DD-obsidian.md` with [[wikilinks]]. Teams notifier posts the card as-is, Slack notifier converts it to Block Kit, and Obsidian publisher copies the markdown to the vault with topic stub pages.
     </p>
   </div>
 
@@ -284,6 +308,15 @@ flowchart TD
     S1 --> S2{teams-to-slack conversion OK?}
     S2 -->|No| S3[Slack notify failed]
     S2 -->|Yes| S4[POST Block Kit to first URL or all URLs]
+
+    A --> OB{obsidian.md exists?}
+    OB -->|No| OB0[Skip Obsidian]
+    OB -->|Yes| OC{Vault env set + writable?}
+    OC -->|No| OC0[Obsidian publish skipped]
+    OC -->|Yes| OC1[publish-obsidian]
+    OC1 --> OC2[Copy to AI-News-Briefings/]
+    OC1 --> OC3["Extract [[wikilinks]]"]
+    OC3 --> OC4[Create Topics/ stub pages]
     </pre>
   </div>
 </section>
@@ -338,6 +371,7 @@ flowchart LR
     S --> OUT["Terminal Output"]
     S -->|"--notion"| N["Notion Page"]
     S -->|"--teams/--slack"| CARD["Card JSON"]
+    S -->|"--obsidian"| OBS["Obsidian Vault +\nGraph View"]
     CARD --> T["Teams"]
     CARD --> SL["Slack"]
     </pre>
@@ -380,8 +414,11 @@ flowchart TD
         SYNTH --> STDOUT["Terminal"]
         SYNTH -->|"--notion"| NOTION["Notion Page"]
         SYNTH -->|"--teams/--slack"| CARD["Card JSON"]
+        SYNTH -->|"--obsidian"| OBSMD["Obsidian Markdown"]
         CARD --> NT["notify-teams"]
         CARD --> NS["notify-slack"]
+        OBSMD --> PO["publish-obsidian"]
+        PO --> OV["Vault +\nTopic Stubs"]
     end
       </pre>
     </div>
@@ -395,19 +432,22 @@ flowchart TD
     </div>
     <div class="code-body">
 <pre><span class="comment"># Full research with all destinations</span>
-<span class="cmd">./custom-brief.sh</span> <span class="flag">--topic</span> <span class="string">"AI in healthcare"</span> <span class="flag">--notion --teams --slack</span>
+<span class="cmd">./custom-brief.sh</span> <span class="flag">--topic</span> <span class="string">"AI in healthcare"</span> <span class="flag">--notion --teams --slack --obsidian</span>
 
 <span class="comment"># Terminal + Notion only</span>
 <span class="cmd">./custom-brief.sh</span> <span class="flag">-t</span> <span class="string">"quantum computing"</span> <span class="flag">-n</span>
+
+<span class="comment"># Terminal + Obsidian vault (graph-enabled)</span>
+<span class="cmd">./custom-brief.sh</span> <span class="flag">-t</span> <span class="string">"AI coding assistants"</span> <span class="flag">--obsidian</span>
 
 <span class="comment"># Interactive mode (prompts for topic and destinations)</span>
 <span class="cmd">./custom-brief.sh</span>
 
 <span class="comment"># PowerShell</span>
-<span class="cmd">.\custom-brief.ps1</span> <span class="flag">-Topic</span> <span class="string">"AI regulation EU"</span> <span class="flag">-Notion -Teams</span>
+<span class="cmd">.\custom-brief.ps1</span> <span class="flag">-Topic</span> <span class="string">"AI regulation EU"</span> <span class="flag">-Notion -Teams -Obsidian</span>
 
 <span class="comment"># Make target</span>
-<span class="cmd">make</span> custom-brief T=<span class="string">"open source LLMs"</span> NOTION=1 TEAMS=1</pre>
+<span class="cmd">make</span> custom-brief T=<span class="string">"open source LLMs"</span> NOTION=1 TEAMS=1 OBSIDIAN=1</pre>
     </div>
   </div>
 
@@ -426,6 +466,7 @@ flowchart TD
       <tr><td>Depth</td><td>Broad scan (search per topic)</td><td>Deep (5 parallel agents + follow-ups)</td></tr>
       <tr><td>Deduplication</td><td>Yes (covered-stories.txt)</td><td>No (standalone)</td></tr>
       <tr><td>Notion title</td><td><code>YYYY-MM-DD - AI Daily Briefing</code></td><td><code>YYYY-MM-DD - Custom Brief: [Topic]</code></td></tr>
+      <tr><td>Obsidian vault file</td><td><code>AI-News-Briefings/YYYY-MM-DD.md</code></td><td><code>AI-News-Briefings/YYYY-MM-DD - [Topic].md</code></td></tr>
       <tr><td>CLI output</td><td>Logged to file only</td><td>Printed to terminal + logged</td></tr>
       <tr><td>Card filename</td><td><code>logs/YYYY-MM-DD-card.json</code></td><td><code>logs/custom-TIMESTAMP-card.json</code></td></tr>
       </tbody>
@@ -526,6 +567,7 @@ flowchart TD
       <tr><td><code>make run-scheduled</code></td><td><span class="cat-badge exec">Execution</span></td><td>Trigger via scheduler service</td></tr>
       <tr><td><code>make custom-brief T="topic"</code></td><td><span class="cat-badge exec">Execution</span></td><td>Deep-research a specific topic</td></tr>
       <tr><td><code>make custom-brief T="..." NOTION=1 TEAMS=1</code></td><td><span class="cat-badge exec">Execution</span></td><td>Research + publish to Notion/Teams</td></tr>
+      <tr><td><code>make custom-brief T="..." OBSIDIAN=1</code></td><td><span class="cat-badge exec">Execution</span></td><td>Research + publish to Obsidian vault</td></tr>
       <tr><td><code>make custom-brief-bg T="..."</code></td><td><span class="cat-badge exec">Execution</span></td><td>Custom brief in background</td></tr>
       <tr><td><code>make tail</code></td><td><span class="cat-badge logs">Logs</span></td><td>Tail today log</td></tr>
       <tr><td><code>make logs</code></td><td><span class="cat-badge logs">Logs</span></td><td>List all logs</td></tr>
@@ -569,6 +611,8 @@ flowchart TD
       <tr><td><code>notify</code></td><td>Native OS status notification</td><td><code>bash scripts/notify.sh</code></td></tr>
       <tr><td><code>notify-teams</code></td><td>Validate and POST Adaptive Card JSON to Teams webhook(s)</td><td><code>bash scripts/notify-teams.sh --all --card-file logs/2026-03-24-card.json</code></td></tr>
       <tr><td><code>notify-slack</code></td><td>Convert Teams card JSON to Block Kit and POST to Slack webhook(s)</td><td><code>bash scripts/notify-slack.sh --all --card-file logs/2026-03-24-card.json</code></td></tr>
+      <tr><td><code>publish-obsidian</code></td><td>Copy Obsidian markdown to vault and create [[wikilink]] topic stubs</td><td><code>bash scripts/publish-obsidian.sh --file logs/2026-04-11-obsidian.md</code></td></tr>
+      <tr><td><code>test-obsidian</code></td><td>Test Obsidian vault connectivity, permissions, and .obsidian config</td><td><code>bash scripts/test-obsidian.sh</code></td></tr>
       <tr><td><code>uninstall</code></td><td>Remove scheduler and optional artifacts</td><td><code>bash scripts/uninstall.sh --all</code></td></tr>
       </tbody>
     </table>
@@ -578,8 +622,8 @@ flowchart TD
 <section class="section" id="delivery">
   <div class="section-header">
     <div class="section-label">Delivery</div>
-    <h2 class="section-title">Teams + Slack webhook paths</h2>
-    <p class="section-desc">Both channels use the same generated <code>logs/YYYY-MM-DD-card.json</code>, with Slack converting it to Block Kit first.</p>
+    <h2 class="section-title">Teams, Slack, and Obsidian publishing paths</h2>
+    <p class="section-desc">Teams and Slack reuse the same <code>logs/YYYY-MM-DD-card.json</code>. Obsidian uses the dedicated <code>logs/YYYY-MM-DD-obsidian.md</code> with <code>[[wikilinks]]</code> for graph visualization.</p>
   </div>
 
   <div class="mermaid-wrap" style="margin-bottom: 2rem;">
@@ -591,6 +635,12 @@ flowchart LR
     C --> E["POST Adaptive Card JSON to Teams webhooks"]
     D --> F["teams-to-slack.py conversion"]
     F --> G["POST Block Kit JSON to Slack webhooks"]
+
+    H["Claude writes logs/YYYY-MM-DD-obsidian.md"] --> I["publish-obsidian.sh / .ps1"]
+    I --> J["Copy to vault/AI-News-Briefings/"]
+    I --> K["Extract [[wikilinks]]"]
+    K --> L["Create Topics/ stub pages"]
+    L --> M["Obsidian Graph View\nvisualizes topic connections"]
     </pre>
   </div>
 
@@ -644,9 +694,165 @@ flowchart LR
     </div>
   </div>
 
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">configure + test Obsidian vault (macOS/Linux)</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Set vault path (absolute path to your Obsidian vault root)</span>
+<span class="cmd">export</span> AI_BRIEFING_OBSIDIAN_VAULT=<span class="string">"/Users/you/Documents/ObsidianVault"</span>
+
+<span class="comment"># Test vault connectivity</span>
+<span class="cmd">bash</span> scripts/test-obsidian.sh
+
+<span class="comment"># Manual publish (auto-runs after daily briefing when vault is configured)</span>
+<span class="cmd">bash</span> scripts/publish-obsidian.sh <span class="flag">--file</span> logs/2026-04-11-obsidian.md</pre>
+    </div>
+  </div>
+
+  <div class="code-section" style="max-width: 780px; margin: 0 auto 1.25rem;">
+    <div class="code-header">
+      <div class="code-dots"><span class="red"></span><span class="yellow"></span><span class="green"></span></div>
+      <span class="code-title">configure + test Obsidian vault (Windows PowerShell)</span>
+      <button class="code-copy">Copy</button>
+    </div>
+    <div class="code-body">
+<pre><span class="comment"># Persist vault path</span>
+[Environment]::SetEnvironmentVariable(<span class="string">"AI_BRIEFING_OBSIDIAN_VAULT"</span>, <span class="string">"C:\Users\you\Documents\ObsidianVault"</span>, <span class="string">"User"</span>)
+
+<span class="comment"># Test vault connectivity</span>
+<span class="cmd">.\scripts\test-obsidian.ps1</span>
+
+<span class="comment"># Manual publish</span>
+<span class="cmd">.\scripts\publish-obsidian.ps1</span> <span class="flag">-File</span> <span class="string">".\logs\2026-04-11-obsidian.md"</span></pre>
+    </div>
+  </div>
+
   <div style="background: rgba(16, 185, 129, 0.10); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius); padding: 1rem 1.25rem; max-width: 860px; margin: 0 auto;">
     <p style="color: var(--text); margin: 0; font-size: 0.92rem;">
-      <strong>Legacy note:</strong> `scripts/build-teams-card.py` remains for historical parser flow, but current runtime uses direct card generation in `prompt.md` Step 4. Slack reuses that same card through `scripts/teams-to-slack.py`.
+      <strong>Legacy note:</strong> `scripts/build-teams-card.py` remains for historical parser flow, but current runtime uses direct card generation in `prompt.md` Step 4. Step 5 generates Obsidian-formatted markdown. Slack reuses the card through `scripts/teams-to-slack.py`, and Obsidian publishing writes directly to the local vault.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="obsidian">
+  <div class="section-header">
+    <div class="section-label">Obsidian</div>
+    <h2 class="section-title">Local-first vault publishing with graph visualization</h2>
+    <p class="section-desc">Briefings are written as markdown files with <code>[[wikilinks]]</code> and YAML frontmatter. Obsidian's graph view automatically maps topic connections across all briefings.</p>
+  </div>
+
+  <div class="mermaid-wrap" style="margin-bottom: 2rem;">
+    <pre class="mermaid">
+flowchart TD
+    subgraph "Claude CLI Output"
+        A["logs/YYYY-MM-DD-obsidian.md"]
+    end
+
+    subgraph "publish-obsidian.sh"
+        B["Copy briefing to vault"]
+        C["Extract all [[wikilinks]]"]
+        D{"Topic stub exists?"}
+        D -->|No| E["Create Topics/Name.md\nwith YAML frontmatter"]
+        D -->|Yes| F["Skip (idempotent)"]
+    end
+
+    subgraph "Obsidian Vault"
+        G["AI-News-Briefings/\n2026-04-11.md"]
+        H["Topics/Claude Code.md"]
+        I["Topics/OpenAI.md"]
+        J["Topics/AI Coding IDEs.md"]
+        K["Topics/..."]
+    end
+
+    A --> B --> G
+    A --> C --> D
+    G -.->|"[[Claude Code]]"| H
+    G -.->|"[[OpenAI]]"| I
+    G -.->|"[[AI Coding IDEs]]"| J
+    H -.->|"graph edges"| I
+    I -.->|"graph edges"| J
+    </pre>
+  </div>
+
+  <div style="margin-bottom: 2.5rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;">Vault Directory Structure</h3>
+    <div class="file-tree" style="max-width: 680px; margin: 0 auto;">
+      <div><span class="dir">your-obsidian-vault/</span></div>
+      <div>&nbsp;&nbsp;<span class="dir" style="color:#a78bfa;">AI-News-Briefings/</span> <span class="dim"># briefing pages (one per run)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">2026-04-11.md</span> <span class="dim"># daily briefing with [[wikilinks]]</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">2026-04-11 - AI Coding Assistants.md</span> <span class="dim"># custom brief</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">2026-04-10.md</span></div>
+      <div>&nbsp;&nbsp;<span class="dir" style="color:#a78bfa;">Topics/</span> <span class="dim"># graph hub nodes (auto-created)</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Claude Code.md</span> <span class="dim"># type: topic, links back to briefings</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">OpenAI.md</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">AI Coding IDEs.md</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">Anthropic.md</span></div>
+      <div>&nbsp;&nbsp;<span class="dir">.obsidian/</span> <span class="dim"># Obsidian app config (auto-created by Obsidian)</span></div>
+    </div>
+  </div>
+
+  <div class="mermaid-wrap" style="margin-bottom: 2rem;">
+    <h3 style="text-align:center; color:#e4e4ef; font-size:1.15rem; font-weight:700; margin-bottom:1.25rem;">Graph View Concept</h3>
+    <pre class="mermaid">
+graph LR
+    B1["2026-04-11\nDaily Briefing"] --> CC["Claude Code"]
+    B1 --> OA["OpenAI"]
+    B1 --> ACI["AI Coding IDEs"]
+    B1 --> AG["Agentic AI"]
+    B2["2026-04-10\nDaily Briefing"] --> CC
+    B2 --> OA
+    B2 --> MS["Mistral"]
+    B2 --> HF["Hugging Face"]
+    B3["2026-04-11\nCustom: AI Regulation"] --> POL["AI Policy"]
+    B3 --> OA
+    B3 --> EU["EU AI Act"]
+    CC --> ANT["Anthropic"]
+    ACI --> CUR["Cursor"]
+    ACI --> WS["Windsurf"]
+    style CC fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style OA fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style ACI fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style AG fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style MS fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style HF fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style POL fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style EU fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style ANT fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style CUR fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style WS fill:#7c3aed,stroke:#a78bfa,color:#fff
+    style B1 fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style B2 fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style B3 fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    </pre>
+  </div>
+
+  <div class="table-wrap" style="max-width: 860px; margin: 0 auto; margin-bottom: 2rem;">
+    <table>
+      <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Implementation</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr><td>Wikilinks</td><td>Section headings use <code>## [[Topic Name]]</code>, inline mentions wrapped in <code>[[brackets]]</code></td></tr>
+      <tr><td>YAML Frontmatter</td><td>Briefings: <code>type: briefing</code>, <code>date</code>, <code>topics</code> list. Stubs: <code>type: topic</code>, <code>created</code></td></tr>
+      <tr><td>Topic Hub Pages</td><td>Auto-created in <code>Topics/</code> on first reference; idempotent on subsequent runs</td></tr>
+      <tr><td>Graph Edges</td><td>Each <code>[[wikilink]]</code> creates a bidirectional edge in Obsidian's graph view</td></tr>
+      <tr><td>Cross-Briefing Links</td><td>"Related Topics" header links all topics at top of each briefing for maximum connectivity</td></tr>
+      <tr><td>Tags</td><td>YAML <code>tags</code> array enables tag-based filtering in Obsidian search</td></tr>
+      <tr><td>Env Variable</td><td><code>AI_BRIEFING_OBSIDIAN_VAULT</code> — absolute path to vault root directory</td></tr>
+      <tr><td>Local-First</td><td>No API, no cloud sync — files written directly to disk. Obsidian Sync is optional.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background: rgba(139, 92, 246, 0.10); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: var(--radius); padding: 1rem 1.25rem; max-width: 860px; margin: 0 auto;">
+    <p style="color: var(--text); margin: 0; font-size: 0.92rem;">
+      <strong>How the graph grows:</strong> Each daily run adds one briefing page linking to ~9 topic nodes. Each custom brief adds another page with its own topic nodes. Over time, Obsidian's graph view reveals which topics cluster together, which are trending, and how AI news themes evolve. Topic hub pages serve as the gravitational centers of the graph.
     </p>
   </div>
 </section>
@@ -654,26 +860,28 @@ flowchart LR
 <section class="section" id="tests">
   <div class="section-header">
     <div class="section-label">Tests</div>
-    <h2 class="section-title">247 non-blocking tests</h2>
-    <p class="section-desc">Verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, and cross-platform portability. No external services called.</p>
+    <h2 class="section-title">201 non-blocking tests</h2>
+    <p class="section-desc">Verify syntax, structure, arg handling, template substitution, card JSON, notification error paths, Obsidian vault publishing, and cross-platform portability. No external services called.</p>
   </div>
 
   <div class="mermaid-wrap" style="margin-bottom: 2rem;">
     <pre class="mermaid">
 flowchart TD
     subgraph "Bash (macOS / Linux / Git Bash)"
-        R["tests/run-all.sh"] --> T1["test-custom-brief.sh\n37 tests"]
-        R --> T2["test-daily-brief.sh\n56 tests"]
-        R --> T3["test-notifications.sh\n37 tests"]
+        R["tests/run-all.sh"] --> T1["test-custom-brief.sh\n48 tests"]
+        R --> T2["test-daily-brief.sh\n80 tests"]
+        R --> T3["test-notifications.sh\n17 tests"]
         R --> T4["test-portability.sh\n26 tests"]
+        R --> T5["test-obsidian.sh\n30 tests"]
     end
     subgraph "PowerShell (Windows)"
         PS["tests/test-all.ps1\n91 tests"]
     end
-    T1 --> X["Args, templates,\nprompts, skills"]
-    T2 --> Y["Steps, topics,\nchangelogs, scripts"]
+    T1 --> X["Args, templates,\nprompts, skills, Obsidian flag"]
+    T2 --> Y["Steps, topics,\nchangelogs, scripts, Obsidian"]
     T3 --> Z["Card JSON, converter,\nerror handling"]
     T4 --> W["Bash 3.2, awk, date,\nANSI safety"]
+    T5 --> V["Vault structure, topic stubs,\nfrontmatter, idempotency"]
     PS --> X
     PS --> Y
     PS --> Z
@@ -695,6 +903,7 @@ flowchart TD
 <span class="cmd">bash</span> tests/test-daily-brief.sh
 <span class="cmd">bash</span> tests/test-notifications.sh
 <span class="cmd">bash</span> tests/test-portability.sh
+<span class="cmd">bash</span> tests/test-obsidian.sh
 
 <span class="comment"># PowerShell (Windows)</span>
 <span class="cmd">powershell</span> <span class="flag">-ExecutionPolicy Bypass -File</span> tests\test-all.ps1</pre>
@@ -711,10 +920,11 @@ flowchart TD
       </tr>
       </thead>
       <tbody>
-      <tr><td><code>test-custom-brief.sh</code></td><td>37</td><td>Args, template substitution, prompt structure, skill</td></tr>
-      <tr><td><code>test-daily-brief.sh</code></td><td>56</td><td>Prompt steps, 9 topics, 8 changelog URLs, entry scripts, dedup</td></tr>
-      <tr><td><code>test-notifications.sh</code></td><td>37</td><td>Card JSON validity, Adaptive Card structure, converter, errors</td></tr>
+      <tr><td><code>test-custom-brief.sh</code></td><td>48</td><td>Args, template substitution, prompt structure, skill, Obsidian flag</td></tr>
+      <tr><td><code>test-daily-brief.sh</code></td><td>80</td><td>Prompt steps, 9 topics, 8 changelog URLs, entry scripts, dedup, Obsidian integration</td></tr>
+      <tr><td><code>test-notifications.sh</code></td><td>17</td><td>Card JSON validity, Adaptive Card structure, converter, errors</td></tr>
       <tr><td><code>test-portability.sh</code></td><td>26</td><td>Bash 3.2 compat, awk, date, <code>-f</code> not <code>-x</code>, ANSI safety</td></tr>
+      <tr><td><code>test-obsidian.sh</code></td><td>30</td><td>Vault simulation, publish flow, topic stubs, frontmatter, idempotency</td></tr>
       <tr><td><code>test-all.ps1</code></td><td>91</td><td>PowerShell syntax, all prompts, cards, converter, docs</td></tr>
       </tbody>
     </table>
@@ -765,7 +975,7 @@ flowchart TD
   <div class="features">
     <div class="feature-card">
       <h3><a href="README.md">README.md</a></h3>
-      <p>User-facing setup, topic scope, scheduler installation, Makefile commands, and Teams + Slack delivery overview.</p>
+      <p>User-facing setup, topic scope, scheduler installation, Makefile commands, Teams, Slack, and Obsidian delivery overview.</p>
     </div>
     <div class="feature-card">
       <h3><a href="ARCHITECTURE.md">ARCHITECTURE.md</a></h3>
@@ -785,15 +995,15 @@ flowchart TD
     </div>
     <div class="feature-card">
       <h3><a href="prompt.md">prompt.md</a></h3>
-      <p>Agent instructions for search scope, formatting requirements, and Notion write operation.</p>
+      <p>Agent instructions for search scope, formatting requirements, Notion write, and Obsidian markdown with [[wikilinks]].</p>
     </div>
     <div class="feature-card">
       <h3><a href="CUSTOM_BRIEF.md">CUSTOM_BRIEF.md</a></h3>
-      <p>Custom topic deep research: CLI usage, agent architecture, output formats, and comparison with daily briefing.</p>
+      <p>Custom topic deep research: CLI usage, agent architecture, output formats, Obsidian graph support, and comparison with daily briefing.</p>
     </div>
     <div class="feature-card">
       <h3><a href="SETUP.md">SETUP.md</a></h3>
-      <p>Full setup guide: AI CLI engines, Notion MCP, webhook configuration, scheduler install, and verification.</p>
+      <p>Full setup guide: AI CLI engines, Notion MCP, Obsidian vault, webhook configuration, scheduler install, and verification.</p>
     </div>
     <div class="feature-card">
       <h3><a href="NOTIFY_SLACK.md">NOTIFY_SLACK.md</a></h3>
@@ -801,7 +1011,7 @@ flowchart TD
     </div>
     <div class="feature-card">
       <h3><a href="TESTS.md">TESTS.md</a></h3>
-      <p>Test suite documentation: architecture, per-suite coverage tables, run commands, design principles, how to add tests.</p>
+      <p>Test suite documentation: architecture, per-suite coverage tables (including Obsidian suite), run commands, design principles.</p>
     </div>
     <div class="feature-card">
       <h3><a href="LOGS.md">LOGS.md</a></h3>
@@ -825,8 +1035,10 @@ flowchart TD
     <div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="dim"># diagnostics, maintenance, notify paths</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-teams.sh / .ps1</span> <span class="dim"># Teams webhook notifier</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">notify-slack.sh / .ps1</span> <span class="dim"># Slack webhook notifier</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file" style="color:#a78bfa;">publish-obsidian.sh / .ps1</span> <span class="dim"># Obsidian vault publisher</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file" style="color:#a78bfa;">test-obsidian.sh / .ps1</span> <span class="dim"># Obsidian vault connectivity test</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">teams-to-slack.py</span> <span class="dim"># Adaptive Card to Block Kit converter</span></div>
-    <div>&nbsp;&nbsp;<span class="dir" style="color:#6366f1;">tests/</span> <span class="dim"># 221 non-blocking tests (bash + PowerShell)</span></div>
+    <div>&nbsp;&nbsp;<span class="dir" style="color:#6366f1;">tests/</span> <span class="dim"># 201 non-blocking tests (bash + PowerShell)</span></div>
     <div>&nbsp;&nbsp;<span class="dir">logs/</span> <span class="dim"># runtime output (gitignored)</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">covered-stories.txt</span> <span class="dim"># dedup headline tracker</span></div>
     <div>&nbsp;&nbsp;<span class="file">README.md</span> <span class="dim"># setup + usage</span></div>
@@ -841,9 +1053,9 @@ flowchart TD
 
 <footer class="footer">
   <div class="footer-inner">
-    <p>AI News Briefing - Powered by Claude Code, Codex, Gemini, and Copilot CLIs with Notion MCP, WebSearch, multi-agent research, and multi-channel delivery.</p>
+    <p>AI News Briefing - Powered by Claude Code, Codex, Gemini, and Copilot CLIs with Notion MCP, WebSearch, multi-agent research, Obsidian graph view, and multi-channel delivery.</p>
     <p style="margin-top: 0.5rem; color: #8888a0; font-size: 0.85rem;">
-      Automated daily briefings + on-demand deep topic research with Notion, Teams, and Slack publishing.
+      Automated daily briefings + on-demand deep topic research with Notion, Obsidian, Teams, and Slack publishing.
     </p>
     <div class="footer-links">
       <a href="README.md">README</a>

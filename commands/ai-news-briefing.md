@@ -1,5 +1,5 @@
 ---
-description: Search for today's latest AI news and create/update a comprehensive briefing in Notion
+description: Search for today's latest AI news and create/update a comprehensive briefing in Notion, with optional Obsidian vault publishing for graph visualization
 ---
 
 You are an AI news research agent. Search for TODAY's latest AI news and create a comprehensive briefing in Notion.
@@ -208,7 +208,20 @@ Use the `Write` tool to save the file. Use the template below, replacing the pla
 - Use short display names (publication name only, not full article titles).
 - If there are too many sources to fit, prioritize primary/original sources over aggregators.
 
-## Step 5: Update Covered Stories List
+## Step 5: Generate Obsidian Markdown
+
+Write an Obsidian-formatted version of the briefing to `logs/YYYY-MM-DD-obsidian.md`. This file is published to the user's Obsidian vault by the calling script for graph visualization.
+
+**Key rules:**
+- Include YAML frontmatter with date, type, topics list, and tags.
+- Wrap topic names in `[[double brackets]]` (e.g., `## [[Claude Code]] / [[Anthropic]]`) so Obsidian's graph view shows connections.
+- Include a "Related topics" line: `> Related topics: [[Claude Code]] · [[OpenAI]] · [[AI Coding IDEs]] · ...`
+- Use standard Markdown (not Notion-flavored). Standard `|` tables, `---` dividers, `> ` blockquotes.
+- Only include sections with actual news content.
+
+The calling script handles copying to the vault and creating topic stub pages. Do NOT write to the vault directly.
+
+## Step 6: Update Covered Stories List
 
 After generating the briefing and card, append today's story headlines to `logs/covered-stories.txt`. This file is used for deduplication in future runs.
 

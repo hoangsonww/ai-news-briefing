@@ -223,6 +223,27 @@ if ($Success) {
             Write-Log "Slack notification failed: $_"
         }
     }
+
+    # Publish to Obsidian vault if configured
+    $obsidianScript = Join-Path $ScriptDir "scripts\publish-obsidian.ps1"
+    $obsidianFile = Join-Path $LogDir "$Date-obsidian.md"
+    $obsidianVault = $env:AI_BRIEFING_OBSIDIAN_VAULT
+    if (-not $obsidianVault) {
+        $obsidianVault = [Environment]::GetEnvironmentVariable("AI_BRIEFING_OBSIDIAN_VAULT", "User")
+    }
+    if ((Test-Path $obsidianScript) -and $obsidianVault) {
+        if (Test-Path $obsidianFile) {
+            Write-Log "Publishing to Obsidian vault..."
+            try {
+                & $obsidianScript -File $obsidianFile
+                Write-Log "Obsidian publish complete."
+            } catch {
+                Write-Log "Obsidian publish failed: $_"
+            }
+        } else {
+            Write-Log "Obsidian skipped -- markdown file not found."
+        }
+    }
 } else {
     Write-Log "Briefing FAILED -- all engines exhausted or selected engine failed."
 }

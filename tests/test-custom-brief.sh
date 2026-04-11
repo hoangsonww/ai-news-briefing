@@ -53,6 +53,7 @@ assert_contains "$help_output" "--topic" "help: mentions --topic"
 assert_contains "$help_output" "--notion" "help: mentions --notion"
 assert_contains "$help_output" "--teams" "help: mentions --teams"
 assert_contains "$help_output" "--slack" "help: mentions --slack"
+assert_contains "$help_output" "--obsidian" "help: mentions --obsidian"
 
 # -- Short help flag ---------------------------------------
 help_short=$(bash "$CUSTOM_BRIEF" -h 2>&1) || true
@@ -78,6 +79,7 @@ assert_contains "$tmpl" '{{DATE}}' "template: has {{DATE}} placeholder"
 assert_contains "$tmpl" '{{TIMESTAMP}}' "template: has {{TIMESTAMP}} placeholder"
 assert_contains "$tmpl" '{{PUBLISH_NOTION}}' "template: has {{PUBLISH_NOTION}} placeholder"
 assert_contains "$tmpl" '{{PUBLISH_TEAMS_SLACK}}' "template: has {{PUBLISH_TEAMS_SLACK}} placeholder"
+assert_contains "$tmpl" '{{PUBLISH_OBSIDIAN}}' "template: has {{PUBLISH_OBSIDIAN}} placeholder"
 assert_contains "$tmpl" "Phase 1" "template: has Phase 1 (Broad Discovery)"
 assert_contains "$tmpl" "Phase 2" "template: has Phase 2 (Deep Dive)"
 assert_contains "$tmpl" "Phase 3" "template: has Phase 3 (Compile)"
@@ -96,19 +98,22 @@ result=$(awk \
   -v ts="2026-04-01-090000" \
   -v notion="true" \
   -v tslack="false" \
+  -v obsidian="true" \
   '{
     gsub(/\{\{TOPIC\}\}/, topic)
     gsub(/\{\{DATE\}\}/, date)
     gsub(/\{\{TIMESTAMP\}\}/, ts)
     gsub(/\{\{PUBLISH_NOTION\}\}/, notion)
     gsub(/\{\{PUBLISH_TEAMS_SLACK\}\}/, tslack)
+    gsub(/\{\{PUBLISH_OBSIDIAN\}\}/, obsidian)
     print
-  }' <<< "Topic: {{TOPIC}} Date: {{DATE}} Notion: {{PUBLISH_NOTION}}")
+  }' <<< "Topic: {{TOPIC}} Date: {{DATE}} Notion: {{PUBLISH_NOTION}} Obsidian: {{PUBLISH_OBSIDIAN}}")
 
 assert_contains "$result" "AI regulation in the EU" "awk substitution: topic injected"
 assert_contains "$result" "(2026)" "awk substitution: parens preserved in topic"
 assert_contains "$result" "2026-04-01" "awk substitution: replaces {{DATE}}"
 assert_contains "$result" "Notion: true" "awk substitution: replaces {{PUBLISH_NOTION}}"
+assert_contains "$result" "Obsidian: true" "awk substitution: replaces {{PUBLISH_OBSIDIAN}}"
 
 # Test no leftover placeholders
 leftover=$(awk \
@@ -117,12 +122,14 @@ leftover=$(awk \
   -v ts="2026-04-01-090000" \
   -v notion="false" \
   -v tslack="true" \
+  -v obsidian="false" \
   '{
     gsub(/\{\{TOPIC\}\}/, topic)
     gsub(/\{\{DATE\}\}/, date)
     gsub(/\{\{TIMESTAMP\}\}/, ts)
     gsub(/\{\{PUBLISH_NOTION\}\}/, notion)
     gsub(/\{\{PUBLISH_TEAMS_SLACK\}\}/, tslack)
+    gsub(/\{\{PUBLISH_OBSIDIAN\}\}/, obsidian)
     print
   }' "$PROMPT_TEMPLATE" | grep -c '{{' || true)
 assert_eq "$leftover" "0" "awk substitution: no leftover {{}} placeholders"
@@ -138,6 +145,25 @@ assert_contains "$skill" "Agent 1" "skill: defines parallel agents"
 assert_contains "$skill" "mcp__notion__notion-create-pages" "skill: uses Notion MCP"
 assert_contains "$skill" "856794cc-d871-4a95-be2d-2a1600920a19" "skill: has correct data_source_id"
 assert_contains "$skill" "Quality Checklist" "skill: has quality checklist"
+
+# -- Obsidian integration (custom-brief.sh) ----------------
+echo ""
+section "Obsidian integration (custom-brief.sh)"
+cb=$(cat "$CUSTOM_BRIEF")
+assert_contains "$cb" "PUBLISH_OBSIDIAN" "custom-brief.sh: has PUBLISH_OBSIDIAN variable"
+assert_contains "$cb" "obsidian" "custom-brief.sh: has obsidian flag handling"
+assert_contains "$cb" "publish-obsidian" "custom-brief.sh: calls publish-obsidian script"
+
+# -- Obsidian integration (prompt template) ----------------
+section "Obsidian integration (prompt-custom-brief.md)"
+assert_contains "$tmpl" "Obsidian" "template: mentions Obsidian"
+assert_contains "$tmpl" "PUBLISH_OBSIDIAN" "template: has PUBLISH_OBSIDIAN parameter"
+assert_contains "$tmpl" "obsidian.md" "template: references obsidian.md output"
+assert_contains "$tmpl" "[[" "template: uses [[wikilinks]] syntax"
+
+# -- Obsidian integration (skill) --------------------------
+section "Obsidian integration (commands/custom-brief.md)"
+assert_contains "$skill" "Obsidian" "skill: mentions Obsidian"
 
 # -- Summary -----------------------------------------------
 echo ""

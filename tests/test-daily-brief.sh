@@ -47,7 +47,8 @@ assert_contains "$prompt" "Step 1" "prompt: has Step 1 (search)"
 assert_contains "$prompt" "Step 2" "prompt: has Step 2 (compile)"
 assert_contains "$prompt" "Step 3" "prompt: has Step 3 (write to Notion)"
 assert_contains "$prompt" "Step 4" "prompt: has Step 4 (card JSON)"
-assert_contains "$prompt" "Step 5" "prompt: has Step 5 (covered stories update)"
+assert_contains "$prompt" "Step 5" "prompt: has Step 5 (Obsidian markdown)"
+assert_contains "$prompt" "Step 6" "prompt: has Step 6 (covered stories update)"
 assert_contains "$prompt" "856794cc-d871-4a95-be2d-2a1600920a19" "prompt: has correct data_source_id"
 assert_contains "$prompt" "covered-stories.txt" "prompt: references dedup file"
 assert_contains "$prompt" "mcp__notion__notion-search" "prompt: uses Notion search MCP"
@@ -117,6 +118,61 @@ if [ -f "$COVERED" ]; then
 else
   pass "covered-stories.txt not yet created (OK for fresh install)"
 fi
+
+# -- Obsidian integration (prompt.md) ----------------------
+section "Obsidian integration (prompt.md)"
+assert_contains "$prompt" "Obsidian" "prompt: mentions Obsidian"
+assert_contains "$prompt" "obsidian.md" "prompt: references obsidian.md output file"
+assert_contains "$prompt" "[[" "prompt: uses [[wikilinks]] syntax"
+assert_contains "$prompt" "frontmatter" "prompt: requires YAML frontmatter"
+
+# -- Obsidian integration (briefing.sh) --------------------
+section "Obsidian integration (briefing.sh)"
+assert_contains "$entry" "publish-obsidian" "briefing.sh: calls Obsidian publisher"
+assert_contains "$entry" "OBSIDIAN_VAULT" "briefing.sh: checks vault env var"
+assert_contains "$entry" "obsidian.md" "briefing.sh: references obsidian.md file"
+
+# -- Obsidian integration (briefing.ps1) -------------------
+section "Obsidian integration (briefing.ps1)"
+assert_contains "$ps_entry" "publish-obsidian" "briefing.ps1: calls Obsidian publisher"
+assert_contains "$ps_entry" "OBSIDIAN_VAULT" "briefing.ps1: checks vault env var"
+assert_contains "$ps_entry" "obsidian.md" "briefing.ps1: references obsidian.md file"
+
+# -- Obsidian publish script existence ---------------------
+section "Obsidian publish scripts"
+[ -f "$SCRIPT_DIR/scripts/publish-obsidian.sh" ] && pass "publish-obsidian.sh exists" || fail "publish-obsidian.sh exists"
+[ -x "$SCRIPT_DIR/scripts/publish-obsidian.sh" ] && pass "publish-obsidian.sh is executable" || fail "publish-obsidian.sh is executable"
+[ -f "$SCRIPT_DIR/scripts/publish-obsidian.ps1" ] && pass "publish-obsidian.ps1 exists" || fail "publish-obsidian.ps1 exists"
+[ -f "$SCRIPT_DIR/scripts/test-obsidian.sh" ] && pass "test-obsidian.sh exists" || fail "test-obsidian.sh exists"
+[ -x "$SCRIPT_DIR/scripts/test-obsidian.sh" ] && pass "test-obsidian.sh is executable" || fail "test-obsidian.sh is executable"
+[ -f "$SCRIPT_DIR/scripts/test-obsidian.ps1" ] && pass "test-obsidian.ps1 exists" || fail "test-obsidian.ps1 exists"
+
+# -- Obsidian publish script syntax ------------------------
+section "Obsidian script syntax"
+if bash -n "$SCRIPT_DIR/scripts/publish-obsidian.sh" 2>/dev/null; then
+  pass "publish-obsidian.sh valid bash syntax"
+else
+  fail "publish-obsidian.sh valid bash syntax"
+fi
+if bash -n "$SCRIPT_DIR/scripts/test-obsidian.sh" 2>/dev/null; then
+  pass "test-obsidian.sh valid bash syntax"
+else
+  fail "test-obsidian.sh valid bash syntax"
+fi
+
+# -- Obsidian publish script structure ---------------------
+section "Obsidian publish script structure"
+pub_obs=$(cat "$SCRIPT_DIR/scripts/publish-obsidian.sh")
+assert_contains "$pub_obs" "set -euo pipefail" "publish-obsidian.sh: uses strict mode"
+assert_contains "$pub_obs" "AI-News-Briefings" "publish-obsidian.sh: uses briefings subdirectory"
+assert_contains "$pub_obs" "Topics" "publish-obsidian.sh: uses topics subdirectory"
+assert_contains "$pub_obs" "[[" "publish-obsidian.sh: extracts wikilinks"
+assert_contains "$pub_obs" "type: topic" "publish-obsidian.sh: creates YAML topic type for stubs"
+assert_contains "$pub_obs" "OBSIDIAN_VAULT" "publish-obsidian.sh: reads vault env var"
+
+# -- Obsidian skill references -----------------------------
+section "Obsidian in skill files"
+assert_contains "$skill" "Obsidian" "daily skill: mentions Obsidian"
 
 # -- Summary -----------------------------------------------
 echo ""

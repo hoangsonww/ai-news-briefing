@@ -5,7 +5,7 @@
     Deep-research a topic and produce a comprehensive news briefing.
 .DESCRIPTION
     Uses an AI CLI engine in headless mode to conduct multi-agent deep research
-    on a user-defined topic, then optionally publishes to Notion, Teams, and/or Slack.
+    on a user-defined topic, then optionally publishes to Notion, Obsidian, Teams, and/or Slack.
     Supports Claude Code, Codex, Gemini, and GitHub Copilot.
 .PARAMETER Topic
     The topic to research. If omitted, enters interactive mode.
@@ -13,14 +13,16 @@
     AI engine: claude, codex, gemini, copilot. Default: AI_BRIEFING_CLI env or claude.
 .PARAMETER Notion
     Publish the briefing to Notion.
+.PARAMETER Obsidian
+    Publish the briefing to an Obsidian vault (requires AI_BRIEFING_OBSIDIAN_VAULT env var).
 .PARAMETER Teams
     Send a summary card to Microsoft Teams.
 .PARAMETER Slack
     Send a summary card to Slack.
 .EXAMPLE
-    .\custom-brief.ps1 -Topic "AI in healthcare" -Cli codex -Notion -Teams
+    .\custom-brief.ps1 -Topic "AI in healthcare" -Cli codex -Notion -Obsidian -Teams
 .EXAMPLE
-    .\custom-brief.ps1 -Topic "quantum computing" -Notion
+    .\custom-brief.ps1 -Topic "quantum computing" -Notion -Obsidian
 .EXAMPLE
     .\custom-brief.ps1   # interactive mode
 #>
@@ -30,6 +32,7 @@ param(
     [ValidateSet("claude", "codex", "gemini", "copilot", "")]
     [string]$Cli = "",
     [switch]$Notion,
+    [switch]$Obsidian,
     [switch]$Teams,
     [switch]$Slack
 )
@@ -189,7 +192,6 @@ if (-not $Topic) {
         exit 1
     }
     Write-Host ""
-
     # AI Engine
     Write-Host "  --- AI Engine ---------------------------------------------" -ForegroundColor DarkGray
     $idx = 0
@@ -245,9 +247,11 @@ if (-not $Topic) {
 
     # Publish destinations
     Write-Host "  --- Publish -----------------------------------------------" -ForegroundColor DarkGray
-    $yn = Read-Host "    Notion? [y/N]"
+    $yn = Read-Host "    Notion?   [y/N]"
     if ($yn -match "^[Yy]") { $Notion = [switch]::new($true) }
-    $yn = Read-Host "    Teams?  [y/N]"
+    $yn = Read-Host "    Obsidian? [y/N]"
+    if ($yn -match "^[Yy]") { $Obsidian = [switch]::new($true) }
+    $yn = Read-Host "    Teams?    [y/N]"
     if ($yn -match "^[Yy]") { $Teams = [switch]::new($true) }
     $yn = Read-Host "    Slack?  [y/N]"
     if ($yn -match "^[Yy]") { $Slack = [switch]::new($true) }
@@ -268,6 +272,7 @@ if (-not $EngineBinary) {
 
 # -- Derive flags ----------------------------------------------
 $PublishNotion = if ($Notion) { "true" } else { "false" }
+$PublishObsidian = if ($Obsidian) { "true" } else { "false" }
 $PublishTeamsSlack = if ($Teams -or $Slack) { "true" } else { "false" }
 $PublishTeams = if ($Teams) { "true" } else { "false" }
 $PublishSlack = if ($Slack) { "true" } else { "false" }
@@ -283,6 +288,7 @@ $Prompt = $PromptTemplate.
     Replace('{{DATE}}', $Date).
     Replace('{{TIMESTAMP}}', $Timestamp).
     Replace('{{PUBLISH_NOTION}}', $PublishNotion).
+    Replace('{{PUBLISH_OBSIDIAN}}', $PublishObsidian).
     Replace('{{PUBLISH_TEAMS_SLACK}}', $PublishTeamsSlack)
 
 # -- Styled boolean label --------------------------------------
@@ -305,6 +311,7 @@ Write-Host ""
 Write-Host "  Topic     " -NoNewline; Write-Host "$Topic"
 Write-Host "  Engine    " -NoNewline; Write-Host "$(Get-CliDisplayName $Cli)" -NoNewline; Write-Host " ($EngineBinary)" -ForegroundColor DarkGray
 Write-Flag "Notion" $PublishNotion
+Write-Flag "Obsidian" $PublishObsidianFlag
 Write-Flag "Teams" $PublishTeams
 Write-Flag "Slack" $PublishSlack
 Write-Host "  Log       " -NoNewline -ForegroundColor DarkGray; Write-Host "$LogFile" -ForegroundColor DarkGray
@@ -323,7 +330,7 @@ function Write-Log {
 }
 
 Write-Log "Custom Brief -- Topic: $Topic"
-Write-Log "Engine=$Cli Notion=$PublishNotion Teams=$PublishTeams Slack=$PublishSlack"
+Write-Log "Engine=$Cli Notion=$PublishNotion Obsidian=$PublishObsidian Teams=$PublishTeams Slack=$PublishSlack"
 
 # -- Run engine ------------------------------------------------
 try {
@@ -398,6 +405,41 @@ try {
             Write-Host "  Slack     " -ForegroundColor Yellow -NoNewline
             Write-Host "skipped " -NoNewline
             Write-Host "(webhook not set)" -ForegroundColor DarkGray
+        }
+    }
+
+    # -- Post-processing: Obsidian publishing ---------------
+    if ($Obsidian) {
+        $obsidianScript = Join-Path $ScriptDir "scripts\publish-obsidian.ps1"
+        $obsidianFile = Join-Path $LogDir "custom-$Timestamp-obsidian.md"
+        $obsidianVault = $env:AI_BRIEFING_OBSIDIAN_VAULT
+        if (-not $obsidianVault) {
+            $obsidianVault = [Environment]::GetEnvironmentVariable("AI_BRIEFING_OBSIDIAN_VAULT", "User")
+        }
+        if ((Test-Path $obsidianScript) -and $obsidianVault) {
+            if (Test-Path $obsidianFile) {
+                Write-Host "  Publishing to Obsidian..." -ForegroundColor DarkGray
+                Write-Log "Publishing to Obsidian vault..."
+                try {
+                    & $obsidianScript -File $obsidianFile
+                    Write-Log "Obsidian publish complete."
+                    Write-Host "  Obsidian  " -ForegroundColor Green -NoNewline
+                    Write-Host "published"
+                } catch {
+                    Write-Log "Obsidian publish failed: $_"
+                    Write-Host "  Obsidian  " -ForegroundColor Red -NoNewline
+                    Write-Host "failed"
+                }
+            } else {
+                Write-Host "  Obsidian  " -ForegroundColor Yellow -NoNewline
+                Write-Host "skipped " -NoNewline
+                Write-Host "(no markdown file)" -ForegroundColor DarkGray
+                Write-Log "Obsidian skipped -- markdown file not found."
+            }
+        } else {
+            Write-Host "  Obsidian  " -ForegroundColor Yellow -NoNewline
+            Write-Host "skipped " -NoNewline
+            Write-Host "(vault not set)" -ForegroundColor DarkGray
         }
     }
 } catch {
